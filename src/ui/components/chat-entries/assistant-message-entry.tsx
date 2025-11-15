@@ -34,13 +34,7 @@ export function AssistantMessageEntry({ entry, verbosityLevel: _verbosityLevel }
       <Box flexDirection="row" alignItems="flex-start">
         <Text color={inkColors.text}>⏺ </Text>
         <Box flexDirection="column" width="100%">
-          {entry.toolCalls ? (
-            // If there are tool calls, just show plain text  
-            <Text color={inkColors.text} wrap="wrap" dimColor={false}>{processedContent.trim()}</Text>
-          ) : (
-            // Use bright white text like Claude Code - explicit hex color to override any defaults
-            <Text color={inkColors.text} wrap="wrap" dimColor={false}>{processedContent.trim()}</Text>
-          )}
+          <MarkdownRenderer content={processedContent.trim()} />
           {entry.isStreaming && <Text color="cyan">█</Text>}
           {isTruncated && (
             <Text color="yellow" italic>

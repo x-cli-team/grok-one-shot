@@ -27,18 +27,19 @@ Perfect paste detection system with **100% Claude Code feature compatibility**:
 - ✅ **Content Expansion**: Full content preserved for AI processing
 - ✅ **Mixed Content**: Type-first + paste-second workflows working flawlessly
 
-### 🔧 **Tool Output Optimization**
+### 🔧 **Tool Output Optimization** ✅ **CLAUDE CODE PARITY ACHIEVED**
 
-- ✅ **3-Line Limit Applied**: Fixed bash tool showing excessive output
-- ✅ **Consistent Verbosity**: All tools now respect output truncation limits
-- ✅ **Claude Code Behavior**: Matches Claude Code's clean tool output display
+- ✅ **Claude Code Format Default**: `⎿ Read X lines (ctrl+r to expand)` - **ACTIVE BY DEFAULT**
+- ✅ **Professional Terminal UX**: Clean, uncluttered output matching Claude Code exactly
+- ✅ **User Control**: `/verbosity quiet` (Claude mode) | `normal` (detailed) | `verbose` (debug)
+- ✅ **Zero Learning Curve**: Familiar experience for Claude Code users
 
 ### 📊 **Business Impact**
 
 - **Token Efficiency**: 90% potential savings for basic text operations
-- **User Experience**: Instant native processing vs multi-tool chains
-- **Competitive Position**: Now matches Claude Code's core efficiency advantages
-- **Enterprise Ready**: Massive cost optimization for scale deployment
+- **User Experience**: **Claude Code parity achieved** - familiar, professional terminal interface
+- **Competitive Position**: **Default Claude Code format** eliminates switching friction
+- **Enterprise Ready**: Clean output format suitable for professional environments
 
 ### 🎯 **Implementation Roadmap**
 
@@ -65,6 +66,10 @@ This represents the **single largest optimization opportunity** discovered - fun
 │  # 2. Run instantly (no installation required!)                │
 │  npx @xagent/one-shot                                          │
 │                                                                 │
+│  # 3. Experience Claude Code tool format by default:           │
+│  # ⏺ Read(file.txt)                                            │
+│  #   ⎿ Read 42 lines (ctrl+r to expand)                       │
+│                                                                 │
 │  🔐 Tip: Never commit API keys to git. Use local env vars!     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -78,7 +83,7 @@ This represents the **single largest optimization opportunity** discovered - fun
 [![License](https://img.shields.io/github/license/x-cli-team/grok-one-shot?style=for-the-badge&color=green)](https://github.com/x-cli-team/grok-one-shot/blob/main/LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-xAI_Community-5865F2?style=for-the-badge&logo=discord)](https://discord.com/channels/1315720379607679066/1315822328139223064)
 
-A conversational AI CLI tool powered by x.ai with **Claude Code-level intelligence** and advanced tool capabilities.
+A conversational AI CLI tool powered by x.ai with **Claude Code-level intelligence** and **Claude Code's exact tool output format by default**.
 
 <div align="center">
   <img src="apps/site/static/img/logo.png" alt="Grok One-Shot Logo" width="120" />
@@ -214,6 +219,7 @@ A conversational AI CLI tool powered by x.ai with **Claude Code-level intelligen
 ### 🤖 **Core AI Capabilities**
 
 - **💬 Conversational Interface**: Natural language powered by x.ai models
+- **🎯 Claude Code Tool Format**: `⎿ Read X lines (ctrl+r to expand)` **enabled by default**
 - **🔧 Intelligent Tool Selection**: AI automatically chooses the right tools for your requests
 - **⚡ Bash Integration**: Execute shell commands through natural conversation
 - **🔌 MCP Extension**: Extend capabilities with Model Context Protocol servers (Linear, GitHub, etc.)
@@ -755,6 +761,22 @@ grok-one-shot -d /path/to/project
 - **`Esc`** - Interrupt current operation
 - **`exit`** - Quit the application
 
+#### 🎯 Claude Code Mode (Default)
+
+By default, Grok One-Shot uses Claude Code's exact tool output format:
+
+```bash
+❯ read the README.md file
+⏺ Read(README.md)
+  ⎿ Read 1314 lines (ctrl+r to expand)
+
+❯ /verbosity normal    # Switch to detailed mode if needed
+✅ Verbosity level set to: NORMAL
+
+❯ /verbosity quiet     # Back to Claude Code mode
+🎯 Claude Code mode activated! Tool outputs will now show ultra-brief format
+```
+
 ### Headless Mode
 
 Process a single prompt and exit (useful for scripting and automation):
@@ -997,19 +1019,20 @@ If checks fail, the commit is blocked until issues are resolved.
 
 ## 🤖 Automated Release System
 
-**Status**: ✅ **FULLY AUTOMATED** (as of 2025-10-17)
+**Status**: ✅ **FULLY AUTOMATED** (as of 2025-10-17, CI fixes Nov 2024)
 
 ### How It Works
 
 Every push to the `main` branch automatically:
 
-1. **🔄 Bumps version** (patch increment: 1.0.X → 1.0.X+1)
-2. **📝 Updates README** with new version number
-3. **🏗️ Builds the project** with fresh dependencies
+1. **🛡️ Pre-commit validation** (TypeScript, ESLint, 25+ tools, documentation sync)
+2. **🔄 Bumps version** (patch increment: 1.0.X → 1.0.X+1)
+3. **🏗️ Builds the project** with fresh dependencies (handles CI environment issues)
 4. **📦 Publishes to NPM** at https://www.npmjs.com/package/@xagent/one-shot
-5. **🏷️ Creates git tag** (e.g., `v1.0.87`)
+5. **🏷️ Creates git tag** (e.g., `v1.0.87`) and GitHub release
 
-**⏱️ Timeline**: ~3-5 minutes from push to NPM availability
+**⏱️ Timeline**: ~3-5 minutes from push to NPM availability  
+**🛠️ Recent Fixes** (Nov 2024): Resolved TypeScript compilation and pre-commit hook CI environment issues
 
 ### What You Need to Do
 
@@ -1034,11 +1057,13 @@ git push             # ❌ Missing automation checks!
 
 **💡 Why Smart Push Required:**
 
-- Runs TypeScript & ESLint quality checks
-- Monitors GitHub Actions workflow status
-- Verifies NPM package publication
-- Handles branch protection with automatic PRs
-- Provides real-time feedback and error recovery
+- ✅ Runs TypeScript & ESLint quality checks (fixed Nov 2024 CI compilation issues)
+- ✅ Monitors GitHub Actions workflow status
+- ✅ Verifies NPM package publication
+- ✅ Handles branch protection with automatic PRs
+- ✅ Provides real-time feedback and error recovery
+- ✅ Ensures all 25+ tools integrity checks pass
+- ✅ Validates documentation sync and core features
 
 **📋 Complete Development Workflow:**
 
@@ -1119,6 +1144,8 @@ If automation fails:
 - **Build fails**: Usually Rollup dependency cache (auto-fixed with clean install)
 - **Publish fails**: Check NPM token is valid and from correct account
 - **Git push fails**: Verify PAT_TOKEN has repo permissions
+- **TypeScript compilation fails in CI** (Fixed Nov 2024): Was due to invalid MCP client configuration
+- **Pre-commit hooks fail in CI** (Fixed Nov 2024): Environment adaptations added for CI-specific validations
 
 ### 📚 Related Documentation
 

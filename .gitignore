@@ -206,6 +206,7 @@ apps/site/.agent/
 apps/site/.grok/
 apps/site/*.mp4
 apps/site/grok-video-*.mp4
+dump.md
 
 # Grok One Shot configuration
 .grok-one-shot/all-claude-docs.zip

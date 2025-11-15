@@ -49,6 +49,7 @@ try {
   const { printWelcomeBanner } = await import("./hooks/use-console-setup.js");
   const { getSettingsManager } = await import("./utils/settings-manager.js");
   const { ConfirmationService } = await import("./utils/confirmation-service.js");
+  const { renderMarkdownToConsole } = await import("./utils/console-markdown.js");
   const { createMCPCommand } = await import("./commands/mcp.js");
   const { createSetNameCommand } = await import("./commands/set-name.js");
   const { createToggleConfirmationsCommand } = await import("./commands/toggle-confirmations.js");
@@ -169,10 +170,10 @@ try {
 
             const chatEntries = await agent.processUserMessage(options.prompt);
             
-            // Output assistant responses
+            // Output assistant responses with markdown rendering
             for (const entry of chatEntries) {
               if (entry.type === "assistant" && entry.content) {
-                console.log(entry.content);
+                console.log(renderMarkdownToConsole(entry.content));
               }
             }
           } catch (error) {

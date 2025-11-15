@@ -3,6 +3,7 @@ import { Box, Text } from "ink";
 import { ChatEntry } from "../../../agent/grok-agent.js";
 import { DiffRenderer } from "../diff-renderer.js";
 import { FileContentRenderer } from "../content-renderers/file-content-renderer.js";
+import { ToolBrevityService, type BrevityMode } from "../../../services/tool-brevity-service.js";
 
 interface ToolCallEntryProps {
   entry: ChatEntry;
@@ -161,9 +162,23 @@ export function ToolCallEntry({ entry, verbosityLevel, explainLevel }: ToolCallE
   // Verbosity-based content filtering
   const shouldShowToolContent = verbosityLevel !== 'quiet';
   const shouldShowFullContent = verbosityLevel === 'normal' || verbosityLevel === 'verbose';
+  
+  // Convert verbosity to brevity mode
+  const brevityMode: BrevityMode = verbosityLevel === 'quiet' ? 'brief' : 
+                                   verbosityLevel === 'verbose' ? 'verbose' : 'normal';
+
+  // Generate brevity summary for compact display
+  const brevitySummary = ToolBrevityService.formatToolResult(
+    toolName, 
+    entry.content || '', 
+    brevityMode
+  );
 
   const explanation = getExplanation(toolName, filePath, isExecuting);
   const { preview, hasMore, totalLines } = truncateToClaudeStyle(entry.content || '');
+  
+  // Claude Code style: use ultra-brief format in quiet mode
+  const useClaudeCodeFormat = verbosityLevel === 'quiet' && brevitySummary.hasContent;
 
   return (
     <Box flexDirection="column" marginTop={1}>
@@ -174,14 +189,19 @@ export function ToolCallEntry({ entry, verbosityLevel, explainLevel }: ToolCallE
           {filePath ? `${actionName}(${filePath})` : actionName}
         </Text>
       </Box>
-      {explanation && (
+      {explanation && !useClaudeCodeFormat && (
         <Box marginLeft={2}>
           <Text color="blue" italic>
             💡 {explanation}
           </Text>
         </Box>
       )}
-      {shouldShowToolContent && (
+      {useClaudeCodeFormat ? (
+        // Claude Code style: ultra-brief format
+        <Box marginLeft={2}>
+          <Text color="gray">⎿ {brevitySummary.summary} {brevitySummary.expansionHint}</Text>
+        </Box>
+      ) : shouldShowToolContent && (
         <Box marginLeft={2} flexDirection="column">
           {isExecuting ? (
             <Text color="cyan">⎿ Executing...</Text>
@@ -224,7 +244,7 @@ export function ToolCallEntry({ entry, verbosityLevel, explainLevel }: ToolCallE
           )}
         </Box>
       )}
-      {shouldShowDiff && !isExecuting && shouldShowFullContent && (
+      {shouldShowDiff && !isExecuting && shouldShowFullContent && !useClaudeCodeFormat && (
         <Box marginLeft={4} flexDirection="column">
           <DiffRenderer
             diffContent={entry.content}

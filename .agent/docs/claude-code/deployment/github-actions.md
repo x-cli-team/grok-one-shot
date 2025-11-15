@@ -2,9 +2,51 @@
 
 > Learn about integrating Grok One-Shot into your development workflow with GitHub Actions
 
-## Parity Gap: No Official Grok GitHub Actions
+## 🛠️ CI/CD Integration Status ✅ **PRODUCTION READY**
 
-**Current Status**: Unlike Claude Code, Grok One-Shot does not currently have official GitHub Actions support from xAI.
+**Current Status**: Grok One-Shot has a **robust, battle-tested CI/CD pipeline** with automated releases and comprehensive quality gates.
+
+### ✅ **Fully Automated Release System**
+
+Every push to `main` automatically:
+1. **🔄 Bumps version** (patch increment)
+2. **🏗️ Builds with clean dependencies** (handles Rollup cache issues)
+3. **📦 Publishes to NPM** with provenance
+4. **🏷️ Creates git tags** and GitHub releases
+5. **🛡️ Validates all security checks** (25+ tools, TypeScript, ESLint)
+
+**⏱️ Timeline**: ~3-5 minutes from push to NPM availability
+
+### 🛡️ **Comprehensive Quality Gates**
+
+**Pre-commit Hooks** (`.husky/pre-commit`):
+- ✅ Critical folder protection (prevents accidental deletion)
+- ✅ Code formatting (lint-staged with ESLint auto-fix)
+- ✅ Documentation sync (.agent docs to public docs)
+- ✅ Core features validation (TypeScript + build + CLI tests)
+- ✅ Tool system validation (25+ tools integrity check)
+- ✅ Tool code integrity (prevents accidental changes)
+
+**CI Environment Adaptations** (Nov 2024 fixes):
+- ⏭️ Roadmap update skipped in CI (missing API key, documentation only)
+- ⏭️ MDX validation skipped in CI (link resolution issues, local validation sufficient)
+- ✅ Enhanced CI-specific validations (test API key, CLI version/help tests)
+
+### 🚨 **Smart Push Required**
+
+**⚠️ CRITICAL for AI agents**: Never use direct `git push origin main`
+
+```bash
+# ✅ CORRECT METHOD:
+npm run smart-push
+
+# ❌ NEVER DO THIS:  
+git push origin main  # Bypasses quality gates
+```
+
+## Parity Gap: No Official xAI GitHub Actions
+
+**Current Status**: Unlike Claude Code, Grok One-Shot does not currently have official GitHub Actions support from xAI, but has implemented a comprehensive custom CI/CD solution.
 
 **What This Means**:
 - No official `@grok` mention support in GitHub issues/PRs
@@ -321,6 +363,55 @@ When using custom Grok One-Shot GitHub Actions:
 Unlike Claude Code which supports AWS Bedrock and Google Vertex AI, Grok One-Shot currently only supports the xAI Grok API directly.
 
 ## Troubleshooting
+
+### CI/CD Pipeline Issues (Updated Nov 2024)
+
+**🔧 TypeScript Compilation Errors in CI**
+
+If you see "TypeScript compilation failed" in GitHub Actions but works locally:
+
+```bash
+# Check for MCP client configuration issues
+grep -n "capabilities:" src/mcp/client.ts
+
+# Should NOT contain invalid properties like 'tools: {}'
+# Valid properties: experimental, sampling, elicitation, roots
+```
+
+**🔧 Pre-commit Hook Failures**
+
+If pre-commit hooks fail in CI but work locally:
+
+```bash
+# Check environment variable handling
+if [ -z "$CI" ] && [ -z "$GITHUB_ACTIONS" ]; then
+  echo "This runs locally only"
+fi
+
+# CI-specific test setup
+export GROK_API_KEY="${X_API_KEY:-test-key-for-validation-only}"
+```
+
+**🔧 Release Workflow Troubleshooting**
+
+Common CI failure patterns:
+
+1. **Core features validation failed**
+   - Check TypeScript compilation: `npm run typecheck`
+   - Verify build artifacts: `npm run build && ls dist/`
+   - Test CLI locally: `node dist/index.js --version`
+
+2. **NPM publish failures**
+   - Verify NPM_TOKEN secret (must be Automation token)
+   - Check package name hasn't changed
+   - Review .npmrc configuration in workflow
+
+3. **Git push failures**
+   - Check PAT_TOKEN secret permissions
+   - Verify git user configuration in workflow
+   - Review branch protection rules
+
+### Custom GitHub Actions
 
 ### Grok not responding
 

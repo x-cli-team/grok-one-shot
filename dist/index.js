@@ -20,11 +20,11 @@ import { glob } from 'glob';
 import crypto2 from 'crypto';
 import { encoding_for_model, get_encoding } from 'tiktoken';
 import * as readline from 'readline';
-import React5, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import React4, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { render, Box, Text, useApp, useInput } from 'ink';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
+import chalk2 from 'chalk';
 import { program, Command } from 'commander';
-import chalk from 'chalk';
 import * as dotenv from 'dotenv';
 
 var __create = Object.create;
@@ -726,7 +726,7 @@ var init_client2 = __esm({
             },
             {
               capabilities: {
-                tools: {}
+                // Client capabilities - not tools (tools are for servers)
               }
             }
           );
@@ -6547,14 +6547,14 @@ var init_ast_parser = __esm({
           });
           const symbols = this.extractTypeScriptSymbols(ast, content);
           const imports = this.extractTypeScriptImports(ast);
-          const exports = this.extractTypeScriptExports(ast);
+          const exports$1 = this.extractTypeScriptExports(ast);
           const tree = this.convertTypeScriptAST(ast);
           return {
             language,
             tree,
             symbols,
             imports,
-            exports,
+            exports: exports$1,
             errors
           };
         } catch (error) {
@@ -6578,14 +6578,14 @@ var init_ast_parser = __esm({
         const tree = parser.parse(content);
         const symbols = this.extractTreeSitterSymbols(tree.rootNode, content, language);
         const imports = this.extractTreeSitterImports(tree.rootNode, content, language);
-        const exports = this.extractTreeSitterExports(tree.rootNode, content, language);
+        const exports$1 = this.extractTreeSitterExports(tree.rootNode, content, language);
         const astTree = this.convertTreeSitterAST(tree.rootNode, content);
         return {
           language,
           tree: astTree,
           symbols,
           imports,
-          exports,
+          exports: exports$1,
           errors: []
         };
       }
@@ -6762,13 +6762,13 @@ var init_ast_parser = __esm({
         return imports;
       }
       extractTypeScriptExports(ast) {
-        const exports = [];
+        const exports$1 = [];
         const visit = (node) => {
           switch (node.type) {
             case "ExportNamedDeclaration":
               if (node.declaration) {
                 if (node.declaration.id?.name) {
-                  exports.push({
+                  exports$1.push({
                     name: node.declaration.id.name,
                     type: this.getDeclarationType(node.declaration.type),
                     startPosition: {
@@ -6779,7 +6779,7 @@ var init_ast_parser = __esm({
                 }
               } else if (node.specifiers) {
                 node.specifiers.forEach((spec) => {
-                  exports.push({
+                  exports$1.push({
                     name: spec.exported.name,
                     type: "variable",
                     // Default to variable
@@ -6794,7 +6794,7 @@ var init_ast_parser = __esm({
               break;
             case "ExportDefaultDeclaration":
               const name = node.declaration?.id?.name || "default";
-              exports.push({
+              exports$1.push({
                 name,
                 type: this.getDeclarationType(node.declaration?.type) || "default",
                 startPosition: {
@@ -6821,7 +6821,7 @@ var init_ast_parser = __esm({
           }
         };
         visit(ast);
-        return exports;
+        return exports$1;
       }
       extractTreeSitterSymbols(node, content, language) {
         const symbols = [];
@@ -6906,11 +6906,11 @@ var init_ast_parser = __esm({
         return imports;
       }
       extractTreeSitterExports(node, content, language) {
-        const exports = [];
+        const exports$1 = [];
         const visit = (node2) => {
           if (node2.type === "export_statement") {
             const name = this.extractNodeName(node2, "name") || "unknown";
-            exports.push({
+            exports$1.push({
               name,
               type: "variable",
               startPosition: {
@@ -6922,7 +6922,7 @@ var init_ast_parser = __esm({
           node2.children?.forEach((child) => visit(child));
         };
         visit(node);
-        return exports;
+        return exports$1;
       }
       convertTypeScriptAST(node) {
         return {
@@ -7472,7 +7472,7 @@ var init_dependency_analyzer = __esm({
             const parsed = JSON.parse(parseResult.output);
             if (parsed.success && parsed.result) {
               const imports = parsed.result.imports || [];
-              const exports = parsed.result.exports || [];
+              const exports$1 = parsed.result.exports || [];
               const dependencies = await this.resolveImportPaths(
                 imports,
                 filePath,
@@ -7483,7 +7483,7 @@ var init_dependency_analyzer = __esm({
                 filePath: path8__default.relative(rootPath, filePath),
                 absolutePath: filePath,
                 imports,
-                exports,
+                exports: exports$1,
                 dependencies,
                 dependents: [],
                 isEntryPoint: false,
@@ -19701,6 +19701,10 @@ ${output?.plan?.summary || "Task completed"}`,
             instructions += "- Keep responses CONCISE and to the point. Avoid lengthy explanations.\n";
             instructions += "- Prioritize brevity over detail unless specifically requested.\n";
             instructions += "- Use minimal formatting and avoid verbose tool descriptions.\n";
+            instructions += "- NEVER use separators like ### or --- between tool results and your response.\n";
+            instructions += "- Provide analysis immediately after tools without visual dividers.\n";
+            instructions += "- You may use **bold** and _italic_ for emphasis when helpful.\n";
+            instructions += "- Match Claude Code style: tool outputs followed by clean, well-formatted analysis.\n";
             break;
           case "normal":
             instructions += "- Provide balanced responses with appropriate detail.\n";
@@ -19726,6 +19730,11 @@ ${output?.plan?.summary || "Task completed"}`,
             instructions += "- Provide detailed context for all operations.\n";
             break;
         }
+        instructions += "\n";
+        instructions += "\n\u{1F4A1} VISUAL FORMATTING:\n";
+        instructions += "- Use emojis for status: \u2705 success, \u274C error, \u26A0\uFE0F warning, \u{1F4A1} tips\n";
+        instructions += "- Add checkmarks for completed features or working items\n";
+        instructions += "- Use appropriate emojis to make responses more scannable\n";
         return instructions;
       }
       // Plan Mode integration methods
@@ -28815,12 +28824,12 @@ Auto-compact automatically enables compact mode when conversations exceed thresh
           content: `\u{1F50A} **Current Verbosity Level: ${verbosityLevel.toUpperCase()}**
 
 **Available levels:**
-- \`quiet\` - Minimal output, suppress prefixes and extra formatting
+- \`quiet\` - \u{1F3AF} **Claude Code mode**: Ultra-brief tool output (\`\u23BF Read X lines (ctrl+r to expand)\`)
 - \`normal\` - Current default behavior with full details
 - \`verbose\` - Additional details and debug information
 
 **Usage:** \`/verbosity <level>\`
-**Example:** \`/verbosity quiet\``,
+**Example:** \`/verbosity quiet\` (for Claude Code parity)`,
           timestamp: /* @__PURE__ */ new Date()
         };
         setChatHistory((prev) => [...prev, levelEntry]);
@@ -28835,7 +28844,7 @@ Auto-compact automatically enables compact mode when conversations exceed thresh
           type: "assistant",
           content: `\u2705 **Verbosity level set to: ${newLevel.toUpperCase()}**
 
-Tool outputs will now show ${newLevel === "quiet" ? "minimal output" : newLevel === "normal" ? "full details" : "extra details and debug information"}.`,
+${newLevel === "quiet" ? "\u{1F3AF} **Claude Code mode activated!** Tool outputs will now show ultra-brief format: `\u23BF Read X lines (ctrl+r to expand)`" : newLevel === "normal" ? "Tool outputs will now show full details." : "Tool outputs will now show extra details and debug information."}`,
           timestamp: /* @__PURE__ */ new Date()
         };
         setChatHistory((prev) => [...prev, confirmEntry]);
@@ -30472,18 +30481,179 @@ var init_user_message_entry = __esm({
     };
   }
 });
+function MarkdownRenderer({ content }) {
+  try {
+    return /* @__PURE__ */ jsx(InlineMarkdown, { content });
+  } catch (error) {
+    console.error("Markdown rendering error:", error);
+    return /* @__PURE__ */ jsx(Text, { wrap: "wrap", dimColor: false, children: content });
+  }
+}
+function InlineMarkdown({ content }) {
+  const lines = content.split("\n");
+  return /* @__PURE__ */ jsx(Text, { wrap: "wrap", dimColor: false, children: lines.map((line, lineIndex) => /* @__PURE__ */ jsxs(React4.Fragment, { children: [
+    lineIndex > 0 && "\n",
+    parseInlineMarkdown(line).map((part, partIndex) => {
+      if (part.type === "header") {
+        return /* @__PURE__ */ jsx(Text, { bold: true, color: "white", children: part.text }, `${lineIndex}-${partIndex}`);
+      }
+      if (part.type === "bold") {
+        return /* @__PURE__ */ jsx(Text, { bold: true, color: "white", children: part.text }, `${lineIndex}-${partIndex}`);
+      }
+      if (part.type === "italic") {
+        return /* @__PURE__ */ jsx(Text, { italic: true, color: "gray", children: part.text }, `${lineIndex}-${partIndex}`);
+      }
+      if (part.type === "code") {
+        return /* @__PURE__ */ jsx(Text, { color: "cyan", children: part.text }, `${lineIndex}-${partIndex}`);
+      }
+      if (part.type === "emoji") {
+        const emoji = part.text;
+        if (emoji === "\u2705" || emoji === "\u2713") {
+          return /* @__PURE__ */ jsx(Text, { color: "green", children: emoji }, `${lineIndex}-${partIndex}`);
+        }
+        if (emoji === "\u274C" || emoji === "\u2717") {
+          return /* @__PURE__ */ jsx(Text, { color: "red", children: emoji }, `${lineIndex}-${partIndex}`);
+        }
+        if (emoji === "\u26A0\uFE0F" || emoji === "\u26A0") {
+          return /* @__PURE__ */ jsx(Text, { color: "yellow", children: emoji }, `${lineIndex}-${partIndex}`);
+        }
+        if (emoji === "\u{1F4A1}" || emoji === "\u2139\uFE0F" || emoji === "\u{1F50D}") {
+          return /* @__PURE__ */ jsx(Text, { color: "blue", children: emoji }, `${lineIndex}-${partIndex}`);
+        }
+        return /* @__PURE__ */ jsx(Text, { color: "white", children: emoji }, `${lineIndex}-${partIndex}`);
+      }
+      if (part.type === "metadata") {
+        return /* @__PURE__ */ jsx(Text, { color: "gray", dimColor: true, children: part.text }, `${lineIndex}-${partIndex}`);
+      }
+      return /* @__PURE__ */ jsx(Text, { color: "white", children: part.text }, `${lineIndex}-${partIndex}`);
+    })
+  ] }, lineIndex)) });
+}
+function parseInlineMarkdown(content) {
+  if (content.match(/^#+\s*$/)) {
+    return [];
+  }
+  const headerMatch = content.match(/^(#+)\s+(.*)$/);
+  if (headerMatch) {
+    const [, hashes, headerText] = headerMatch;
+    return [{ type: "header", text: headerText.trim(), level: hashes.length }];
+  }
+  const parts = [];
+  let current = "";
+  let i = 0;
+  while (i < content.length) {
+    if (content[i] === "`" && i < content.length - 1) {
+      if (current) {
+        parts.push({ type: "text", text: current });
+        current = "";
+      }
+      const closeIndex = content.indexOf("`", i + 1);
+      if (closeIndex !== -1 && closeIndex > i + 1) {
+        const codeText = content.substring(i + 1, closeIndex);
+        parts.push({ type: "code", text: codeText });
+        i = closeIndex + 1;
+        continue;
+      }
+    }
+    if (content.substr(i, 2) === "**") {
+      if (current) {
+        parts.push({ type: "text", text: current });
+        current = "";
+      }
+      const closeIndex = content.indexOf("**", i + 2);
+      if (closeIndex !== -1) {
+        const boldText = content.substring(i + 2, closeIndex);
+        parts.push({ type: "bold", text: boldText });
+        i = closeIndex + 2;
+        continue;
+      }
+    }
+    if (content[i] === "_" && content[i + 1] !== "_") {
+      if (current) {
+        parts.push({ type: "text", text: current });
+        current = "";
+      }
+      const closeIndex = content.indexOf("_", i + 1);
+      if (closeIndex !== -1) {
+        const italicText = content.substring(i + 1, closeIndex);
+        parts.push({ type: "italic", text: italicText });
+        i = closeIndex + 1;
+        continue;
+      }
+    }
+    const char = content[i];
+    if (/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u.test(char)) {
+      if (current) {
+        parts.push({ type: "text", text: current });
+        current = "";
+      }
+      parts.push({ type: "emoji", text: char });
+      i++;
+      continue;
+    }
+    current += content[i];
+    i++;
+  }
+  if (current) {
+    const codePattern = /(view_file|str_replace_editor|create_file|search|semantic_search|ast_parser|package\.json|README\.md|GROK\.md|install\.sh|docs-getter\.sh|dist\/|src\/|scripts\/|apps\/|node_modules|\.git|\.js|\.ts|\.json|\.sh|\.md|bun\s+install|npm\s+install)/g;
+    const metadataPattern = /(\([^)]*(?:v\d+\.\d+|\d+k?[+]?\s*(?:files?|lines?|items?)|\d+\.\d+[xX]|dependencies?|scripts?|guides?|overview|project\s+docs?|source\s+code|detailed\s+setup|changelog|debugging|session\s+files?|build\s+artifacts)[^)]*\))/g;
+    let lastIndex = 0;
+    let match;
+    let processedText = current;
+    const tempParts = [];
+    lastIndex = 0;
+    while ((match = codePattern.exec(processedText)) !== null) {
+      if (match.index > lastIndex) {
+        tempParts.push({ type: "text", text: processedText.substring(lastIndex, match.index) });
+      }
+      tempParts.push({ type: "code", text: match[0] });
+      lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < processedText.length) {
+      tempParts.push({ type: "text", text: processedText.substring(lastIndex) });
+    }
+    const finalParts = [];
+    for (const part of tempParts) {
+      if (part.type === "text") {
+        lastIndex = 0;
+        metadataPattern.lastIndex = 0;
+        while ((match = metadataPattern.exec(part.text)) !== null) {
+          if (match.index > lastIndex) {
+            finalParts.push({ type: "text", text: part.text.substring(lastIndex, match.index) });
+          }
+          finalParts.push({ type: "metadata", text: match[0] });
+          lastIndex = match.index + match[0].length;
+        }
+        if (lastIndex < part.text.length) {
+          finalParts.push({ type: "text", text: part.text.substring(lastIndex) });
+        }
+        if (finalParts.length === 0 || finalParts[finalParts.length - 1].text !== part.text) {
+          if (finalParts.length === 0) {
+            finalParts.push(part);
+          }
+        }
+      } else {
+        finalParts.push(part);
+      }
+    }
+    if (finalParts.length === 0) {
+      parts.push({ type: "text", text: current });
+    } else {
+      parts.push(...finalParts);
+    }
+  }
+  return parts;
+}
+var init_markdown_renderer = __esm({
+  "src/ui/utils/markdown-renderer.tsx"() {
+  }
+});
 function AssistantMessageEntry({ entry, verbosityLevel: _verbosityLevel }) {
   const { content: processedContent, isTruncated } = handleLongContent(entry.content);
   return /* @__PURE__ */ jsx(Box, { flexDirection: "column", marginTop: 1, children: /* @__PURE__ */ jsxs(Box, { flexDirection: "row", alignItems: "flex-start", children: [
     /* @__PURE__ */ jsx(Text, { color: inkColors.text, children: "\u23FA " }),
     /* @__PURE__ */ jsxs(Box, { flexDirection: "column", width: "100%", children: [
-      entry.toolCalls ? (
-        // If there are tool calls, just show plain text  
-        /* @__PURE__ */ jsx(Text, { color: inkColors.text, wrap: "wrap", dimColor: false, children: processedContent.trim() })
-      ) : (
-        // Use bright white text like Claude Code - explicit hex color to override any defaults
-        /* @__PURE__ */ jsx(Text, { color: inkColors.text, wrap: "wrap", dimColor: false, children: processedContent.trim() })
-      ),
+      /* @__PURE__ */ jsx(MarkdownRenderer, { content: processedContent.trim() }),
       entry.isStreaming && /* @__PURE__ */ jsx(Text, { color: "cyan", children: "\u2588" }),
       isTruncated && /* @__PURE__ */ jsx(Text, { color: "yellow", italic: true, children: "[Response truncated for performance - full content in session log]" })
     ] })
@@ -30492,6 +30662,7 @@ function AssistantMessageEntry({ entry, verbosityLevel: _verbosityLevel }) {
 var handleLongContent;
 var init_assistant_message_entry = __esm({
   "src/ui/components/chat-entries/assistant-message-entry.tsx"() {
+    init_markdown_renderer();
     init_colors();
     handleLongContent = (content, maxLength = 5e3) => {
       if (content.length <= maxLength) {
@@ -30743,6 +30914,221 @@ var init_file_content_renderer = __esm({
   "src/ui/components/content-renderers/file-content-renderer.tsx"() {
   }
 });
+
+// src/services/tool-brevity-service.ts
+var ToolBrevityService;
+var init_tool_brevity_service = __esm({
+  "src/services/tool-brevity-service.ts"() {
+    ToolBrevityService = class {
+      /**
+       * Format tool result based on brevity mode
+       */
+      static formatToolResult(toolName, result, mode = "normal") {
+        const normalizedToolName = this.normalizeToolName(toolName);
+        const metadata = this.extractMetadata(normalizedToolName, result);
+        const summary = this.generateSummary(normalizedToolName, result, metadata);
+        return {
+          toolName: normalizedToolName,
+          summary,
+          expansionHint: result.length > 0 ? "(ctrl+r to expand)" : "",
+          hasContent: result.length > 0,
+          originalContent: result,
+          metadata
+        };
+      }
+      /**
+       * Normalize tool names to handle MCP and special cases
+       */
+      static normalizeToolName(toolName) {
+        if (toolName.startsWith("mcp__")) {
+          const parts = toolName.split("__");
+          if (parts.length >= 3) {
+            return parts[2];
+          }
+        }
+        const toolMappings = {
+          "str_replace_editor": "Edit",
+          "bash": "Bash",
+          "file_editor": "Edit",
+          "grep": "Grep",
+          "file_search": "Search",
+          "list_files": "List",
+          "read_file": "Read",
+          "write_file": "Write"
+        };
+        return toolMappings[toolName] || this.capitalizeFirst(toolName);
+      }
+      /**
+       * Extract metadata from tool result content
+       */
+      static extractMetadata(toolName, content) {
+        const metadata = {};
+        switch (toolName.toLowerCase()) {
+          case "read":
+          case "edit":
+          case "write":
+            metadata.lineCount = this.countLines(content);
+            break;
+          case "grep":
+          case "search":
+            const { matchCount, fileCount } = this.parseGrepResults(content);
+            metadata.matchCount = matchCount;
+            metadata.fileCount = fileCount;
+            break;
+          case "list":
+            metadata.fileCount = this.countFileItems(content);
+            break;
+          case "bash":
+            metadata.status = this.determineBashStatus(content);
+            break;
+          default:
+            metadata.lineCount = this.countLines(content);
+        }
+        return metadata;
+      }
+      /**
+       * Generate tool-specific summary text
+       */
+      static generateSummary(toolName, content, metadata) {
+        const tool = toolName.toLowerCase();
+        if (!content || content.trim().length === 0) {
+          return `${this.capitalizeFirst(tool)} (no output)`;
+        }
+        switch (tool) {
+          case "read":
+            return `Read ${metadata.lineCount || 0} lines`;
+          case "edit":
+            return `Updated ${this.getFileName(content)} with ${metadata.lineCount || 0} lines`;
+          case "write":
+            return `Created file (${metadata.lineCount || 0} lines)`;
+          case "grep":
+          case "search":
+            if (metadata.matchCount === 0) {
+              return "No matches found";
+            }
+            return `${metadata.matchCount} matches across ${metadata.fileCount || 1} files`;
+          case "list":
+            return `Found ${metadata.fileCount || 0} items`;
+          case "bash":
+            if (metadata.status === "error") {
+              return "Command failed";
+            }
+            return "Command completed successfully";
+          case "glob":
+            return `Found ${this.countFileItems(content)} files`;
+          case "webfetch":
+            return `Fetched content (${metadata.lineCount || 0} lines)`;
+          case "websearch":
+            return `Search completed (${this.countSearchResults(content)} results)`;
+          default:
+            const lines = metadata.lineCount || 0;
+            return lines > 0 ? `${this.capitalizeFirst(tool)} (${lines} lines)` : this.capitalizeFirst(tool);
+        }
+      }
+      /**
+       * Count lines in content
+       */
+      static countLines(content) {
+        if (!content) return 0;
+        return content.split("\n").length;
+      }
+      /**
+       * Parse grep/search results for match and file counts
+       */
+      static parseGrepResults(content) {
+        if (!content) return { matchCount: 0, fileCount: 0 };
+        const lines = content.split("\n").filter((line) => line.trim().length > 0);
+        const files = /* @__PURE__ */ new Set();
+        let matches = 0;
+        for (const line of lines) {
+          const fileMatch = line.match(/^([^:]+):/);
+          if (fileMatch) {
+            files.add(fileMatch[1]);
+            matches++;
+          } else if (line.includes(":")) {
+            matches++;
+          }
+        }
+        return {
+          matchCount: matches || lines.length,
+          fileCount: files.size || (matches > 0 ? 1 : 0)
+        };
+      }
+      /**
+       * Count file items in directory listing
+       */
+      static countFileItems(content) {
+        if (!content) return 0;
+        const lines = content.split("\n").filter((line) => line.trim().length > 0).filter((line) => !line.startsWith("total ")).filter((line) => !line.match(/^d.*\s+\.\s*$/)).filter((line) => !line.match(/^d.*\s+\.\.\s*$/));
+        return lines.length;
+      }
+      /**
+       * Determine bash command success/failure status
+       */
+      static determineBashStatus(content) {
+        if (!content) return "success";
+        const errorIndicators = [
+          "error:",
+          "Error:",
+          "ERROR:",
+          "failed",
+          "Failed",
+          "FAILED",
+          "permission denied",
+          "command not found",
+          "no such file",
+          "cannot"
+        ];
+        const contentLower = content.toLowerCase();
+        return errorIndicators.some((indicator) => contentLower.includes(indicator.toLowerCase())) ? "error" : "success";
+      }
+      /**
+       * Extract filename from edit/write operation content
+       */
+      static getFileName(content) {
+        const fileMatch = content.match(/(?:updated|edited|created)\s+([^\s]+)/i);
+        if (fileMatch) return fileMatch[1];
+        const pathMatch = content.match(/([^/]+)$/);
+        return pathMatch ? pathMatch[1] : "file";
+      }
+      /**
+       * Count search results in web search content
+       */
+      static countSearchResults(content) {
+        const resultMatches = content.match(/result\s+\d+/gi);
+        return resultMatches ? resultMatches.length : 1;
+      }
+      /**
+       * Capitalize first letter of string
+       */
+      static capitalizeFirst(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+      }
+      /**
+       * Check if content should use compact display
+       */
+      static shouldUseCompactDisplay(mode, contentLength) {
+        if (mode === "brief") return true;
+        if (mode === "verbose") return false;
+        const lineCount = contentLength > 0 ? contentLength.toString().split("\n").length : 0;
+        return lineCount > 5;
+      }
+      /**
+       * Format expansion hint with content preview
+       */
+      static formatExpansionHint(hasContent, metadata) {
+        if (!hasContent) return "";
+        if (metadata.lineCount && metadata.lineCount > 10) {
+          return `(${metadata.lineCount} lines, ctrl+r to expand)`;
+        }
+        if (metadata.matchCount && metadata.matchCount > 5) {
+          return `(${metadata.matchCount} matches, ctrl+r to expand)`;
+        }
+        return "(ctrl+r to expand)";
+      }
+    };
+  }
+});
 function ToolCallEntry({ entry, verbosityLevel, explainLevel }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const getExplanation = (toolName2, filePath2, _isExecuting) => {
@@ -30852,8 +31238,15 @@ function ToolCallEntry({ entry, verbosityLevel, explainLevel }) {
   const shouldShowFileContent = (entry.toolCall?.function?.name === "view_file" || entry.toolCall?.function?.name === "create_file") && entry.toolResult?.success && !shouldShowDiff;
   const shouldShowToolContent = verbosityLevel !== "quiet";
   const shouldShowFullContent = verbosityLevel === "normal" || verbosityLevel === "verbose";
+  const brevityMode = verbosityLevel === "quiet" ? "brief" : verbosityLevel === "verbose" ? "verbose" : "normal";
+  const brevitySummary = ToolBrevityService.formatToolResult(
+    toolName,
+    entry.content || "",
+    brevityMode
+  );
   const explanation = getExplanation(toolName, filePath);
   const { preview, hasMore, totalLines } = truncateToClaudeStyle(entry.content || "");
+  const useClaudeCodeFormat = verbosityLevel === "quiet" && brevitySummary.hasContent;
   return /* @__PURE__ */ jsxs(Box, { flexDirection: "column", marginTop: 1, children: [
     /* @__PURE__ */ jsxs(Box, { children: [
       /* @__PURE__ */ jsx(Text, { color: "magenta", children: "\u23FA" }),
@@ -30862,11 +31255,19 @@ function ToolCallEntry({ entry, verbosityLevel, explainLevel }) {
         filePath ? `${actionName}(${filePath})` : actionName
       ] })
     ] }),
-    explanation && /* @__PURE__ */ jsx(Box, { marginLeft: 2, children: /* @__PURE__ */ jsxs(Text, { color: "blue", italic: true, children: [
+    explanation && !useClaudeCodeFormat && /* @__PURE__ */ jsx(Box, { marginLeft: 2, children: /* @__PURE__ */ jsxs(Text, { color: "blue", italic: true, children: [
       "\u{1F4A1} ",
       explanation
     ] }) }),
-    shouldShowToolContent && /* @__PURE__ */ jsx(Box, { marginLeft: 2, flexDirection: "column", children: isExecuting ? /* @__PURE__ */ jsx(Text, { color: "cyan", children: "\u23BF Executing..." }) : shouldShowFileContent && shouldShowFullContent ? /* @__PURE__ */ jsx(Box, { flexDirection: "column", children: !isExpanded ? /* @__PURE__ */ jsxs(Box, { flexDirection: "column", children: [
+    useClaudeCodeFormat ? (
+      // Claude Code style: ultra-brief format
+      /* @__PURE__ */ jsx(Box, { marginLeft: 2, children: /* @__PURE__ */ jsxs(Text, { color: "gray", children: [
+        "\u23BF ",
+        brevitySummary.summary,
+        " ",
+        brevitySummary.expansionHint
+      ] }) })
+    ) : shouldShowToolContent && /* @__PURE__ */ jsx(Box, { marginLeft: 2, flexDirection: "column", children: isExecuting ? /* @__PURE__ */ jsx(Text, { color: "cyan", children: "\u23BF Executing..." }) : shouldShowFileContent && shouldShowFullContent ? /* @__PURE__ */ jsx(Box, { flexDirection: "column", children: !isExpanded ? /* @__PURE__ */ jsxs(Box, { flexDirection: "column", children: [
       /* @__PURE__ */ jsxs(Text, { color: "gray", children: [
         "\u23BF ",
         preview
@@ -30902,7 +31303,7 @@ function ToolCallEntry({ entry, verbosityLevel, explainLevel }) {
       "\u23BF ",
       formatToolContent(entry.content, toolName)
     ] }) }),
-    shouldShowDiff && !isExecuting && shouldShowFullContent && /* @__PURE__ */ jsx(Box, { marginLeft: 4, flexDirection: "column", children: /* @__PURE__ */ jsx(
+    shouldShowDiff && !isExecuting && shouldShowFullContent && !useClaudeCodeFormat && /* @__PURE__ */ jsx(Box, { marginLeft: 4, flexDirection: "column", children: /* @__PURE__ */ jsx(
       DiffRenderer,
       {
         diffContent: entry.content,
@@ -30917,6 +31318,7 @@ var init_tool_call_entry = __esm({
   "src/ui/components/chat-entries/tool-call-entry.tsx"() {
     init_diff_renderer();
     init_file_content_renderer();
+    init_tool_brevity_service();
     truncateContent2 = (content, maxLength = 100) => {
       if (process.env.COMPACT !== "1") return content;
       return content.length > maxLength ? content.substring(0, maxLength) + "..." : content;
@@ -30967,7 +31369,7 @@ var MemoizedChatEntry;
 var init_chat_history = __esm({
   "src/ui/components/chat-history.tsx"() {
     init_chat_entry_router();
-    MemoizedChatEntry = React5.memo(
+    MemoizedChatEntry = React4.memo(
       ({ entry, verbosityLevel, explainLevel }) => {
         return /* @__PURE__ */ jsx(ChatEntryRouter, { entry, verbosityLevel, explainLevel });
       }
@@ -32181,6 +32583,28 @@ var init_chat_interface = __esm({
   }
 });
 
+// src/utils/console-markdown.ts
+var console_markdown_exports = {};
+__export(console_markdown_exports, {
+  renderMarkdownToConsole: () => renderMarkdownToConsole
+});
+function renderMarkdownToConsole(content) {
+  let result = content;
+  result = result.replace(/^#+\s+(.*)$/gm, (_, text) => chalk2.bold.white(text));
+  result = result.replace(/\*\*(.*?)\*\*/g, (_, text) => chalk2.bold.white(text));
+  result = result.replace(/_(.*?)_/g, (_, text) => chalk2.italic.gray(text));
+  result = result.replace(/`([^`]+)`/g, (_, text) => chalk2.cyan(text));
+  result = result.replace(/(✅|✓)/g, (match) => chalk2.green(match));
+  result = result.replace(/(❌|✗)/g, (match) => chalk2.red(match));
+  result = result.replace(/(⚠️|⚠)/g, (match) => chalk2.yellow(match));
+  result = result.replace(/(ℹ️|💡|🔍)/g, (match) => chalk2.blue(match));
+  return result;
+}
+var init_console_markdown = __esm({
+  "src/utils/console-markdown.ts"() {
+  }
+});
+
 // src/commands/mcp.ts
 var mcp_exports = {};
 __export(mcp_exports, {
@@ -32194,27 +32618,27 @@ function createMCPCommand() {
       if (PREDEFINED_SERVERS[name]) {
         const config3 = PREDEFINED_SERVERS[name];
         addMCPServer(config3);
-        console.log(chalk.green(`\u2713 Added predefined MCP server: ${name}`));
+        console.log(chalk2.green(`\u2713 Added predefined MCP server: ${name}`));
         const manager2 = getMCPManager();
         await manager2.addServer(config3);
-        console.log(chalk.green(`\u2713 Connected to MCP server: ${name}`));
+        console.log(chalk2.green(`\u2713 Connected to MCP server: ${name}`));
         const tools2 = manager2.getTools().filter((t) => t.serverName === name);
-        console.log(chalk.blue(`  Available tools: ${tools2.length}`));
+        console.log(chalk2.blue(`  Available tools: ${tools2.length}`));
         return;
       }
       const transportType = options.transport.toLowerCase();
       if (transportType === "stdio") {
         if (!options.command) {
-          console.error(chalk.red("Error: --command is required for stdio transport"));
+          console.error(chalk2.red("Error: --command is required for stdio transport"));
           process.exit(1);
         }
       } else if (transportType === "http" || transportType === "sse" || transportType === "streamable_http") {
         if (!options.url) {
-          console.error(chalk.red(`Error: --url is required for ${transportType} transport`));
+          console.error(chalk2.red(`Error: --url is required for ${transportType} transport`));
           process.exit(1);
         }
       } else {
-        console.error(chalk.red("Error: Transport type must be stdio, http, sse, or streamable_http"));
+        console.error(chalk2.red("Error: Transport type must be stdio, http, sse, or streamable_http"));
         process.exit(1);
       }
       const env = {};
@@ -32243,14 +32667,14 @@ function createMCPCommand() {
         }
       };
       addMCPServer(config2);
-      console.log(chalk.green(`\u2713 Added MCP server: ${name}`));
+      console.log(chalk2.green(`\u2713 Added MCP server: ${name}`));
       const manager = getMCPManager();
       await manager.addServer(config2);
-      console.log(chalk.green(`\u2713 Connected to MCP server: ${name}`));
+      console.log(chalk2.green(`\u2713 Connected to MCP server: ${name}`));
       const tools = manager.getTools().filter((t) => t.serverName === name);
-      console.log(chalk.blue(`  Available tools: ${tools.length}`));
+      console.log(chalk2.blue(`  Available tools: ${tools.length}`));
     } catch (error) {
-      console.error(chalk.red(`Error adding MCP server: ${error.message}`));
+      console.error(chalk2.red(`Error adding MCP server: ${error.message}`));
       process.exit(1);
     }
   });
@@ -32260,7 +32684,7 @@ function createMCPCommand() {
       try {
         config2 = JSON.parse(jsonConfig);
       } catch {
-        console.error(chalk.red("Error: Invalid JSON configuration"));
+        console.error(chalk2.red("Error: Invalid JSON configuration"));
         process.exit(1);
       }
       const serverConfig = {
@@ -32283,14 +32707,14 @@ function createMCPCommand() {
         }
       }
       addMCPServer(serverConfig);
-      console.log(chalk.green(`\u2713 Added MCP server: ${name}`));
+      console.log(chalk2.green(`\u2713 Added MCP server: ${name}`));
       const manager = getMCPManager();
       await manager.addServer(serverConfig);
-      console.log(chalk.green(`\u2713 Connected to MCP server: ${name}`));
+      console.log(chalk2.green(`\u2713 Connected to MCP server: ${name}`));
       const tools = manager.getTools().filter((t) => t.serverName === name);
-      console.log(chalk.blue(`  Available tools: ${tools.length}`));
+      console.log(chalk2.blue(`  Available tools: ${tools.length}`));
     } catch (error) {
-      console.error(chalk.red(`Error adding MCP server: ${error.message}`));
+      console.error(chalk2.red(`Error adding MCP server: ${error.message}`));
       process.exit(1);
     }
   });
@@ -32299,9 +32723,9 @@ function createMCPCommand() {
       const manager = getMCPManager();
       await manager.removeServer(name);
       removeMCPServer(name);
-      console.log(chalk.green(`\u2713 Removed MCP server: ${name}`));
+      console.log(chalk2.green(`\u2713 Removed MCP server: ${name}`));
     } catch (error) {
-      console.error(chalk.red(`Error removing MCP server: ${error.message}`));
+      console.error(chalk2.red(`Error removing MCP server: ${error.message}`));
       process.exit(1);
     }
   });
@@ -32309,15 +32733,15 @@ function createMCPCommand() {
     const config2 = loadMCPConfig();
     const manager = getMCPManager();
     if (config2.servers.length === 0) {
-      console.log(chalk.yellow("No MCP servers configured"));
+      console.log(chalk2.yellow("No MCP servers configured"));
       return;
     }
-    console.log(chalk.bold("Configured MCP servers:"));
+    console.log(chalk2.bold("Configured MCP servers:"));
     console.log();
     for (const server of config2.servers) {
       const isConnected = manager.getServers().includes(server.name);
-      const status = isConnected ? chalk.green("\u2713 Connected") : chalk.red("\u2717 Disconnected");
-      console.log(`${chalk.bold(server.name)}: ${status}`);
+      const status = isConnected ? chalk2.green("\u2713 Connected") : chalk2.red("\u2717 Disconnected");
+      console.log(`${chalk2.bold(server.name)}: ${status}`);
       if (server.transport) {
         console.log(`  Transport: ${server.transport.type}`);
         if (server.transport.type === "stdio") {
@@ -32350,15 +32774,15 @@ function createMCPCommand() {
       const config2 = loadMCPConfig();
       const serverConfig = config2.servers.find((s) => s.name === name);
       if (!serverConfig) {
-        console.error(chalk.red(`Server ${name} not found`));
+        console.error(chalk2.red(`Server ${name} not found`));
         process.exit(1);
       }
-      console.log(chalk.blue(`Testing connection to ${name}...`));
+      console.log(chalk2.blue(`Testing connection to ${name}...`));
       const manager = getMCPManager();
       await manager.addServer(serverConfig);
       const tools = manager.getTools().filter((t) => t.serverName === name);
-      console.log(chalk.green(`\u2713 Successfully connected to ${name}`));
-      console.log(chalk.blue(`  Available tools: ${tools.length}`));
+      console.log(chalk2.green(`\u2713 Successfully connected to ${name}`));
+      console.log(chalk2.blue(`  Available tools: ${tools.length}`));
       if (tools.length > 0) {
         console.log("  Tools:");
         tools.forEach((tool) => {
@@ -32367,7 +32791,7 @@ function createMCPCommand() {
         });
       }
     } catch (error) {
-      console.error(chalk.red(`\u2717 Failed to connect to ${name}: ${error.message}`));
+      console.error(chalk2.red(`\u2717 Failed to connect to ${name}: ${error.message}`));
       process.exit(1);
     }
   });
@@ -32391,9 +32815,9 @@ function createSetNameCommand() {
     try {
       const settingsManager = getSettingsManager();
       settingsManager.updateUserSetting("assistantName", name);
-      console.log(chalk.green(`\u2705 Assistant name set to: ${name}`));
+      console.log(chalk2.green(`\u2705 Assistant name set to: ${name}`));
     } catch (error) {
-      console.error(chalk.red(`\u274C Failed to set assistant name: ${error.message}`));
+      console.error(chalk2.red(`\u274C Failed to set assistant name: ${error.message}`));
       process.exit(1);
     }
   });
@@ -32418,10 +32842,10 @@ function createToggleConfirmationsCommand() {
       const currentValue = settingsManager.getUserSetting("requireConfirmation") ?? true;
       const newValue = !currentValue;
       settingsManager.updateUserSetting("requireConfirmation", newValue);
-      console.log(chalk.green(`\u2705 Confirmation requirement ${newValue ? "enabled" : "disabled"}`));
+      console.log(chalk2.green(`\u2705 Confirmation requirement ${newValue ? "enabled" : "disabled"}`));
       console.log(`File operations and bash commands will ${newValue ? "now" : "no longer"} require confirmation.`);
     } catch (error) {
-      console.error(chalk.red(`\u274C Failed to toggle confirmations: ${error.message}`));
+      console.error(chalk2.red(`\u274C Failed to toggle confirmations: ${error.message}`));
       process.exit(1);
     }
   });
@@ -32435,7 +32859,7 @@ var init_toggle_confirmations = __esm({
 
 // package.json
 var require_package = __commonJS({
-  "package.json"(exports, module) {
+  "package.json"(exports$1, module) {
     module.exports = {
       type: "module",
       name: "@xagent/one-shot",
@@ -32624,6 +33048,7 @@ try {
   const { printWelcomeBanner: printWelcomeBanner2 } = await Promise.resolve().then(() => (init_use_console_setup(), use_console_setup_exports));
   const { getSettingsManager: getSettingsManager2 } = await Promise.resolve().then(() => (init_settings_manager(), settings_manager_exports));
   const { ConfirmationService: ConfirmationService2 } = await Promise.resolve().then(() => (init_confirmation_service(), confirmation_service_exports));
+  const { renderMarkdownToConsole: renderMarkdownToConsole2 } = await Promise.resolve().then(() => (init_console_markdown(), console_markdown_exports));
   const { createMCPCommand: createMCPCommand2 } = await Promise.resolve().then(() => (init_mcp(), mcp_exports));
   const { createSetNameCommand: createSetNameCommand2 } = await Promise.resolve().then(() => (init_set_name(), set_name_exports));
   const { createToggleConfirmationsCommand: createToggleConfirmationsCommand2 } = await Promise.resolve().then(() => (init_toggle_confirmations(), toggle_confirmations_exports));
@@ -32699,7 +33124,7 @@ try {
           const chatEntries = await agent.processUserMessage(options.prompt);
           for (const entry of chatEntries) {
             if (entry.type === "assistant" && entry.content) {
-              console.log(entry.content);
+              console.log(renderMarkdownToConsole2(entry.content));
             }
           }
         } catch (error) {
@@ -32718,7 +33143,7 @@ try {
         printWelcomeBanner2(options.quiet);
       }
       const initialMessage = Array.isArray(message) ? message.join(" ") : message || "";
-      const app = render(React5.createElement(ChatInterface2, {
+      const app = render(React4.createElement(ChatInterface2, {
         agent,
         initialMessage,
         quiet: options.quiet

@@ -1782,6 +1782,10 @@ Current working directory: ${process.cwd()}`,
         instructions += '- Keep responses CONCISE and to the point. Avoid lengthy explanations.\n';
         instructions += '- Prioritize brevity over detail unless specifically requested.\n';
         instructions += '- Use minimal formatting and avoid verbose tool descriptions.\n';
+        instructions += '- NEVER use separators like ### or --- between tool results and your response.\n';
+        instructions += '- Provide analysis immediately after tools without visual dividers.\n';
+        instructions += '- You may use **bold** and _italic_ for emphasis when helpful.\n';
+        instructions += '- Match Claude Code style: tool outputs followed by clean, well-formatted analysis.\n';
         break;
       case 'normal':
         instructions += '- Provide balanced responses with appropriate detail.\n';
@@ -1808,6 +1812,15 @@ Current working directory: ${process.cwd()}`,
         instructions += '- Provide detailed context for all operations.\n';
         break;
     }
+    
+    // Universal style guidelines - FORMAT RULES
+    instructions += '\n';
+    // Let AI respond naturally with standard markdown - we'll parse and render it properly
+    // Encourage visual formatting for better UX
+    instructions += '\n💡 VISUAL FORMATTING:\n';
+    instructions += '- Use emojis for status: ✅ success, ❌ error, ⚠️ warning, 💡 tips\n';
+    instructions += '- Add checkmarks for completed features or working items\n';
+    instructions += '- Use appropriate emojis to make responses more scannable\n';
     
     return instructions;
   }

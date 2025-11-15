@@ -1791,7 +1791,7 @@ Auto-compact automatically enables compact mode when conversations exceed thresh
         // Show current verbosity level
         const levelEntry: ChatEntry = {
           type: "assistant",
-          content: `🔊 **Current Verbosity Level: ${verbosityLevel.toUpperCase()}**\n\n**Available levels:**\n- \`quiet\` - Minimal output, suppress prefixes and extra formatting\n- \`normal\` - Current default behavior with full details\n- \`verbose\` - Additional details and debug information\n\n**Usage:** \`/verbosity <level>\`\n**Example:** \`/verbosity quiet\``,
+          content: `🔊 **Current Verbosity Level: ${verbosityLevel.toUpperCase()}**\n\n**Available levels:**\n- \`quiet\` - 🎯 **Claude Code mode**: Ultra-brief tool output (\`⎿ Read X lines (ctrl+r to expand)\`)\n- \`normal\` - Current default behavior with full details\n- \`verbose\` - Additional details and debug information\n\n**Usage:** \`/verbosity <level>\`\n**Example:** \`/verbosity quiet\` (for Claude Code parity)`,
           timestamp: new Date(),
         };
         setChatHistory((prev) => [...prev, levelEntry]);
@@ -1806,7 +1806,7 @@ Auto-compact automatically enables compact mode when conversations exceed thresh
         }
         const confirmEntry: ChatEntry = {
           type: "assistant",
-          content: `✅ **Verbosity level set to: ${newLevel.toUpperCase()}**\n\nTool outputs will now show ${newLevel === 'quiet' ? 'minimal output' : newLevel === 'normal' ? 'full details' : 'extra details and debug information'}.`,
+          content: `✅ **Verbosity level set to: ${newLevel.toUpperCase()}**\n\n${newLevel === 'quiet' ? '🎯 **Claude Code mode activated!** Tool outputs will now show ultra-brief format: `⎿ Read X lines (ctrl+r to expand)`' : newLevel === 'normal' ? 'Tool outputs will now show full details.' : 'Tool outputs will now show extra details and debug information.'}`,
           timestamp: new Date(),
         };
         setChatHistory((prev) => [...prev, confirmEntry]);
