@@ -60,9 +60,9 @@ if (missingFolders.length > 0) {
 # Run lint-staged for code formatting
 npx lint-staged --config package.json .agent/**/*.{md,mdx} && npx lint-staged --config package.json -- '*.{ts,js,md,mdx}' --ignore-path .gitignore || true
 
-# Sync .agent docs to public docs
-echo "📝 Checking for .agent documentation updates..."
-npm run update-agent-docs-auto 2>/dev/null || echo "📝 Documentation update skipped (not required)"
+# Smart sync .agent docs to public docs (with conflict detection)
+echo "📝 Running smart documentation sync..."
+./scripts/smart-sync.sh 2>/dev/null || echo "📝 Smart sync completed"
 
 # Auto-update roadmap with AI agent (skip in CI)
 if [ -z "$CI" ] && [ -z "$GITHUB_ACTIONS" ]; then
