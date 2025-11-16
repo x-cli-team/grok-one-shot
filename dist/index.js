@@ -27092,7 +27092,7 @@ var init_package = __esm({
     package_default = {
       type: "module",
       name: "@xagent/one-shot",
-      version: "1.2.0",
+      version: "1.2.1",
       description: "An open-source AI agent that brings advanced AI capabilities directly into your terminal with automatic documentation updates.",
       main: "dist/index.js",
       module: "dist/index.js",
@@ -27114,6 +27114,8 @@ var init_package = __esm({
       ],
       scripts: {
         local: "bun --watch src/index.ts",
+        "test-agent": "bun run build && ./dist/index.js -p",
+        "test-log": 'bun run build && ./dist/index.js -p "$1" 2>&1 | tee agent-test.log',
         build: "tsup src/index.ts --format esm --dts",
         dev: "tsx watch src/index.ts",
         lint: "eslint src --ext .ts",
@@ -30491,46 +30493,58 @@ function MarkdownRenderer({ content }) {
 }
 function InlineMarkdown({ content }) {
   const lines = content.split("\n");
-  return /* @__PURE__ */ jsx(Text, { wrap: "wrap", dimColor: false, children: lines.map((line, lineIndex) => /* @__PURE__ */ jsxs(React4.Fragment, { children: [
-    lineIndex > 0 && "\n",
-    parseInlineMarkdown(line).map((part, partIndex) => {
-      if (part.type === "header") {
-        return /* @__PURE__ */ jsx(Text, { bold: true, color: "white", children: part.text }, `${lineIndex}-${partIndex}`);
-      }
-      if (part.type === "bold") {
-        return /* @__PURE__ */ jsx(Text, { bold: true, color: "white", children: part.text }, `${lineIndex}-${partIndex}`);
-      }
-      if (part.type === "italic") {
-        return /* @__PURE__ */ jsx(Text, { italic: true, color: "gray", children: part.text }, `${lineIndex}-${partIndex}`);
-      }
-      if (part.type === "code") {
-        return /* @__PURE__ */ jsx(Text, { color: "cyan", children: part.text }, `${lineIndex}-${partIndex}`);
-      }
-      if (part.type === "emoji") {
-        const emoji = part.text;
-        if (emoji === "\u2705" || emoji === "\u2713") {
-          return /* @__PURE__ */ jsx(Text, { color: "green", children: emoji }, `${lineIndex}-${partIndex}`);
+  return /* @__PURE__ */ jsx(Text, { wrap: "wrap", dimColor: false, children: lines.map((line, lineIndex) => {
+    const parts = parseInlineMarkdown(line);
+    if (parts.length === 0) {
+      return null;
+    }
+    return /* @__PURE__ */ jsxs(React4.Fragment, { children: [
+      lineIndex > 0 && "\n",
+      parts.map((part, partIndex) => {
+        if (part.type === "header") {
+          return /* @__PURE__ */ jsx(Text, { bold: true, color: "white", children: part.text }, `${lineIndex}-${partIndex}`);
         }
-        if (emoji === "\u274C" || emoji === "\u2717") {
-          return /* @__PURE__ */ jsx(Text, { color: "red", children: emoji }, `${lineIndex}-${partIndex}`);
+        if (part.type === "bold") {
+          return /* @__PURE__ */ jsx(Text, { bold: true, color: "white", children: part.text }, `${lineIndex}-${partIndex}`);
         }
-        if (emoji === "\u26A0\uFE0F" || emoji === "\u26A0") {
-          return /* @__PURE__ */ jsx(Text, { color: "yellow", children: emoji }, `${lineIndex}-${partIndex}`);
+        if (part.type === "italic") {
+          return /* @__PURE__ */ jsx(Text, { italic: true, color: "gray", children: part.text }, `${lineIndex}-${partIndex}`);
         }
-        if (emoji === "\u{1F4A1}" || emoji === "\u2139\uFE0F" || emoji === "\u{1F50D}") {
-          return /* @__PURE__ */ jsx(Text, { color: "blue", children: emoji }, `${lineIndex}-${partIndex}`);
+        if (part.type === "code") {
+          return /* @__PURE__ */ jsx(Text, { color: "cyan", children: part.text }, `${lineIndex}-${partIndex}`);
         }
-        return /* @__PURE__ */ jsx(Text, { color: "white", children: emoji }, `${lineIndex}-${partIndex}`);
-      }
-      if (part.type === "metadata") {
-        return /* @__PURE__ */ jsx(Text, { color: "gray", dimColor: true, children: part.text }, `${lineIndex}-${partIndex}`);
-      }
-      return /* @__PURE__ */ jsx(Text, { color: "white", children: part.text }, `${lineIndex}-${partIndex}`);
-    })
-  ] }, lineIndex)) });
+        if (part.type === "emoji") {
+          const emoji = part.text;
+          if (emoji === "\u2705" || emoji === "\u2713") {
+            return /* @__PURE__ */ jsx(Text, { color: "green", children: emoji }, `${lineIndex}-${partIndex}`);
+          }
+          if (emoji === "\u274C" || emoji === "\u2717") {
+            return /* @__PURE__ */ jsx(Text, { color: "red", children: emoji }, `${lineIndex}-${partIndex}`);
+          }
+          if (emoji === "\u26A0\uFE0F" || emoji === "\u26A0") {
+            return /* @__PURE__ */ jsx(Text, { color: "yellow", children: emoji }, `${lineIndex}-${partIndex}`);
+          }
+          if (emoji === "\u{1F4A1}" || emoji === "\u2139\uFE0F" || emoji === "\u{1F50D}") {
+            return /* @__PURE__ */ jsx(Text, { color: "blue", children: emoji }, `${lineIndex}-${partIndex}`);
+          }
+          return /* @__PURE__ */ jsx(Text, { color: "white", children: emoji }, `${lineIndex}-${partIndex}`);
+        }
+        if (part.type === "metadata") {
+          return /* @__PURE__ */ jsx(Text, { color: "gray", dimColor: true, children: part.text }, `${lineIndex}-${partIndex}`);
+        }
+        if (part.type === "version") {
+          return /* @__PURE__ */ jsx(Text, { color: "gray", dimColor: true, children: part.text }, `${lineIndex}-${partIndex}`);
+        }
+        if (part.type === "section") {
+          return /* @__PURE__ */ jsx(Text, { bold: true, color: "cyan", children: part.text }, `${lineIndex}-${partIndex}`);
+        }
+        return /* @__PURE__ */ jsx(Text, { color: "white", children: part.text }, `${lineIndex}-${partIndex}`);
+      })
+    ] }, lineIndex);
+  }) });
 }
 function parseInlineMarkdown(content) {
-  if (content.match(/^#+\s*$/)) {
+  if (content.match(/^#+\s*$/) || content.trim() === "" || content.trim() === "\u23FA" || content.match(/^#+$/)) {
     return [];
   }
   const headerMatch = content.match(/^(#+)\s+(.*)$/);
@@ -30595,47 +30609,30 @@ function parseInlineMarkdown(content) {
     i++;
   }
   if (current) {
-    const codePattern = /(view_file|str_replace_editor|create_file|search|semantic_search|ast_parser|package\.json|README\.md|GROK\.md|install\.sh|docs-getter\.sh|dist\/|src\/|scripts\/|apps\/|node_modules|\.git|\.js|\.ts|\.json|\.sh|\.md|bun\s+install|npm\s+install)/g;
-    const metadataPattern = /(\([^)]*(?:v\d+\.\d+|\d+k?[+]?\s*(?:files?|lines?|items?)|\d+\.\d+[xX]|dependencies?|scripts?|guides?|overview|project\s+docs?|source\s+code|detailed\s+setup|changelog|debugging|session\s+files?|build\s+artifacts)[^)]*\))/g;
+    const codePattern = /(view_file|str_replace_editor|create_file|search|semantic_search|ast_parser|package\.json|README\.md|GROK\.md|install\.sh|docs-getter\.sh|dist\/|src\/|scripts\/|apps\/|node_modules|\.git|\.js|\.ts|\.json|\.sh|\.md|bun\s+install|npm\s+install|npm\s+start|bun\s+start|TypeScript|React|Ink|ESLint|Husky|tsup|Vercel|GitHub|API|CLI|MCP|tsconfig\.json|\.env|\.gitignore|\.npmrc|package-lock\.json|bun\.lock|docs-index\.md|\.github\/|\.husky\/|\/Users\/[^\s]+|Grok\s+API|xAI|x\.ai)/g;
+    const metadataPattern = /(\([^)]*(?:v\d+\.\d+\.\d+|v\d+\.\d+|\d+k?[+]?\s*(?:files?|lines?|items?|packages?|deps?|subdirs?|MB|KB|GB)|\d+\.\d+[xX]|~\d+[A-Z]*|dependencies?|scripts?|guides?|overview|project\s+docs?|source\s+code|detailed\s+setup|changelog|debugging|session\s+files?|build\s+artifacts|latest\s+release|current\s+Directory|for\s+CLI|via\s+Ink|xAI)[^)]*\))/g;
+    const enhancedParts = [];
+    let processedText = current;
     let lastIndex = 0;
     let match;
-    let processedText = current;
-    const tempParts = [];
-    lastIndex = 0;
-    while ((match = codePattern.exec(processedText)) !== null) {
+    const combinedPattern = new RegExp(`(${codePattern.source})|(${metadataPattern.source})|\\b(Overview|Key Features|Tech Stack|Current State|Purpose & Value|Structure)\\b`, "g");
+    while ((match = combinedPattern.exec(processedText)) !== null) {
       if (match.index > lastIndex) {
-        tempParts.push({ type: "text", text: processedText.substring(lastIndex, match.index) });
+        enhancedParts.push({ type: "text", text: processedText.substring(lastIndex, match.index) });
       }
-      tempParts.push({ type: "code", text: match[0] });
+      if (match[1]) {
+        enhancedParts.push({ type: "code", text: match[1] });
+      } else if (match[2]) {
+        enhancedParts.push({ type: "metadata", text: match[2] });
+      } else if (match[3]) {
+        enhancedParts.push({ type: "section", text: match[3] });
+      }
       lastIndex = match.index + match[0].length;
     }
     if (lastIndex < processedText.length) {
-      tempParts.push({ type: "text", text: processedText.substring(lastIndex) });
+      enhancedParts.push({ type: "text", text: processedText.substring(lastIndex) });
     }
-    const finalParts = [];
-    for (const part of tempParts) {
-      if (part.type === "text") {
-        lastIndex = 0;
-        metadataPattern.lastIndex = 0;
-        while ((match = metadataPattern.exec(part.text)) !== null) {
-          if (match.index > lastIndex) {
-            finalParts.push({ type: "text", text: part.text.substring(lastIndex, match.index) });
-          }
-          finalParts.push({ type: "metadata", text: match[0] });
-          lastIndex = match.index + match[0].length;
-        }
-        if (lastIndex < part.text.length) {
-          finalParts.push({ type: "text", text: part.text.substring(lastIndex) });
-        }
-        if (finalParts.length === 0 || finalParts[finalParts.length - 1].text !== part.text) {
-          if (finalParts.length === 0) {
-            finalParts.push(part);
-          }
-        }
-      } else {
-        finalParts.push(part);
-      }
-    }
+    const finalParts = enhancedParts;
     if (finalParts.length === 0) {
       parts.push({ type: "text", text: current });
     } else {
@@ -30650,6 +30647,11 @@ var init_markdown_renderer = __esm({
 });
 function AssistantMessageEntry({ entry, verbosityLevel: _verbosityLevel }) {
   const { content: processedContent, isTruncated } = handleLongContent(entry.content);
+  const trimmedContent = processedContent.trim();
+  const isEffectivelyEmpty = !trimmedContent || trimmedContent.match(/^#+\s*$/) || trimmedContent === "\u23FA";
+  if (isEffectivelyEmpty && !entry.isStreaming) {
+    return null;
+  }
   return /* @__PURE__ */ jsx(Box, { flexDirection: "column", marginTop: 1, children: /* @__PURE__ */ jsxs(Box, { flexDirection: "row", alignItems: "flex-start", children: [
     /* @__PURE__ */ jsx(Text, { color: inkColors.text, children: "\u23FA " }),
     /* @__PURE__ */ jsxs(Box, { flexDirection: "column", width: "100%", children: [
@@ -32594,6 +32596,10 @@ function renderMarkdownToConsole(content) {
   result = result.replace(/\*\*(.*?)\*\*/g, (_, text) => chalk2.bold.white(text));
   result = result.replace(/_(.*?)_/g, (_, text) => chalk2.italic.gray(text));
   result = result.replace(/`([^`]+)`/g, (_, text) => chalk2.cyan(text));
+  result = result.replace(/(view_file|str_replace_editor|create_file|search|semantic_search|ast_parser|package\.json|README\.md|GROK\.md|install\.sh|docs-getter\.sh|dist\/|src\/|scripts\/|apps\/|node_modules|\.git|\.js|\.ts|\.json|\.sh|\.md|bun\s+install|npm\s+install|npm\s+start|bun\s+start|TypeScript|React|Ink|ESLint|Husky|tsup|Vercel|GitHub|API|CLI|MCP|tsconfig\.json|\.env|\.gitignore|\.npmrc|package-lock\.json|bun\.lock|docs-index\.md|\.github\/|\.husky\/|\/Users\/[^\s]+|Grok\s+API|xAI|x\.ai)/g, (match) => chalk2.cyan(match));
+  result = result.replace(/\b(Overview|Key Features|Tech Stack|Current State|Purpose & Value|Structure)\b/g, (match) => chalk2.bold.cyan(match));
+  result = result.replace(/(\([^)]*(?:v\d+\.\d+\.\d+|v\d+\.\d+|\d+k?[+]?\s*(?:files?|lines?|items?|packages?|deps?|subdirs?|MB|KB|GB)|\d+\.\d+[xX]|~\d+[A-Z]*|dependencies?|scripts?|guides?|overview|project\s+docs?|source\s+code|detailed\s+setup|changelog|debugging|session\s+files?|build\s+artifacts|latest\s+release|current\s+Directory|for\s+CLI|via\s+Ink|xAI)[^)]*\))/g, (match) => chalk2.gray.dim(match));
+  result = result.replace(/(\b(?:v\d+\.\d+\.\d+|v\d+\.\d+|~\d+[A-Z]+|\d+k?\+?\s*(?:files?|lines?|packages?|deps?|items?)|\d+\.\d+[xX])\b)/g, (match) => chalk2.gray.dim(match));
   result = result.replace(/(✅|✓)/g, (match) => chalk2.green(match));
   result = result.replace(/(❌|✗)/g, (match) => chalk2.red(match));
   result = result.replace(/(⚠️|⚠)/g, (match) => chalk2.yellow(match));
@@ -32863,7 +32869,7 @@ var require_package = __commonJS({
     module.exports = {
       type: "module",
       name: "@xagent/one-shot",
-      version: "1.2.0",
+      version: "1.2.1",
       description: "An open-source AI agent that brings advanced AI capabilities directly into your terminal with automatic documentation updates.",
       main: "dist/index.js",
       module: "dist/index.js",
@@ -32885,6 +32891,8 @@ var require_package = __commonJS({
       ],
       scripts: {
         local: "bun --watch src/index.ts",
+        "test-agent": "bun run build && ./dist/index.js -p",
+        "test-log": 'bun run build && ./dist/index.js -p "$1" 2>&1 | tee agent-test.log',
         build: "tsup src/index.ts --format esm --dts",
         dev: "tsx watch src/index.ts",
         lint: "eslint src --ext .ts",

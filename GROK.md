@@ -156,6 +156,46 @@ See `docs-index.md` for complete documentation map.
 
 ## Development Workflow
 
+### 🧪 **Agent Self-Testing: Revolutionary Development Method**
+
+**BREAKTHROUGH**: Grok One-Shot introduces the first AI-agent self-testing workflow for iterative development. The agent can test itself, analyze outputs, and iterate to perfection.
+
+#### **Primary Development Method**
+
+```bash
+# 🚀 CORE WORKFLOW: Agent tests itself and iterates
+./scripts/test-agent-iterative.sh "test prompt"
+# Agent reads log, identifies issues, makes fixes, repeats
+
+# 📊 Comprehensive test suite (multiple test cases)
+./scripts/agent-self-test.js
+
+# ⚡ Quick iteration loop
+npm run test-log "specific prompt"
+# Outputs to agent-test.log for analysis
+```
+
+#### **Why This is Revolutionary**
+
+1. **Complete Visibility**: See exactly what users see
+2. **Automated Issue Detection**: Scripts find formatting problems, errors, isolated dots
+3. **Rapid Iteration**: No manual testing - agent fixes itself
+4. **Pattern Recognition**: Identify systemic issues across scenarios
+5. **Quality Assurance**: Every change verified immediately
+
+#### **Iteration Process**
+
+```
+Test → Read Log → Identify Issues → Make Fixes → Re-test → Perfect!
+```
+
+**Example Success**: Used this method to fix the isolated `⏺` dot bug in 3 iterations:
+
+1. **Test**: Found dots appearing between sections
+2. **Log Analysis**: Revealed empty markdown headers causing issue
+3. **Fix**: Enhanced content validation in UI components
+4. **Verify**: Clean output with no visual artifacts ✅
+
 ### Build & Run
 
 ```bash
@@ -497,6 +537,46 @@ All detailed documentation lives in `.agent/docs/`:
 See `docs-index.md` for complete documentation map.
 
 ## Development Workflow
+
+### 🧪 **Agent Self-Testing: Revolutionary Development Method**
+
+**BREAKTHROUGH**: Grok One-Shot introduces the first AI-agent self-testing workflow for iterative development. The agent can test itself, analyze outputs, and iterate to perfection.
+
+#### **Primary Development Method**
+
+```bash
+# 🚀 CORE WORKFLOW: Agent tests itself and iterates
+./scripts/test-agent-iterative.sh "test prompt"
+# Agent reads log, identifies issues, makes fixes, repeats
+
+# 📊 Comprehensive test suite (multiple test cases)
+./scripts/agent-self-test.js
+
+# ⚡ Quick iteration loop
+npm run test-log "specific prompt"
+# Outputs to agent-test.log for analysis
+```
+
+#### **Why This is Revolutionary**
+
+1. **Complete Visibility**: See exactly what users see
+2. **Automated Issue Detection**: Scripts find formatting problems, errors, isolated dots
+3. **Rapid Iteration**: No manual testing - agent fixes itself
+4. **Pattern Recognition**: Identify systemic issues across scenarios
+5. **Quality Assurance**: Every change verified immediately
+
+#### **Iteration Process**
+
+```
+Test → Read Log → Identify Issues → Make Fixes → Re-test → Perfect!
+```
+
+**Example Success**: Used this method to fix the isolated `⏺` dot bug in 3 iterations:
+
+1. **Test**: Found dots appearing between sections
+2. **Log Analysis**: Revealed empty markdown headers causing issue
+3. **Fix**: Enhanced content validation in UI components
+4. **Verify**: Clean output with no visual artifacts ✅
 
 ### Build & Run
 

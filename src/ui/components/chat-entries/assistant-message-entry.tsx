@@ -29,6 +29,15 @@ export function AssistantMessageEntry({ entry, verbosityLevel: _verbosityLevel }
   // Handle very long content to prevent rendering issues
   const { content: processedContent, isTruncated } = handleLongContent(entry.content);
 
+  // Check if content is effectively empty (just whitespace, headers without text, etc.)
+  const trimmedContent = processedContent.trim();
+  const isEffectivelyEmpty = !trimmedContent || trimmedContent.match(/^#+\s*$/) || trimmedContent === '⏺';
+
+  // Don't render anything for effectively empty content
+  if (isEffectivelyEmpty && !entry.isStreaming) {
+    return null;
+  }
+
   return (
     <Box flexDirection="column" marginTop={1}>
       <Box flexDirection="row" alignItems="flex-start">

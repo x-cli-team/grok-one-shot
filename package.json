@@ -23,6 +23,10 @@
   ],
   "scripts": {
     "local": "bun --watch src/index.ts",
+    "test-agent": "bun run build && ./dist/index.js -p",
+    "test-log": "bun run build && ./dist/index.js -p \"$1\" 2>&1 | tee agent-test.log",
+    "test-iterative": "./scripts/test-agent-iterative.sh",
+    "test-self": "./scripts/agent-self-test.js",
     "build": "tsup src/index.ts --format esm --dts",
     "dev": "tsx watch src/index.ts",
     "lint": "eslint src --ext .ts",

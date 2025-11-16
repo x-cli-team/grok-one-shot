@@ -18,10 +18,17 @@ function InlineMarkdown({ content }: { content: string }) {
   
   return (
     <Text wrap="wrap" dimColor={false}>
-      {lines.map((line, lineIndex) => (
-        <React.Fragment key={lineIndex}>
-          {lineIndex > 0 && '\n'}
-          {parseInlineMarkdown(line).map((part, partIndex) => {
+      {lines.map((line, lineIndex) => {
+        const parts = parseInlineMarkdown(line);
+        // Skip empty lines entirely (don't render anything, including newlines)
+        if (parts.length === 0) {
+          return null;
+        }
+        
+        return (
+          <React.Fragment key={lineIndex}>
+            {lineIndex > 0 && '\n'}
+            {parts.map((part, partIndex) => {
             if (part.type === 'header') {
               return <Text key={`${lineIndex}-${partIndex}`} bold color="white">{part.text}</Text>;
             }
@@ -55,24 +62,33 @@ function InlineMarkdown({ content }: { content: string }) {
               // Dim parenthetical info, version numbers, file counts
               return <Text key={`${lineIndex}-${partIndex}`} color="gray" dimColor>{part.text}</Text>;
             }
+            if (part.type === 'version') {
+              // Dim standalone version numbers and metrics
+              return <Text key={`${lineIndex}-${partIndex}`} color="gray" dimColor>{part.text}</Text>;
+            }
+            if (part.type === 'section') {
+              // Make section headers more prominent
+              return <Text key={`${lineIndex}-${partIndex}`} bold color="cyan">{part.text}</Text>;
+            }
             return <Text key={`${lineIndex}-${partIndex}`} color="white">{part.text}</Text>;
           })}
         </React.Fragment>
-      ))}
+        );
+      })}
     </Text>
   );
 }
 
 interface MarkdownPart {
-  type: 'text' | 'bold' | 'italic' | 'header' | 'code' | 'emoji' | 'metadata';
+  type: 'text' | 'bold' | 'italic' | 'header' | 'code' | 'emoji' | 'metadata' | 'version' | 'section';
   text: string;
   level?: number; // for headers
 }
 
 function parseInlineMarkdown(content: string): MarkdownPart[] {
-  // Handle empty header lines (just ### with no text) - skip them
-  if (content.match(/^#+\s*$/)) {
-    return []; // Return empty array to skip rendering this line
+  // Enhanced empty line detection - skip empty headers, whitespace, and symbol lines
+  if (content.match(/^#+\s*$/) || content.trim() === '' || content.trim() === '⏺' || content.match(/^#+$/)) {
+    return []; // Return empty array to skip rendering this line entirely
   }
   
   // First check if this is a header line with text
@@ -164,59 +180,50 @@ function parseInlineMarkdown(content: string): MarkdownPart[] {
   // Add remaining text with enhanced code detection
   if (current) {
     // Enhanced: Detect common code patterns even without backticks  
-    const codePattern = /(view_file|str_replace_editor|create_file|search|semantic_search|ast_parser|package\.json|README\.md|GROK\.md|install\.sh|docs-getter\.sh|dist\/|src\/|scripts\/|apps\/|node_modules|\.git|\.js|\.ts|\.json|\.sh|\.md|bun\s+install|npm\s+install)/g;
+    const codePattern = /(view_file|str_replace_editor|create_file|search|semantic_search|ast_parser|package\.json|README\.md|GROK\.md|install\.sh|docs-getter\.sh|dist\/|src\/|scripts\/|apps\/|node_modules|\.git|\.js|\.ts|\.json|\.sh|\.md|bun\s+install|npm\s+install|npm\s+start|bun\s+start|TypeScript|React|Ink|ESLint|Husky|tsup|Vercel|GitHub|API|CLI|MCP|tsconfig\.json|\.env|\.gitignore|\.npmrc|package-lock\.json|bun\.lock|docs-index\.md|\.github\/|\.husky\/|\/Users\/[^\s]+|Grok\s+API|xAI|x\.ai)/g;
     
-    // Detect parenthetical metadata for dimming
-    const metadataPattern = /(\([^)]*(?:v\d+\.\d+|\d+k?[+]?\s*(?:files?|lines?|items?)|\d+\.\d+[xX]|dependencies?|scripts?|guides?|overview|project\s+docs?|source\s+code|detailed\s+setup|changelog|debugging|session\s+files?|build\s+artifacts)[^)]*\))/g;
+    // Detect parenthetical metadata for dimming (enhanced)
+    const metadataPattern = /(\([^)]*(?:v\d+\.\d+\.\d+|v\d+\.\d+|\d+k?[+]?\s*(?:files?|lines?|items?|packages?|deps?|subdirs?|MB|KB|GB)|\d+\.\d+[xX]|~\d+[A-Z]*|dependencies?|scripts?|guides?|overview|project\s+docs?|source\s+code|detailed\s+setup|changelog|debugging|session\s+files?|build\s+artifacts|latest\s+release|current\s+Directory|for\s+CLI|via\s+Ink|xAI)[^)]*\))/g;
     
+    // Enhanced: Also detect standalone version numbers and metrics for dimming
+    const versionPattern = /(\b(?:v\d+\.\d+\.\d+|v\d+\.\d+|~\d+[A-Z]+|\d+k?\+?\s*(?:files?|lines?|packages?|deps?|items?)|\d+\.\d+[xX])\b)/g;
+    
+    // Simplified single-pass pattern detection to fix duplication issues
     const enhancedParts: MarkdownPart[] = [];
+    let processedText = current;
     let lastIndex = 0;
     let match;
     
-    // Apply both patterns in order: code first, then metadata
-    let processedText = current;
-    const tempParts: MarkdownPart[] = [];
+    // Apply all patterns in one pass to avoid duplication
+    const combinedPattern = new RegExp(`(${codePattern.source})|(${metadataPattern.source})|\\b(Overview|Key Features|Tech Stack|Current State|Purpose & Value|Structure)\\b`, 'g');
     
-    // First pass: Handle code patterns
-    lastIndex = 0;
-    while ((match = codePattern.exec(processedText)) !== null) {
+    while ((match = combinedPattern.exec(processedText)) !== null) {
+      // Add text before match
       if (match.index > lastIndex) {
-        tempParts.push({ type: 'text', text: processedText.substring(lastIndex, match.index) });
+        enhancedParts.push({ type: 'text', text: processedText.substring(lastIndex, match.index) });
       }
-      tempParts.push({ type: 'code', text: match[0] });
+      
+      // Determine match type and add appropriate part
+      if (match[1]) {
+        // Code pattern match
+        enhancedParts.push({ type: 'code', text: match[1] });
+      } else if (match[2]) {
+        // Metadata pattern match  
+        enhancedParts.push({ type: 'metadata', text: match[2] });
+      } else if (match[3]) {
+        // Section header match
+        enhancedParts.push({ type: 'section', text: match[3] });
+      }
+      
       lastIndex = match.index + match[0].length;
     }
+    
+    // Add remaining text
     if (lastIndex < processedText.length) {
-      tempParts.push({ type: 'text', text: processedText.substring(lastIndex) });
+      enhancedParts.push({ type: 'text', text: processedText.substring(lastIndex) });
     }
     
-    // Second pass: Handle metadata in text parts only
-    const finalParts: MarkdownPart[] = [];
-    for (const part of tempParts) {
-      if (part.type === 'text') {
-        // Apply metadata detection to text parts
-        lastIndex = 0;
-        metadataPattern.lastIndex = 0; // Reset regex
-        while ((match = metadataPattern.exec(part.text)) !== null) {
-          if (match.index > lastIndex) {
-            finalParts.push({ type: 'text', text: part.text.substring(lastIndex, match.index) });
-          }
-          finalParts.push({ type: 'metadata', text: match[0] });
-          lastIndex = match.index + match[0].length;
-        }
-        if (lastIndex < part.text.length) {
-          finalParts.push({ type: 'text', text: part.text.substring(lastIndex) });
-        }
-        if (finalParts.length === 0 || finalParts[finalParts.length - 1].text !== part.text) {
-          // If no metadata found in this text part, add it as is
-          if (finalParts.length === 0) {
-            finalParts.push(part);
-          }
-        }
-      } else {
-        finalParts.push(part);
-      }
-    }
+    const finalParts = enhancedParts;
     
     // Add final parts
     if (finalParts.length === 0) {
