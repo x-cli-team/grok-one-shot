@@ -202,6 +202,7 @@ function FeaturesSection() {
           <div className={styles.featureCard}>
             <h3>⚡ Multi-File Transactions<div className={styles.completionBadge}>70% Complete</div></h3>
             <p>Atomic operations across multiple files with rollback capabilities.</p>
+            {/* Smart Sync test comment - v2 */}
           </div>
           <div className={styles.featureCard}>
             <h3>🌐 Web Integration<div className={styles.completionBadge}>80% Complete</div></h3>
