@@ -11,7 +11,8 @@ This directory contains comprehensive analysis of Grok CLI's position relative t
 
 ### Current State
 - **[Grok CLI Current Capabilities](./grok-cli-current-state.md)** - Comprehensive inventory of implemented features
-- **[Gap Analysis](./gap-analysis.md)** - Detailed feature gaps with implementation complexity
+- **[Gap Analysis](./gap-analysis.md)** - High-level feature gaps with implementation complexity
+- **[Tool Parity Analysis](./tool-parity-analysis.md)** - Detailed tool-by-tool comparison with Claude Code (28 tools analyzed)
 - **[Implementation Roadmap](./implementation-roadmap.md)** - Strategic development plan
 - **[Competitive Matrix](./competitive-matrix.md)** - Side-by-side feature comparison
 
@@ -49,13 +50,30 @@ Nice-to-have improvements for user experience:
 - Specialized tool integrations
 - Advanced configuration options
 
+## 📋 Document Hierarchy
+
+### Understanding the Analysis Layers
+
+**Feature Level** (Strategic Planning):
+- **[Gap Analysis](./gap-analysis.md)** - What features we're missing (e.g., "Plan Mode", "Autonomous Execution")
+- **[Implementation Roadmap](./implementation-roadmap.md)** - When to build features (sprint timeline)
+
+**Tool Level** (Implementation Details):
+- **[Tool Parity Analysis](./tool-parity-analysis.md)** - What tools are needed to build features (e.g., "Task tool", "Glob tool", "Enhanced Bash")
+
+**Key Insight**: Feature gaps require specific tool implementations. For example:
+- **Plan Mode** (feature) requires → ExitPlanMode tool + Task tool (implementation)
+- **Autonomous Execution** (feature) requires → Task tool + Agent framework + Enhanced Bash with background execution
+- **Deep Codebase Understanding** (feature) requires → Glob tool + Enhanced Grep + Vector Search optimization
+
 ## 📋 Usage
 
 ### Sprint Planning
 1. Review [Gap Analysis](./gap-analysis.md) for priority features
-2. Select features based on complexity and impact
-3. Reference [Implementation Roadmap](./implementation-roadmap.md) for technical guidance
-4. Create sprint documents in `.agent/tasks/`
+2. Check [Tool Parity Analysis](./tool-parity-analysis.md) for required tool implementations
+3. Select features based on complexity and impact
+4. Reference [Implementation Roadmap](./implementation-roadmap.md) for technical guidance
+5. Create sprint documents in `.agent/tasks/`
 
 ### Feature Assessment
 Use the [Competitive Matrix](./competitive-matrix.md) to:

@@ -1337,6 +1337,32 @@ class TaskTool {
 - Gap analysis: `.agent/parity/gap-analysis.md`
 - Implementation roadmap: `.agent/parity/implementation-roadmap.md`
 
+## 🔄 Relationship to Feature Gaps
+
+This tool-level analysis complements the [Gap Analysis](./gap-analysis.md) by providing implementation details for high-level features:
+
+### Feature → Tool Mapping
+
+| Feature Gap (gap-analysis.md) | Required Tools (this document) | Priority |
+|-------------------------------|--------------------------------|----------|
+| **Plan Mode** | ExitPlanMode tool, Task tool, Enhanced Read (read-only mode) | P0 🔴 |
+| **Deep Codebase Understanding** | Glob tool, Enhanced Grep (context, multiline), Vector Search optimization | P0 🔴 |
+| **Multi-File Intelligence** | Enhanced MultiFileEditor (dependency-aware), Refactoring Assistant | P0 🔴 |
+| **Autonomous Task Execution** | Task tool + Agent framework, Enhanced Bash (background, monitoring) | P0 🔴 |
+| **IDE Integration** | (Feature-level, not tool-level) | P1 🟡 |
+| **GitHub Workflow Automation** | Enhanced Bash (git safety), WebFetch (for PR/issue data) | P1 🟡 |
+| **Testing Integration** | Enhanced Bash (test execution), NotebookEdit (test notebooks) | P1 🟡 |
+
+### Critical Finding
+
+The **Task Tool + Agent Framework** is the **highest priority** because it's required for:
+1. Plan Mode (Explore agent)
+2. Autonomous Execution (general-purpose agent)
+3. Code Review workflows (code-reviewer agent)
+4. Multi-round search (Explore agent)
+
+Without the Task tool, we cannot build any of the P0 features in the gap-analysis.md.
+
 ---
 
-*This comprehensive tool analysis serves as the foundation for achieving Claude Code parity and establishing Grok CLI as a competitive AI coding assistant.*
+*This comprehensive tool analysis serves as the implementation foundation for achieving Claude Code parity and establishing Grok CLI as a competitive AI coding assistant.*
