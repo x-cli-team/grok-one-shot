@@ -19948,18 +19948,8 @@ function useEnhancedInput({
 } = {}) {
   const [input, setInputState] = useState("");
   const [cursorPosition, setCursorPositionState] = useState(0);
-  const debugSetInputState = useCallback((newInput) => {
-    setInputState(newInput);
-  }, []);
-  const debugSetCursorPositionState = useCallback((newPos) => {
-    enhancedLog("\u{1F3AF} CURSOR_POSITION_UPDATE:", {
-      from: "previous",
-      to: newPos,
-      delta: "calculated",
-      reason: "cursor_position_update"
-    });
-    setCursorPositionState(newPos);
-  }, []);
+  const setInputDirect = setInputState;
+  const setCursorPositionDirect = setCursorPositionState;
   const isMultilineRef = useRef(multiline);
   const {
     addToHistory,
@@ -19969,44 +19959,34 @@ function useEnhancedInput({
     isNavigatingHistory
   } = useInputHistory();
   const setInput = useCallback((text) => {
-    enhancedLog("\u{1F504} setInput called");
-    enhancedLog("setInput details:", {
-      previousInput: input.slice(0, 100) + (input.length > 100 ? "..." : ""),
-      newText: text.slice(0, 100) + (text.length > 100 ? "..." : ""),
-      previousLength: input.length,
-      newLength: text.length,
-      cursorPosition,
-      isNavigatingHistory: isNavigatingHistory()
-    });
-    debugSetInputState(text);
+    setInputDirect(text);
     if (!isNavigatingHistory()) {
       setOriginalInput(text);
     }
-    enhancedLog("\u2705 setInput completed");
   }, []);
   const setCursorPosition = useCallback((position) => {
     setInputState((currentInput) => {
-      debugSetCursorPositionState(Math.max(0, Math.min(currentInput.length, position)));
+      setCursorPositionDirect(Math.max(0, Math.min(currentInput.length, position)));
       return currentInput;
     });
-  }, [debugSetCursorPositionState]);
+  }, []);
   const clearInput = useCallback(() => {
-    debugSetInputState("");
-    debugSetCursorPositionState(0);
+    setInputDirect("");
+    setCursorPositionDirect(0);
     setOriginalInput("");
-  }, [setOriginalInput, debugSetInputState, debugSetCursorPositionState]);
+  }, [setOriginalInput]);
   const insertAtCursor = useCallback((text) => {
     setInputState((currentInput) => {
       setCursorPositionState((currentCursor) => {
         const result = insertText(currentInput, currentCursor, text);
-        debugSetInputState(result.text);
-        debugSetCursorPositionState(result.position);
+        setInputDirect(result.text);
+        setCursorPositionDirect(result.position);
         setOriginalInput(result.text);
-        return currentCursor;
+        return result.position;
       });
       return currentInput;
     });
-  }, [setOriginalInput, debugSetInputState, debugSetCursorPositionState]);
+  }, [setOriginalInput]);
   const handleSubmit = useCallback(() => {
     setInputState((currentInput) => {
       if (currentInput.trim()) {
@@ -20018,29 +19998,12 @@ function useEnhancedInput({
     });
   }, [addToHistory, onSubmit, clearInput]);
   const handleInput = useCallback((inputChar, key) => {
-    enhancedLog("\u2328\uFE0F handleInput called");
-    enhancedLog("Input event:", {
-      inputChar: inputChar === "" ? "(empty)" : inputChar,
-      charCode: inputChar.charCodeAt(0) || "N/A",
-      key: {
-        name: key.name || "undefined",
-        ctrl: !!key.ctrl,
-        meta: !!key.meta,
-        shift: !!key.shift,
-        paste: !!key.paste,
-        return: !!key.return,
-        backspace: !!key.backspace,
-        delete: !!key.delete
-      },
-      disabled
-    });
     if (disabled) {
-      enhancedLog("\u274C Input disabled, returning early");
       return;
     }
     if (key.ctrl && inputChar === "c" || inputChar === "") {
-      debugSetInputState("");
-      debugSetCursorPositionState(0);
+      setInputDirect("");
+      setCursorPositionDirect(0);
       setOriginalInput("");
       return;
     }
@@ -20054,8 +20017,8 @@ function useEnhancedInput({
     if (key.return) {
       if (multiline && key.shift) {
         const result = insertText(input, cursorPosition, "\n");
-        debugSetInputState(result.text);
-        debugSetCursorPositionState(result.position);
+        setInputDirect(result.text);
+        setCursorPositionDirect(result.position);
         setOriginalInput(result.text);
       } else {
         handleSubmit();
@@ -20065,75 +20028,62 @@ function useEnhancedInput({
     if ((key.upArrow || key.name === "up") && !key.ctrl && !key.meta) {
       const historyInput = navigateHistory("up");
       if (historyInput !== null) {
-        debugSetInputState(historyInput);
-        debugSetCursorPositionState(historyInput.length);
+        setInputDirect(historyInput);
+        setCursorPositionDirect(historyInput.length);
       }
       return;
     }
     if ((key.downArrow || key.name === "down") && !key.ctrl && !key.meta) {
       const historyInput = navigateHistory("down");
       if (historyInput !== null) {
-        debugSetInputState(historyInput);
-        debugSetCursorPositionState(historyInput.length);
+        setInputDirect(historyInput);
+        setCursorPositionDirect(historyInput.length);
       }
       return;
     }
     const isEmpty = !inputChar || inputChar === "" || inputChar === "(empty)";
     if ((key.leftArrow || key.rightArrow || key.upArrow || key.downArrow) && isEmpty) {
-      enhancedLog("\u{1F6AB} PHANTOM ARROW KEY FILTERED:", {
-        leftArrow: !!key.leftArrow,
-        rightArrow: !!key.rightArrow,
-        upArrow: !!key.upArrow,
-        downArrow: !!key.downArrow,
-        inputChar: inputChar || "(empty)",
-        isEmpty,
-        reason: "empty_input_with_arrow_flag"
-      });
       return;
     }
     if ((key.leftArrow || key.name === "left") && key.ctrl && !inputChar.includes("[")) {
-      enhancedLog("\u{1F504} WORD MOVEMENT LEFT");
       const newPos = moveToPreviousWord(input, cursorPosition);
-      debugSetCursorPositionState(newPos);
+      setCursorPositionDirect(newPos);
       return;
     }
     if ((key.rightArrow || key.name === "right") && key.ctrl && !inputChar.includes("[")) {
-      enhancedLog("\u{1F504} WORD MOVEMENT RIGHT");
       const newPos = moveToNextWord(input, cursorPosition);
-      debugSetCursorPositionState(newPos);
+      setCursorPositionDirect(newPos);
       return;
     }
     if (key.leftArrow || key.name === "left") {
-      enhancedLog("\u2B05\uFE0F CURSOR LEFT");
       const newPos = Math.max(0, cursorPosition - 1);
-      debugSetCursorPositionState(newPos);
+      setCursorPositionDirect(newPos);
       return;
     }
     if (key.rightArrow || key.name === "right") {
-      enhancedLog("\u27A1\uFE0F CURSOR RIGHT");
       const newPos = Math.min(input.length, cursorPosition + 1);
-      debugSetCursorPositionState(newPos);
+      setCursorPositionDirect(newPos);
       return;
     }
     if (key.ctrl && inputChar === "a" || key.name === "home") {
-      debugSetCursorPositionState(0);
+      setCursorPositionDirect(0);
       return;
     }
     if (key.ctrl && inputChar === "e" || key.name === "end") {
-      debugSetCursorPositionState(input.length);
+      setCursorPositionDirect(input.length);
       return;
     }
     const isBackspace = key.backspace || key.name === "backspace" || inputChar === "\b" || inputChar === "\x7F" || key.delete && inputChar === "" && !key.shift;
     if (isBackspace) {
       if (key.ctrl || key.meta) {
         const result = deleteWordBefore(input, cursorPosition);
-        debugSetInputState(result.text);
-        debugSetCursorPositionState(result.position);
+        setInputDirect(result.text);
+        setCursorPositionDirect(result.position);
         setOriginalInput(result.text);
       } else {
         const result = deleteCharBefore(input, cursorPosition);
-        debugSetInputState(result.text);
-        debugSetCursorPositionState(result.position);
+        setInputDirect(result.text);
+        setCursorPositionDirect(result.position);
         setOriginalInput(result.text);
       }
       return;
@@ -20141,13 +20091,13 @@ function useEnhancedInput({
     if (key.delete && inputChar !== "" || key.ctrl && inputChar === "d") {
       if (key.ctrl || key.meta) {
         const result = deleteWordAfter(input, cursorPosition);
-        debugSetInputState(result.text);
-        debugSetCursorPositionState(result.position);
+        setInputDirect(result.text);
+        setCursorPositionDirect(result.position);
         setOriginalInput(result.text);
       } else {
         const result = deleteCharAfter(input, cursorPosition);
-        debugSetInputState(result.text);
-        debugSetCursorPositionState(result.position);
+        setInputDirect(result.text);
+        setCursorPositionDirect(result.position);
         setOriginalInput(result.text);
       }
       return;
@@ -20155,57 +20105,36 @@ function useEnhancedInput({
     if (key.ctrl && inputChar === "k") {
       const lineEnd = moveToLineEnd(input, cursorPosition);
       const newText = input.slice(0, cursorPosition) + input.slice(lineEnd);
-      debugSetInputState(newText);
+      setInputDirect(newText);
       setOriginalInput(newText);
       return;
     }
     if (key.ctrl && inputChar === "u") {
       const lineStart = moveToLineStart(input, cursorPosition);
       const newText = input.slice(0, lineStart) + input.slice(cursorPosition);
-      debugSetInputState(newText);
-      debugSetCursorPositionState(lineStart);
+      setInputDirect(newText);
+      setCursorPositionDirect(lineStart);
       setOriginalInput(newText);
       return;
     }
     if (key.ctrl && inputChar === "w") {
       const result = deleteWordBefore(input, cursorPosition);
-      debugSetInputState(result.text);
-      debugSetCursorPositionState(result.position);
+      setInputDirect(result.text);
+      setCursorPositionDirect(result.position);
       setOriginalInput(result.text);
       return;
     }
     if (key.ctrl && inputChar === "x") {
-      debugSetInputState("");
-      debugSetCursorPositionState(0);
+      setInputDirect("");
+      setCursorPositionDirect(0);
       setOriginalInput("");
       return;
     }
     if (inputChar && !key.ctrl && !key.meta) {
-      enhancedLog("\u{1F4DD} Regular character input detected");
-      enhancedLog("Character details:", {
-        character: inputChar,
-        currentPosition: cursorPosition,
-        currentInputLength: input.length,
-        willInsertAt: cursorPosition
-      });
       const result = insertText(input, cursorPosition, inputChar);
-      enhancedLog("\u{1F4DD} Text insertion result:", {
-        oldLength: input.length,
-        newLength: result.text.length,
-        newPosition: result.position,
-        insertedChar: inputChar
-      });
-      debugSetInputState(result.text);
-      debugSetCursorPositionState(result.position);
+      setInputDirect(result.text);
+      setCursorPositionDirect(result.position);
       setOriginalInput(result.text);
-      enhancedLog("\u2705 Regular character input completed");
-    } else {
-      enhancedLog("\u274C Character input skipped:", {
-        hasInputChar: !!inputChar,
-        isCtrl: !!key.ctrl,
-        isMeta: !!key.meta,
-        reason: !inputChar ? "No input char" : key.ctrl ? "Ctrl pressed" : "Meta pressed"
-      });
     }
   }, [disabled, onSpecialKey, multiline, handleSubmit, navigateHistory, setOriginalInput]);
   return {
@@ -20220,15 +20149,10 @@ function useEnhancedInput({
     handleInput
   };
 }
-var enhancedLog;
 var init_use_enhanced_input = __esm({
   "src/hooks/use-enhanced-input.ts"() {
     init_text_utils();
     init_use_input_history();
-    enhancedLog = (...args) => {
-      const timestamp = (/* @__PURE__ */ new Date()).toISOString().slice(11, 23);
-      console.log(`[ENHANCED-DEBUG ${timestamp}]`, ...args);
-    };
   }
 });
 
