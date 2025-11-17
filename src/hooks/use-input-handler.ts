@@ -341,15 +341,13 @@ export function useInputHandler({
   // Debounce mechanism for paste detection to prevent race conditions
   const pasteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Debug logging re-enabled to verify cursor desync fix
+  // Debug logging disabled - input handling stable
   const debugInputLog = (event: string, details: any) => {
-    const timestamp = new Date().toISOString().slice(11, 23); // HH:MM:SS.mmm
-    console.log(`[INPUT-DEBUG ${timestamp}] ${event}:`, JSON.stringify(details, null, 2));
+    // Debug logging disabled - input handling stable
   };
 
   // Hook up the actual input handling with paste detection
   useInput((inputChar: string, key: Key) => {
-    // Log all input events for debugging
     debugInputLog('RAW_INPUT', {
       inputChar: inputChar === '' ? '(empty)' : inputChar,
       inputLength: inputChar.length,

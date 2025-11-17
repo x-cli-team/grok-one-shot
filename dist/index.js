@@ -27506,12 +27506,9 @@ function useInputHandler({
   }
   const pasteTimeoutRef = useRef(null);
   const debugInputLog = (event, details) => {
-    const timestamp = (/* @__PURE__ */ new Date()).toISOString().slice(11, 23);
-    console.log(`[INPUT-DEBUG ${timestamp}] ${event}:`, JSON.stringify(details, null, 2));
   };
   useInput((inputChar, key) => {
     debugInputLog("RAW_INPUT", {
-      inputChar: inputChar === "" ? "(empty)" : inputChar,
       inputLength: inputChar.length,
       charCodes: Array.from(inputChar).map((c) => c.charCodeAt(0)),
       key: {
@@ -27532,31 +27529,23 @@ function useInputHandler({
         delete: key.delete
       },
       currentInput: input.slice(0, 50) + (input.length > 50 ? "..." : ""),
-      currentCursor: cursorPosition,
       inputState: {
-        length: input.length,
-        cursorPos: cursorPosition
-      }
+        length: input.length}
     });
     if (onGlobalShortcut && onGlobalShortcut(inputChar, key)) {
-      debugInputLog("GLOBAL_SHORTCUT", { handled: true });
       return;
     }
     if (inputChar.length > 3) {
       debugInputLog("PASTE_DETECTED", {
         inputChar: inputChar.slice(0, 100) + (inputChar.length > 100 ? "..." : ""),
-        inputLength: inputChar.length,
-        triggerThreshold: 3
-      });
+        inputLength: inputChar.length});
       const existingInputBeforePaste = input;
       const cursorPositionBeforePaste = cursorPosition;
       if (!globalThis.grokStreamingPasteBuffer) {
         globalThis.grokExistingInputBeforePaste = existingInputBeforePaste;
         globalThis.grokCursorPositionBeforePaste = cursorPositionBeforePaste;
         debugInputLog("PASTE_STATE_INIT", {
-          existingInput: existingInputBeforePaste.slice(0, 100) + (existingInputBeforePaste.length > 100 ? "..." : ""),
-          cursorPos: cursorPositionBeforePaste
-        });
+          existingInput: existingInputBeforePaste.slice(0, 100) + (existingInputBeforePaste.length > 100 ? "..." : "")});
       }
       if (!globalThis.grokStreamingPasteBuffer) {
         globalThis.grokStreamingPasteBuffer = "";
@@ -27564,23 +27553,19 @@ function useInputHandler({
       globalThis.grokStreamingPasteBuffer += inputChar;
       if (pasteTimeoutRef.current) {
         debugInputLog("PASTE_TIMEOUT_CLEARED", {
-          previousTimeoutExists: true,
           newBuffer: globalThis.grokStreamingPasteBuffer?.slice(0, 100)
         });
         clearTimeout(pasteTimeoutRef.current);
       }
       pasteTimeoutRef.current = setTimeout(() => {
         debugInputLog("PASTE_TIMEOUT_FIRED", {
-          timeoutDelay: 50,
           bufferContent: globalThis.grokStreamingPasteBuffer?.slice(0, 200)
         });
         const pastedContent = globalThis.grokStreamingPasteBuffer;
         if (pastedContent && (pastedContent.length > 200 || pastedContent.split(/\r\n|\r|\n/).length > 20)) {
           debugInputLog("LARGE_PASTE_PROCESSING", {
             contentLength: pastedContent.length,
-            lineCount: pastedContent.split(/\r\n|\r|\n/).length,
-            thresholds: { chars: 200, lines: 20 }
-          });
+            lineCount: pastedContent.split(/\r\n|\r|\n/).length});
           const lines = pastedContent.split(/\r\n|\r|\n/);
           globalThis.grokPasteCounter += 1;
           const summary = `[Pasted text #${globalThis.grokPasteCounter} +${lines.length} lines]`;
@@ -27588,11 +27573,8 @@ function useInputHandler({
           const existingInput2 = globalThis.grokExistingInputBeforePaste || "";
           const cursorPos = globalThis.grokCursorPositionBeforePaste || 0;
           debugInputLog("CURSOR_UPDATE_LARGE_PASTE", {
-            action: "restore_then_insert_summary",
             originalInput: existingInput2.slice(0, 50) + (existingInput2.length > 50 ? "..." : ""),
-            originalCursor: cursorPos,
-            summary,
-            beforeUpdate: { input: input.slice(0, 50), cursor: cursorPosition }
+            beforeUpdate: { input: input.slice(0, 50)}
           });
           setInput(existingInput2);
           setCursorPosition(cursorPos);
@@ -27602,9 +27584,7 @@ function useInputHandler({
           setInput(newInput);
           setCursorPosition(cursorPos + summary.length);
           debugInputLog("CURSOR_UPDATE_COMPLETE", {
-            finalInput: newInput.slice(0, 50) + (newInput.length > 50 ? "..." : ""),
-            finalCursor: cursorPos + summary.length
-          });
+            finalInput: newInput.slice(0, 50) + (newInput.length > 50 ? "..." : "")});
           const pasteConfirmationEntry = {
             type: "assistant",
             content: `\u{1F4C4} Large paste detected: ${lines.length} lines, showing summary`,
@@ -27619,11 +27599,9 @@ function useInputHandler({
           const existingInput2 = globalThis.grokExistingInputBeforePaste || "";
           const cursorPos = globalThis.grokCursorPositionBeforePaste || 0;
           debugInputLog("CURSOR_UPDATE_SMALL_PASTE", {
-            action: "direct_insertion",
             originalInput: existingInput2.slice(0, 50) + (existingInput2.length > 50 ? "..." : ""),
-            originalCursor: cursorPos,
             pastedContent: pastedContent.slice(0, 50) + (pastedContent.length > 50 ? "..." : ""),
-            beforeUpdate: { input: input.slice(0, 50), cursor: cursorPosition }
+            beforeUpdate: { input: input.slice(0, 50)}
           });
           const beforeCursor = existingInput2.slice(0, cursorPos);
           const afterCursor = existingInput2.slice(cursorPos);
@@ -27635,22 +27613,14 @@ function useInputHandler({
             finalCursor: beforeCursor.length + pastedContent.length
           });
         }
-        debugInputLog("PASTE_STATE_CLEARED", {
-          bufferCleared: !!globalThis.grokStreamingPasteBuffer
-        });
         globalThis.grokStreamingPasteBuffer = void 0;
         globalThis.grokExistingInputBeforePaste = void 0;
         globalThis.grokCursorPositionBeforePaste = void 0;
         pasteTimeoutRef.current = null;
       }, 50);
-      debugInputLog("PASTE_PATH_EXIT", {
-        reason: "paste_detected_and_queued",
-        skipHandleInput: true
-      });
       return;
     }
     debugInputLog("NORMAL_INPUT_PATH", {
-      inputChar: inputChar === "" ? "(empty)" : inputChar,
       charLength: inputChar.length
     });
     handleInput(inputChar, key);
