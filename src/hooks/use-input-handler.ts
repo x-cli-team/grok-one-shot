@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useInput } from "ink";
 import path from "path";
 import { GrokAgent, ChatEntry } from "../agent/grok-agent.js";
@@ -338,21 +338,71 @@ export function useInputHandler({
     globalThis.grokPasteCounter = 0;
   }
 
+  // Debounce mechanism for paste detection to prevent race conditions
+  const pasteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debug logging re-enabled to verify cursor desync fix
+  const debugInputLog = (event: string, details: any) => {
+    const timestamp = new Date().toISOString().slice(11, 23); // HH:MM:SS.mmm
+    console.log(`[INPUT-DEBUG ${timestamp}] ${event}:`, JSON.stringify(details, null, 2));
+  };
+
   // Hook up the actual input handling with paste detection
   useInput((inputChar: string, key: Key) => {
+    // Log all input events for debugging
+    debugInputLog('RAW_INPUT', {
+      inputChar: inputChar === '' ? '(empty)' : inputChar,
+      inputLength: inputChar.length,
+      charCodes: Array.from(inputChar).map(c => c.charCodeAt(0)),
+      key: {
+        name: key.name,
+        ctrl: key.ctrl,
+        meta: key.meta,
+        shift: key.shift,
+        paste: key.paste,
+        sequence: key.sequence,
+        upArrow: key.upArrow,
+        downArrow: key.downArrow,
+        leftArrow: key.leftArrow,
+        rightArrow: key.rightArrow,
+        return: key.return,
+        escape: key.escape,
+        tab: key.tab,
+        backspace: key.backspace,
+        delete: key.delete
+      },
+      currentInput: input.slice(0, 50) + (input.length > 50 ? '...' : ''),
+      currentCursor: cursorPosition,
+      inputState: {
+        length: input.length,
+        cursorPos: cursorPosition
+      }
+    });
+
     // Check global shortcuts before normal input handling
     if (onGlobalShortcut && onGlobalShortcut(inputChar, key)) {
+      debugInputLog('GLOBAL_SHORTCUT', { handled: true });
       return; // Handled by global shortcut
     }
 
-    // ⭐ PASTE DETECTION: Check if this is a paste operation
-    if (inputChar.length > 1) {
+    // ⭐ PASTE DETECTION: Check if this is a paste operation (increased threshold to reduce false positives)
+    if (inputChar.length > 3) { // Increased from >1 to >3 to avoid terminal sequences
+      debugInputLog('PASTE_DETECTED', {
+        inputChar: inputChar.slice(0, 100) + (inputChar.length > 100 ? '...' : ''),
+        inputLength: inputChar.length,
+        triggerThreshold: 3
+      });
+
       // 🔑 CRITICAL: Pre-capture existing input and cursor position BEFORE paste processing begins
       const existingInputBeforePaste = input;
       const cursorPositionBeforePaste = cursorPosition;
       if (!globalThis.grokStreamingPasteBuffer) {
         globalThis.grokExistingInputBeforePaste = existingInputBeforePaste;
         globalThis.grokCursorPositionBeforePaste = cursorPositionBeforePaste;
+        debugInputLog('PASTE_STATE_INIT', {
+          existingInput: existingInputBeforePaste.slice(0, 100) + (existingInputBeforePaste.length > 100 ? '...' : ''),
+          cursorPos: cursorPositionBeforePaste
+        });
       }
 
       // Accumulate paste content via streaming buffer
@@ -361,13 +411,33 @@ export function useInputHandler({
       }
       globalThis.grokStreamingPasteBuffer += inputChar;
 
-      // Start timeout for paste completion (100ms)
-      setTimeout(() => {
+      // Clear any existing paste timeout to prevent multiple competing timeouts
+      if (pasteTimeoutRef.current) {
+        debugInputLog('PASTE_TIMEOUT_CLEARED', { 
+          previousTimeoutExists: true,
+          newBuffer: globalThis.grokStreamingPasteBuffer?.slice(0, 100) 
+        });
+        clearTimeout(pasteTimeoutRef.current);
+      }
+
+      // Debounced timeout for paste completion (reduced to 50ms)
+      pasteTimeoutRef.current = setTimeout(() => {
+        debugInputLog('PASTE_TIMEOUT_FIRED', {
+          timeoutDelay: 50,
+          bufferContent: globalThis.grokStreamingPasteBuffer?.slice(0, 200)
+        });
+
         const pastedContent = globalThis.grokStreamingPasteBuffer;
         const existingInput = globalThis.grokExistingInputBeforePaste || '';
 
-        if (pastedContent && (pastedContent.length > 100 || pastedContent.split(/\r\n|\r|\n/).length > 10)) {
-          // Generate paste summary for large content
+        if (pastedContent && (pastedContent.length > 200 || pastedContent.split(/\r\n|\r|\n/).length > 20)) {
+          debugInputLog('LARGE_PASTE_PROCESSING', {
+            contentLength: pastedContent.length,
+            lineCount: pastedContent.split(/\r\n|\r|\n/).length,
+            thresholds: { chars: 200, lines: 20 }
+          });
+
+          // Generate paste summary for large content (increased thresholds)
           const lines = pastedContent.split(/\r\n|\r|\n/);
           globalThis.grokPasteCounter! += 1;
           const summary = `[Pasted text #${globalThis.grokPasteCounter} +${lines.length} lines]`;
@@ -375,18 +445,33 @@ export function useInputHandler({
           // Cache full content for later expansion
           globalThis.grokPasteCache!.set(summary, pastedContent);
 
-          // Restore original input state and insert summary at correct position
+          // Use the original input state and position
           const existingInput = globalThis.grokExistingInputBeforePaste || '';
           const cursorPos = globalThis.grokCursorPositionBeforePaste || 0;
           
-          // First restore the original input state
+          debugInputLog('CURSOR_UPDATE_LARGE_PASTE', {
+            action: 'restore_then_insert_summary',
+            originalInput: existingInput.slice(0, 50) + (existingInput.length > 50 ? '...' : ''),
+            originalCursor: cursorPos,
+            summary: summary,
+            beforeUpdate: { input: input.slice(0, 50), cursor: cursorPosition }
+          });
+
+          // Restore original input state first
           setInput(existingInput);
           setCursorPosition(cursorPos);
           
-          // Then insert the summary - insertAtCursor will handle cursor positioning
-          setTimeout(() => {
-            insertAtCursor(summary);
-          }, 10);
+          // SYNCHRONOUSLY insert the summary to prevent race conditions
+          const beforeCursor = existingInput.slice(0, cursorPos);
+          const afterCursor = existingInput.slice(cursorPos);
+          const newInput = beforeCursor + summary + afterCursor;
+          setInput(newInput);
+          setCursorPosition(cursorPos + summary.length);
+
+          debugInputLog('CURSOR_UPDATE_COMPLETE', {
+            finalInput: newInput.slice(0, 50) + (newInput.length > 50 ? '...' : ''),
+            finalCursor: cursorPos + summary.length
+          });
 
           // Add paste confirmation to chat history
           const pasteConfirmationEntry: ChatEntry = {
@@ -396,32 +481,59 @@ export function useInputHandler({
           };
           setChatHistory((prev) => [...prev, pasteConfirmationEntry]);
         } else if (pastedContent) {
-          // Handle small pastes - insert at cursor position  
+          debugInputLog('SMALL_PASTE_PROCESSING', {
+            contentLength: pastedContent.length,
+            content: pastedContent.slice(0, 100) + (pastedContent.length > 100 ? '...' : '')
+          });
+
+          // Handle small pastes - SYNCHRONOUS insertion to prevent race conditions
           const existingInput = globalThis.grokExistingInputBeforePaste || '';
           const cursorPos = globalThis.grokCursorPositionBeforePaste || 0;
           
+          debugInputLog('CURSOR_UPDATE_SMALL_PASTE', {
+            action: 'direct_insertion',
+            originalInput: existingInput.slice(0, 50) + (existingInput.length > 50 ? '...' : ''),
+            originalCursor: cursorPos,
+            pastedContent: pastedContent.slice(0, 50) + (pastedContent.length > 50 ? '...' : ''),
+            beforeUpdate: { input: input.slice(0, 50), cursor: cursorPosition }
+          });
+
           const beforeCursor = existingInput.slice(0, cursorPos);
           const afterCursor = existingInput.slice(cursorPos);
           const combinedContent = beforeCursor + pastedContent + afterCursor;
 
-          // Update input state with the actual pasted content
+          // Update input state synchronously - no setTimeout
           setInput(combinedContent);
-          // Ensure cursor is positioned after the pasted content with immediate timeout
-          setTimeout(() => {
-            setCursorPosition(beforeCursor.length + pastedContent.length);
-          }, 0);
+          setCursorPosition(beforeCursor.length + pastedContent.length);
+
+          debugInputLog('CURSOR_UPDATE_COMPLETE', {
+            finalInput: combinedContent.slice(0, 50) + (combinedContent.length > 50 ? '...' : ''),
+            finalCursor: beforeCursor.length + pastedContent.length
+          });
         }
 
         // Clear paste state
+        debugInputLog('PASTE_STATE_CLEARED', { 
+          bufferCleared: !!globalThis.grokStreamingPasteBuffer 
+        });
         globalThis.grokStreamingPasteBuffer = undefined;
         globalThis.grokExistingInputBeforePaste = undefined;
         globalThis.grokCursorPositionBeforePaste = undefined;
-      }, 100);
+        pasteTimeoutRef.current = null;
+      }, 50); // Reduced from 100ms to 50ms for better responsiveness
 
+      debugInputLog('PASTE_PATH_EXIT', { 
+        reason: 'paste_detected_and_queued',
+        skipHandleInput: true 
+      });
       return; // CRITICAL: Don't call handleInput for paste chunks - this prevents cursor interference
     }
     
     // Only process as regular input if it's not a paste chunk
+    debugInputLog('NORMAL_INPUT_PATH', { 
+      inputChar: inputChar === '' ? '(empty)' : inputChar,
+      charLength: inputChar.length 
+    });
     handleInput(inputChar, key);
   });
 

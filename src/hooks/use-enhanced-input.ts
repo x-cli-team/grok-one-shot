@@ -12,9 +12,10 @@ import {
 } from "../utils/text-utils.js";
 import { useInputHistory } from "./use-input-history.js";
 
-// Debug logging disabled - using session logger instead  
-const enhancedLog = (..._args: any[]) => {
-  // Disabled debug logging
+// Debug logging re-enabled to verify cursor desync fix
+const enhancedLog = (...args: any[]) => {
+  const timestamp = new Date().toISOString().slice(11, 23); // HH:MM:SS.mmm
+  console.log(`[ENHANCED-DEBUG ${timestamp}]`, ...args);
 };
 
 export interface Key {
@@ -70,10 +71,16 @@ export function useEnhancedInput({
     setInputState(newInput);
   }, []);
   
-  // Wrapper for setCursorPositionState (debug logging removed)
+  // Wrapper for setCursorPositionState with debug logging
   const debugSetCursorPositionState = useCallback((newPos: number) => {
+    enhancedLog('🎯 CURSOR_POSITION_UPDATE:', {
+      from: 'previous',
+      to: newPos,
+      delta: 'calculated',
+      reason: 'cursor_position_update'
+    });
     setCursorPositionState(newPos);
-  }, []);
+  }, []); // ⚠️ FIXED: No dependencies to avoid stale closures
   const isMultilineRef = useRef(multiline);
   
   const {
@@ -97,7 +104,10 @@ export function useEnhancedInput({
 
     const previousInput = input;
     debugSetInputState(text);
-    debugSetCursorPositionState(Math.min(text.length, cursorPosition));
+    // ⚠️ CURSOR DESYNC FIX: Don't automatically adjust cursor position in setInput
+    // This was causing cursor to jump backward and create the "word pushing" effect
+    // The cursor position should only be managed by explicit cursor operations
+    // debugSetCursorPositionState(Math.min(text.length, cursorPosition)); // REMOVED
     if (!isNavigatingHistory()) {
       setOriginalInput(text);
     }
@@ -107,11 +117,15 @@ export function useEnhancedInput({
     // NOTE: Paste detection is now handled by UI component and input handler
     // This duplicate detection was causing counter increments on regular typing
     // The UI-based detection in chat-input.tsx handles paste detection instead
-  }, [input, cursorPosition, isNavigatingHistory, setOriginalInput]);
+  }, []); // ⚠️ STALE CLOSURE FIX: Remove dependencies to prevent cursor desync
 
   const setCursorPosition = useCallback((position: number) => {
-    debugSetCursorPositionState(Math.max(0, Math.min(input.length, position)));
-  }, [input.length, debugSetCursorPositionState]);
+    // Access current input length directly from state rather than closure
+    setInputState(currentInput => {
+      debugSetCursorPositionState(Math.max(0, Math.min(currentInput.length, position)));
+      return currentInput; // Don't change the input, just use it for length
+    });
+  }, [debugSetCursorPositionState]);
 
   const clearInput = useCallback(() => {
     debugSetInputState("");
@@ -120,19 +134,30 @@ export function useEnhancedInput({
   }, [setOriginalInput, debugSetInputState, debugSetCursorPositionState]);
 
   const insertAtCursor = useCallback((text: string) => {
-    const result = insertText(input, cursorPosition, text);
-    debugSetInputState(result.text);
-    debugSetCursorPositionState(result.position);
-    setOriginalInput(result.text);
-  }, [input, cursorPosition, setOriginalInput]);
+    // Access current state directly to avoid stale closures
+    setInputState(currentInput => {
+      setCursorPositionState(currentCursor => {
+        const result = insertText(currentInput, currentCursor, text);
+        debugSetInputState(result.text);
+        debugSetCursorPositionState(result.position);
+        setOriginalInput(result.text);
+        return currentCursor; // Return current for now, will be updated by debugSetCursorPositionState
+      });
+      return currentInput; // Return current for now, will be updated by debugSetInputState
+    });
+  }, [setOriginalInput, debugSetInputState, debugSetCursorPositionState]);
 
   const handleSubmit = useCallback(() => {
-    if (input.trim()) {
-      addToHistory(input);
-      onSubmit?.(input);
-      clearInput();
-    }
-  }, [input, addToHistory, onSubmit, clearInput]);
+    // Access current input directly to avoid stale closures
+    setInputState(currentInput => {
+      if (currentInput.trim()) {
+        addToHistory(currentInput);
+        onSubmit?.(currentInput);
+        clearInput();
+      }
+      return currentInput;
+    });
+  }, [addToHistory, onSubmit, clearInput]);
 
   const handleInput = useCallback((inputChar: string, key: Key) => {
     enhancedLog('⌨️ handleInput called');
@@ -149,8 +174,6 @@ export function useEnhancedInput({
         backspace: !!key.backspace,
         delete: !!key.delete
       },
-      currentInput: input.slice(0, 50) + (input.length > 50 ? '...' : ''),
-      currentInputLength: input.length,
       disabled
     });
 
@@ -211,15 +234,34 @@ export function useEnhancedInput({
       return;
     }
 
+    // ⚠️ CURSOR JUMPING FIX: Filter out phantom arrow key events
+    // These occur when inputChar is empty but arrow keys are detected
+    // This is a terminal compatibility issue causing false cursor movements
+    const isEmpty = !inputChar || inputChar === '' || inputChar === '(empty)';
+    if ((key.leftArrow || key.rightArrow || key.upArrow || key.downArrow) && isEmpty) {
+      enhancedLog('🚫 PHANTOM ARROW KEY FILTERED:', {
+        leftArrow: !!key.leftArrow,
+        rightArrow: !!key.rightArrow,
+        upArrow: !!key.upArrow,
+        downArrow: !!key.downArrow,
+        inputChar: inputChar || '(empty)',
+        isEmpty: isEmpty,
+        reason: 'empty_input_with_arrow_flag'
+      });
+      return; // Ignore phantom arrow keys
+    }
+
     // Handle cursor movement - ignore meta flag for arrows as it's unreliable in terminals
     // Only do word movement if ctrl is pressed AND no arrow escape sequence is in inputChar
     if ((key.leftArrow || key.name === 'left') && key.ctrl && !inputChar.includes('[')) {
+      enhancedLog('🔄 WORD MOVEMENT LEFT');
       const newPos = moveToPreviousWord(input, cursorPosition);
       debugSetCursorPositionState(newPos);
       return;
     }
 
     if ((key.rightArrow || key.name === 'right') && key.ctrl && !inputChar.includes('[')) {
+      enhancedLog('🔄 WORD MOVEMENT RIGHT');
       const newPos = moveToNextWord(input, cursorPosition);
       debugSetCursorPositionState(newPos);
       return;
@@ -227,12 +269,14 @@ export function useEnhancedInput({
 
     // Handle regular cursor movement - single character (ignore meta flag)
     if (key.leftArrow || key.name === 'left') {
+      enhancedLog('⬅️ CURSOR LEFT');
       const newPos = Math.max(0, cursorPosition - 1);
       debugSetCursorPositionState(newPos);
       return;
     }
 
     if (key.rightArrow || key.name === 'right') {
+      enhancedLog('➡️ CURSOR RIGHT');
       const newPos = Math.min(input.length, cursorPosition + 1);
       debugSetCursorPositionState(newPos);
       return;
@@ -365,7 +409,7 @@ export function useEnhancedInput({
         reason: !inputChar ? 'No input char' : (key.ctrl ? 'Ctrl pressed' : 'Meta pressed')
       });
     }
-  }, [disabled, onSpecialKey, input, cursorPosition, multiline, handleSubmit, navigateHistory, setOriginalInput]);
+  }, [disabled, onSpecialKey, multiline, handleSubmit, navigateHistory, setOriginalInput]); // ⚠️ STALE CLOSURE FIX: Removed input, cursorPosition dependencies
 
   return {
     input,
