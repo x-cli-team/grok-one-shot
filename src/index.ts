@@ -5,6 +5,7 @@ import { render } from "ink";
 import { program } from "commander";
 import * as dotenv from "dotenv";
 import path from "path";
+import chalk from "chalk";
 
 // Load environment variables first
 dotenv.config();
@@ -170,10 +171,10 @@ try {
 
             const chatEntries = await agent.processUserMessage(options.prompt);
             
-            // Output assistant responses with markdown rendering
+            // Output assistant responses with markdown rendering and consistent prefix
             for (const entry of chatEntries) {
               if (entry.type === "assistant" && entry.content) {
-                console.log(renderMarkdownToConsole(entry.content));
+                console.log(chalk.gray("⎿ ") + renderMarkdownToConsole(entry.content));
               }
             }
           } catch (error) {

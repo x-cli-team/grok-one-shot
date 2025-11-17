@@ -20,9 +20,13 @@ function InlineMarkdown({ content }: { content: string }) {
     <Text wrap="wrap" dimColor={false}>
       {lines.map((line, lineIndex) => {
         const parts = parseInlineMarkdown(line);
-        // Skip empty lines entirely (don't render anything, including newlines)
+        // Convert empty lines to paragraph breaks for proper spacing
         if (parts.length === 0) {
-          return null;
+          return (
+            <React.Fragment key={lineIndex}>
+              {lineIndex > 0 && '\n\n'}
+            </React.Fragment>
+          );
         }
         
         return (

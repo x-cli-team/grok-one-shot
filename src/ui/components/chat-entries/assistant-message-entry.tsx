@@ -41,7 +41,7 @@ export function AssistantMessageEntry({ entry, verbosityLevel: _verbosityLevel }
   return (
     <Box flexDirection="column" marginTop={1}>
       <Box flexDirection="row" alignItems="flex-start">
-        <Text color={inkColors.text}>⏺ </Text>
+        <Text color="gray">⎿ </Text>
         <Box flexDirection="column" width="100%">
           <MarkdownRenderer content={processedContent.trim()} />
           {entry.isStreaming && <Text color="cyan">█</Text>}

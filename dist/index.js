@@ -30498,7 +30498,7 @@ function InlineMarkdown({ content }) {
   return /* @__PURE__ */ jsx(Text, { wrap: "wrap", dimColor: false, children: lines.map((line, lineIndex) => {
     const parts = parseInlineMarkdown(line);
     if (parts.length === 0) {
-      return null;
+      return /* @__PURE__ */ jsx(React4.Fragment, { children: lineIndex > 0 && "\n\n" }, lineIndex);
     }
     return /* @__PURE__ */ jsxs(React4.Fragment, { children: [
       lineIndex > 0 && "\n",
@@ -30655,7 +30655,7 @@ function AssistantMessageEntry({ entry, verbosityLevel: _verbosityLevel }) {
     return null;
   }
   return /* @__PURE__ */ jsx(Box, { flexDirection: "column", marginTop: 1, children: /* @__PURE__ */ jsxs(Box, { flexDirection: "row", alignItems: "flex-start", children: [
-    /* @__PURE__ */ jsx(Text, { color: inkColors.text, children: "\u23FA " }),
+    /* @__PURE__ */ jsx(Text, { color: "gray", children: "\u23BF " }),
     /* @__PURE__ */ jsxs(Box, { flexDirection: "column", width: "100%", children: [
       /* @__PURE__ */ jsx(MarkdownRenderer, { content: processedContent.trim() }),
       entry.isStreaming && /* @__PURE__ */ jsx(Text, { color: "cyan", children: "\u2588" }),
@@ -30667,7 +30667,6 @@ var handleLongContent;
 var init_assistant_message_entry = __esm({
   "src/ui/components/chat-entries/assistant-message-entry.tsx"() {
     init_markdown_renderer();
-    init_colors();
     handleLongContent = (content, maxLength = 5e3) => {
       if (content.length <= maxLength) {
         return { content, isTruncated: false };
@@ -31253,7 +31252,7 @@ function ToolCallEntry({ entry, verbosityLevel, explainLevel }) {
   const useClaudeCodeFormat = verbosityLevel === "quiet" && brevitySummary.hasContent;
   return /* @__PURE__ */ jsxs(Box, { flexDirection: "column", marginTop: 1, children: [
     /* @__PURE__ */ jsxs(Box, { children: [
-      /* @__PURE__ */ jsx(Text, { color: "magenta", children: "\u23FA" }),
+      /* @__PURE__ */ jsx(Text, { color: "gray", children: "\u23BF" }),
       /* @__PURE__ */ jsxs(Text, { color: "white", children: [
         " ",
         filePath ? `${actionName}(${filePath})` : actionName
@@ -31272,9 +31271,9 @@ function ToolCallEntry({ entry, verbosityLevel, explainLevel }) {
         brevitySummary.expansionHint
       ] }) })
     ) : shouldShowToolContent && /* @__PURE__ */ jsx(Box, { marginLeft: 2, flexDirection: "column", children: isExecuting ? /* @__PURE__ */ jsx(Text, { color: "cyan", children: "\u23BF Executing..." }) : shouldShowFileContent && shouldShowFullContent ? /* @__PURE__ */ jsx(Box, { flexDirection: "column", children: !isExpanded ? /* @__PURE__ */ jsxs(Box, { flexDirection: "column", children: [
-      /* @__PURE__ */ jsxs(Text, { color: "gray", children: [
-        "\u23BF ",
-        preview
+      /* @__PURE__ */ jsxs(Box, { flexDirection: "row", alignItems: "flex-start", children: [
+        /* @__PURE__ */ jsx(Text, { color: "gray", children: "\u23BF " }),
+        /* @__PURE__ */ jsx(Box, { flexDirection: "column", width: "100%", children: /* @__PURE__ */ jsx(MarkdownRenderer, { content: preview }) })
       ] }),
       hasMore && /* @__PURE__ */ jsxs(Text, { color: "gray", children: [
         "\u2026 +",
@@ -31291,21 +31290,21 @@ function ToolCallEntry({ entry, verbosityLevel, explainLevel }) {
         entry.content.split("\n")[0]
       ] })
     ) : !shouldShowFullContent ? /* @__PURE__ */ jsx(Text, { color: "gray", children: "\u23BF Completed" }) : !isExpanded && hasMore ? /* @__PURE__ */ jsxs(Box, { flexDirection: "column", children: [
-      /* @__PURE__ */ jsxs(Text, { color: "gray", children: [
-        "\u23BF ",
-        preview
+      /* @__PURE__ */ jsxs(Box, { flexDirection: "row", alignItems: "flex-start", children: [
+        /* @__PURE__ */ jsx(Text, { color: "gray", children: "\u23BF " }),
+        /* @__PURE__ */ jsx(Box, { flexDirection: "column", width: "100%", children: /* @__PURE__ */ jsx(MarkdownRenderer, { content: preview }) })
       ] }),
       /* @__PURE__ */ jsxs(Text, { color: "gray", children: [
         "\u2026 +",
         totalLines - 3,
         " lines (ctrl+r to expand)"
       ] })
-    ] }) : !isExpanded ? /* @__PURE__ */ jsxs(Text, { color: "gray", children: [
-      "\u23BF ",
-      preview
-    ] }) : /* @__PURE__ */ jsxs(Text, { color: "gray", children: [
-      "\u23BF ",
-      formatToolContent(entry.content, toolName)
+    ] }) : !isExpanded ? /* @__PURE__ */ jsxs(Box, { flexDirection: "row", alignItems: "flex-start", children: [
+      /* @__PURE__ */ jsx(Text, { color: "gray", children: "\u23BF " }),
+      /* @__PURE__ */ jsx(Box, { flexDirection: "column", width: "100%", children: /* @__PURE__ */ jsx(MarkdownRenderer, { content: preview }) })
+    ] }) : /* @__PURE__ */ jsxs(Box, { flexDirection: "row", alignItems: "flex-start", children: [
+      /* @__PURE__ */ jsx(Text, { color: "gray", children: "\u23BF " }),
+      /* @__PURE__ */ jsx(Box, { flexDirection: "column", width: "100%", children: /* @__PURE__ */ jsx(MarkdownRenderer, { content: formatToolContent(entry.content, toolName) }) })
     ] }) }),
     shouldShowDiff && !isExecuting && shouldShowFullContent && !useClaudeCodeFormat && /* @__PURE__ */ jsx(Box, { marginLeft: 4, flexDirection: "column", children: /* @__PURE__ */ jsx(
       DiffRenderer,
@@ -31323,6 +31322,7 @@ var init_tool_call_entry = __esm({
     init_diff_renderer();
     init_file_content_renderer();
     init_tool_brevity_service();
+    init_markdown_renderer();
     truncateContent2 = (content, maxLength = 100) => {
       if (process.env.COMPACT !== "1") return content;
       return content.length > maxLength ? content.substring(0, maxLength) + "..." : content;
@@ -33136,7 +33136,7 @@ try {
           const chatEntries = await agent.processUserMessage(options.prompt);
           for (const entry of chatEntries) {
             if (entry.type === "assistant" && entry.content) {
-              console.log(renderMarkdownToConsole2(entry.content));
+              console.log(chalk2.gray("\u23BF ") + renderMarkdownToConsole2(entry.content));
             }
           }
         } catch (error) {

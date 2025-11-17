@@ -4,6 +4,7 @@ import { ChatEntry } from "../../../agent/grok-agent.js";
 import { DiffRenderer } from "../diff-renderer.js";
 import { FileContentRenderer } from "../content-renderers/file-content-renderer.js";
 import { ToolBrevityService, type BrevityMode } from "../../../services/tool-brevity-service.js";
+import { MarkdownRenderer } from "../../utils/markdown-renderer.js";
 
 interface ToolCallEntryProps {
   entry: ChatEntry;
@@ -183,7 +184,7 @@ export function ToolCallEntry({ entry, verbosityLevel, explainLevel }: ToolCallE
   return (
     <Box flexDirection="column" marginTop={1}>
       <Box>
-        <Text color="magenta">⏺</Text>
+        <Text color="gray">⎿</Text>
         <Text color="white">
           {" "}
           {filePath ? `${actionName}(${filePath})` : actionName}
@@ -209,7 +210,12 @@ export function ToolCallEntry({ entry, verbosityLevel, explainLevel }: ToolCallE
             <Box flexDirection="column">
               {!isExpanded ? (
                 <Box flexDirection="column">
-                  <Text color="gray">⎿ {preview}</Text>
+                  <Box flexDirection="row" alignItems="flex-start">
+                    <Text color="gray">⎿ </Text>
+                    <Box flexDirection="column" width="100%">
+                      <MarkdownRenderer content={preview} />
+                    </Box>
+                  </Box>
                   {hasMore && (
                     <Text color="gray">
                       … +{totalLines - 3} lines (ctrl+r to expand)
@@ -232,15 +238,30 @@ export function ToolCallEntry({ entry, verbosityLevel, explainLevel }: ToolCallE
             <Text color="gray">⎿ Completed</Text>
           ) : !isExpanded && hasMore ? (
             <Box flexDirection="column">
-              <Text color="gray">⎿ {preview}</Text>
+              <Box flexDirection="row" alignItems="flex-start">
+                <Text color="gray">⎿ </Text>
+                <Box flexDirection="column" width="100%">
+                  <MarkdownRenderer content={preview} />
+                </Box>
+              </Box>
               <Text color="gray">
                 … +{totalLines - 3} lines (ctrl+r to expand)
               </Text>
             </Box>
           ) : !isExpanded ? (
-            <Text color="gray">⎿ {preview}</Text>
+            <Box flexDirection="row" alignItems="flex-start">
+              <Text color="gray">⎿ </Text>
+              <Box flexDirection="column" width="100%">
+                <MarkdownRenderer content={preview} />
+              </Box>
+            </Box>
           ) : (
-            <Text color="gray">⎿ {formatToolContent(entry.content, toolName)}</Text>
+            <Box flexDirection="row" alignItems="flex-start">
+              <Text color="gray">⎿ </Text>
+              <Box flexDirection="column" width="100%">
+                <MarkdownRenderer content={formatToolContent(entry.content, toolName)} />
+              </Box>
+            </Box>
           )}
         </Box>
       )}
