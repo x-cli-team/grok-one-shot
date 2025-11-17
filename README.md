@@ -162,7 +162,16 @@ A conversational AI CLI tool powered by x.ai with **Claude Code-level intelligen
 - **📋 User Approval Workflow**: Complete plan review and confirmation before execution
 - **⚡ Performance Optimized**: Fast exploration (1-15 seconds) with intelligent caching and filtering
 
-### 🚀 **P5: Research → Recommend → Execute → Auto-Doc Workflow** (Latest)
+### 🚀 **P6: Input Handling Performance Fix** ⭐ **JUST SHIPPED**
+
+- **⚡ Cursor Jumping Bug Fixed**: Eliminated stale React closure dependencies causing input lag and cursor desynchronization
+- **🎯 Root Cause Resolution**: Fixed `useCallback` stale closures in input handling that caused "word pushing" effect
+- **🔧 Technical Breakthrough**: Characters now insert at correct visual cursor position with zero lag
+- **✨ Smooth Typing Experience**: Professional-grade input responsiveness matching Claude Code standards
+- **🧹 Debug Cleanup**: Removed all debug logging noise for clean production experience
+- **🛡️ Production Ready**: Robust input handling with comprehensive error recovery
+
+### 🚀 **P5: Research → Recommend → Execute → Auto-Doc Workflow**
 
 - **🤖 Research Phase**: Intelligent context loading from `.agent/` docs with Issues/Options analysis
 - **💡 Recommend Phase**: Structured decision framework with trade-offs, effort/risk analysis, and confidence scoring

@@ -13,7 +13,7 @@
 - **UI**: Ink components in src/ui/ with Claude Code-style feedback system
 - **Services**: UI state management, paste detection, context coordination in src/services/
 - **Settings**: File-based .grok/settings.json + ~/.grok/user-settings.json
-- **Input**: Enhanced terminal input with history in src/hooks/
+- **Input**: Enhanced terminal input with professional-grade responsiveness, zero cursor lag, history support in src/hooks/
 
 ## Command System
 - **Slash Commands**: Handled in useInputHandler.ts
@@ -82,6 +82,8 @@ The context metrics displayed below the input prompt now show **real, accurate d
 - Limited built-in documentation capabilities
 
 ## Recent Changes
+- **✅ Cursor Jumping Bug Fixed (2024-11-17)**: Eliminated stale React closure dependencies causing input lag and cursor desynchronization in interactive mode
+- **✅ Input Handling Performance (2024-11-17)**: Professional-grade typing experience with zero cursor lag matching Claude Code standards  
 - **✅ Custom Assistant Name (2025-01-13)**: Users can set custom AI assistant names via `grok set-name <name>`
 - **✅ Persistent Confirmation System (2025-01-13)**: Code-enforced confirmations for file operations and bash commands with `grok toggle-confirmations`
 - **✅ NPM Automation Fixed (2025-10-17)**: Fully automated NPM publishing workflow operational
