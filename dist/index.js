@@ -2778,10 +2778,13 @@ var init_todo_tool = __esm({
           switch (status) {
             case "completed":
               return "\x1B[32m";
+            // Green
             case "in_progress":
               return "\x1B[36m";
+            // Cyan
             case "pending":
               return "\x1B[37m";
+            // White/default
             default:
               return "\x1B[0m";
           }
@@ -16287,14 +16290,14 @@ var init_types = __esm({
     onumber = () => numberType().optional();
     oboolean = () => booleanType().optional();
     coerce = {
-      string: (arg) => ZodString.create({ ...arg, coerce: true }),
-      number: (arg) => ZodNumber.create({ ...arg, coerce: true }),
-      boolean: (arg) => ZodBoolean.create({
+      string: ((arg) => ZodString.create({ ...arg, coerce: true })),
+      number: ((arg) => ZodNumber.create({ ...arg, coerce: true })),
+      boolean: ((arg) => ZodBoolean.create({
         ...arg,
         coerce: true
-      }),
-      bigint: (arg) => ZodBigInt.create({ ...arg, coerce: true }),
-      date: (arg) => ZodDate.create({ ...arg, coerce: true })
+      })),
+      bigint: ((arg) => ZodBigInt.create({ ...arg, coerce: true })),
+      date: ((arg) => ZodDate.create({ ...arg, coerce: true }))
     };
     NEVER = INVALID;
   }
@@ -19173,6 +19176,7 @@ EOF`;
                 }
                 return await this.bash.execute(command);
               }
+            // Advanced Tools
             case "multi_file_edit":
               switch (args.operation) {
                 case "begin_transaction":
@@ -22825,13 +22829,17 @@ var init_plan_visualization_orchestrator = __esm({
           case "research":
           case "design":
             return 0;
+          // Analysis
           case "implement":
             return 1;
+          // Implementation
           case "test":
             return 2;
+          // Testing
           case "deploy":
           case "document":
             return 3;
+          // Deployment
           default:
             return 1;
         }
@@ -26970,8 +26978,10 @@ ${guardrail.createdFrom ? `- Created from incident: ${guardrail.createdFrom}` : 
             return context?.files && context.files.some((f) => !existsSync(f));
           case "check_permissions":
             return false;
+          // Would need actual permission check
           case "check_dependencies":
             return false;
+          // Would need dependency analysis
           default:
             return operation.toLowerCase().includes(pattern.toLowerCase());
         }
@@ -27040,7 +27050,7 @@ var init_package = __esm({
     package_default = {
       type: "module",
       name: "@xagent/one-shot",
-      version: "1.2.7",
+      version: "1.2.8",
       description: "An open-source AI agent that brings advanced AI capabilities directly into your terminal with automatic documentation updates.",
       main: "dist/index.js",
       module: "dist/index.js",
@@ -27136,7 +27146,7 @@ var init_package = __esm({
         openai: "^5.10.1",
         react: "^18.3.1",
         "ripgrep-node": "^1.0.0",
-        "terminal-image": "^1.1.0",
+        "terminal-image": "^4.1.0",
         tiktoken: "^1.0.21"
       },
       devDependencies: {
@@ -27151,7 +27161,7 @@ var init_package = __esm({
         husky: "^9.1.7",
         "lint-staged": "^16.2.4",
         prettier: "^3.6.2",
-        tsup: "^8.1.0",
+        tsup: "^8.5.1",
         tsx: "^4.0.0"
       },
       engines: {
@@ -32886,7 +32896,7 @@ var require_package = __commonJS({
     module.exports = {
       type: "module",
       name: "@xagent/one-shot",
-      version: "1.2.7",
+      version: "1.2.8",
       description: "An open-source AI agent that brings advanced AI capabilities directly into your terminal with automatic documentation updates.",
       main: "dist/index.js",
       module: "dist/index.js",
@@ -32982,7 +32992,7 @@ var require_package = __commonJS({
         openai: "^5.10.1",
         react: "^18.3.1",
         "ripgrep-node": "^1.0.0",
-        "terminal-image": "^1.1.0",
+        "terminal-image": "^4.1.0",
         tiktoken: "^1.0.21"
       },
       devDependencies: {
@@ -32997,7 +33007,7 @@ var require_package = __commonJS({
         husky: "^9.1.7",
         "lint-staged": "^16.2.4",
         prettier: "^3.6.2",
-        tsup: "^8.1.0",
+        tsup: "^8.5.1",
         tsx: "^4.0.0"
       },
       engines: {
@@ -33207,5 +33217,5 @@ try {
   process.exit(1);
 }
 var loadModel2;
-//# sourceMappingURL=out.js.map
+//# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map
