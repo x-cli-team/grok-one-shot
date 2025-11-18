@@ -50,6 +50,10 @@ config.json
 # OS generated files
 .DS_Store
 .DS_Store?
+
+# Agent files - include specific directories for docs/tasks
+!.agent/parity/
+!.agent/tasks/
 ._*
 .Spotlight-V100
 .Trashes
