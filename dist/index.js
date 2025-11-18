@@ -6547,14 +6547,14 @@ var init_ast_parser = __esm({
           });
           const symbols = this.extractTypeScriptSymbols(ast, content);
           const imports = this.extractTypeScriptImports(ast);
-          const exports$1 = this.extractTypeScriptExports(ast);
+          const exports = this.extractTypeScriptExports(ast);
           const tree = this.convertTypeScriptAST(ast);
           return {
             language,
             tree,
             symbols,
             imports,
-            exports: exports$1,
+            exports,
             errors
           };
         } catch (error) {
@@ -6578,14 +6578,14 @@ var init_ast_parser = __esm({
         const tree = parser.parse(content);
         const symbols = this.extractTreeSitterSymbols(tree.rootNode, content, language);
         const imports = this.extractTreeSitterImports(tree.rootNode, content, language);
-        const exports$1 = this.extractTreeSitterExports(tree.rootNode, content, language);
+        const exports = this.extractTreeSitterExports(tree.rootNode, content, language);
         const astTree = this.convertTreeSitterAST(tree.rootNode, content);
         return {
           language,
           tree: astTree,
           symbols,
           imports,
-          exports: exports$1,
+          exports,
           errors: []
         };
       }
@@ -6762,13 +6762,13 @@ var init_ast_parser = __esm({
         return imports;
       }
       extractTypeScriptExports(ast) {
-        const exports$1 = [];
+        const exports = [];
         const visit = (node) => {
           switch (node.type) {
             case "ExportNamedDeclaration":
               if (node.declaration) {
                 if (node.declaration.id?.name) {
-                  exports$1.push({
+                  exports.push({
                     name: node.declaration.id.name,
                     type: this.getDeclarationType(node.declaration.type),
                     startPosition: {
@@ -6779,7 +6779,7 @@ var init_ast_parser = __esm({
                 }
               } else if (node.specifiers) {
                 node.specifiers.forEach((spec) => {
-                  exports$1.push({
+                  exports.push({
                     name: spec.exported.name,
                     type: "variable",
                     // Default to variable
@@ -6794,7 +6794,7 @@ var init_ast_parser = __esm({
               break;
             case "ExportDefaultDeclaration":
               const name = node.declaration?.id?.name || "default";
-              exports$1.push({
+              exports.push({
                 name,
                 type: this.getDeclarationType(node.declaration?.type) || "default",
                 startPosition: {
@@ -6821,7 +6821,7 @@ var init_ast_parser = __esm({
           }
         };
         visit(ast);
-        return exports$1;
+        return exports;
       }
       extractTreeSitterSymbols(node, content, language) {
         const symbols = [];
@@ -6906,11 +6906,11 @@ var init_ast_parser = __esm({
         return imports;
       }
       extractTreeSitterExports(node, content, language) {
-        const exports$1 = [];
+        const exports = [];
         const visit = (node2) => {
           if (node2.type === "export_statement") {
             const name = this.extractNodeName(node2, "name") || "unknown";
-            exports$1.push({
+            exports.push({
               name,
               type: "variable",
               startPosition: {
@@ -6922,7 +6922,7 @@ var init_ast_parser = __esm({
           node2.children?.forEach((child) => visit(child));
         };
         visit(node);
-        return exports$1;
+        return exports;
       }
       convertTypeScriptAST(node) {
         return {
@@ -7472,7 +7472,7 @@ var init_dependency_analyzer = __esm({
             const parsed = JSON.parse(parseResult.output);
             if (parsed.success && parsed.result) {
               const imports = parsed.result.imports || [];
-              const exports$1 = parsed.result.exports || [];
+              const exports = parsed.result.exports || [];
               const dependencies = await this.resolveImportPaths(
                 imports,
                 filePath,
@@ -7483,7 +7483,7 @@ var init_dependency_analyzer = __esm({
                 filePath: path8__default.relative(rootPath, filePath),
                 absolutePath: filePath,
                 imports,
-                exports: exports$1,
+                exports,
                 dependencies,
                 dependents: [],
                 isEntryPoint: false,
@@ -27050,7 +27050,7 @@ var init_package = __esm({
     package_default = {
       type: "module",
       name: "@xagent/one-shot",
-      version: "1.2.4",
+      version: "1.2.5",
       description: "An open-source AI agent that brings advanced AI capabilities directly into your terminal with automatic documentation updates.",
       main: "dist/index.js",
       module: "dist/index.js",
@@ -27071,7 +27071,8 @@ var init_package = __esm({
         "package.json"
       ],
       scripts: {
-        local: "bun --watch src/index.ts",
+        local: "bun run build && bun dist/index.js",
+        "local-watch": "bun --watch src/index.ts",
         "test-agent": "bun run build && ./dist/index.js -p",
         "test-log": 'bun run build && ./dist/index.js -p "$1" 2>&1 | tee agent-test.log',
         "test-iterative": "./scripts/test-agent-iterative.sh",
@@ -32891,11 +32892,11 @@ var init_toggle_confirmations = __esm({
 
 // package.json
 var require_package = __commonJS({
-  "package.json"(exports$1, module) {
+  "package.json"(exports, module) {
     module.exports = {
       type: "module",
       name: "@xagent/one-shot",
-      version: "1.2.4",
+      version: "1.2.5",
       description: "An open-source AI agent that brings advanced AI capabilities directly into your terminal with automatic documentation updates.",
       main: "dist/index.js",
       module: "dist/index.js",
@@ -32916,7 +32917,8 @@ var require_package = __commonJS({
         "package.json"
       ],
       scripts: {
-        local: "bun --watch src/index.ts",
+        local: "bun run build && bun dist/index.js",
+        "local-watch": "bun --watch src/index.ts",
         "test-agent": "bun run build && ./dist/index.js -p",
         "test-log": 'bun run build && ./dist/index.js -p "$1" 2>&1 | tee agent-test.log',
         "test-iterative": "./scripts/test-agent-iterative.sh",

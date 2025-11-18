@@ -22,7 +22,8 @@
     "package.json"
   ],
   "scripts": {
-    "local": "bun --watch src/index.ts",
+    "local": "bun run build && bun dist/index.js",
+    "local-watch": "bun --watch src/index.ts",
     "test-agent": "bun run build && ./dist/index.js -p",
     "test-log": "bun run build && ./dist/index.js -p \"$1\" 2>&1 | tee agent-test.log",
     "test-iterative": "./scripts/test-agent-iterative.sh",
