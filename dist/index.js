@@ -2778,13 +2778,10 @@ var init_todo_tool = __esm({
           switch (status) {
             case "completed":
               return "\x1B[32m";
-            // Green
             case "in_progress":
               return "\x1B[36m";
-            // Cyan
             case "pending":
               return "\x1B[37m";
-            // White/default
             default:
               return "\x1B[0m";
           }
@@ -6547,14 +6544,14 @@ var init_ast_parser = __esm({
           });
           const symbols = this.extractTypeScriptSymbols(ast, content);
           const imports = this.extractTypeScriptImports(ast);
-          const exports = this.extractTypeScriptExports(ast);
+          const exports$1 = this.extractTypeScriptExports(ast);
           const tree = this.convertTypeScriptAST(ast);
           return {
             language,
             tree,
             symbols,
             imports,
-            exports,
+            exports: exports$1,
             errors
           };
         } catch (error) {
@@ -6578,14 +6575,14 @@ var init_ast_parser = __esm({
         const tree = parser.parse(content);
         const symbols = this.extractTreeSitterSymbols(tree.rootNode, content, language);
         const imports = this.extractTreeSitterImports(tree.rootNode, content, language);
-        const exports = this.extractTreeSitterExports(tree.rootNode, content, language);
+        const exports$1 = this.extractTreeSitterExports(tree.rootNode, content, language);
         const astTree = this.convertTreeSitterAST(tree.rootNode, content);
         return {
           language,
           tree: astTree,
           symbols,
           imports,
-          exports,
+          exports: exports$1,
           errors: []
         };
       }
@@ -6762,13 +6759,13 @@ var init_ast_parser = __esm({
         return imports;
       }
       extractTypeScriptExports(ast) {
-        const exports = [];
+        const exports$1 = [];
         const visit = (node) => {
           switch (node.type) {
             case "ExportNamedDeclaration":
               if (node.declaration) {
                 if (node.declaration.id?.name) {
-                  exports.push({
+                  exports$1.push({
                     name: node.declaration.id.name,
                     type: this.getDeclarationType(node.declaration.type),
                     startPosition: {
@@ -6779,7 +6776,7 @@ var init_ast_parser = __esm({
                 }
               } else if (node.specifiers) {
                 node.specifiers.forEach((spec) => {
-                  exports.push({
+                  exports$1.push({
                     name: spec.exported.name,
                     type: "variable",
                     // Default to variable
@@ -6794,7 +6791,7 @@ var init_ast_parser = __esm({
               break;
             case "ExportDefaultDeclaration":
               const name = node.declaration?.id?.name || "default";
-              exports.push({
+              exports$1.push({
                 name,
                 type: this.getDeclarationType(node.declaration?.type) || "default",
                 startPosition: {
@@ -6821,7 +6818,7 @@ var init_ast_parser = __esm({
           }
         };
         visit(ast);
-        return exports;
+        return exports$1;
       }
       extractTreeSitterSymbols(node, content, language) {
         const symbols = [];
@@ -6906,11 +6903,11 @@ var init_ast_parser = __esm({
         return imports;
       }
       extractTreeSitterExports(node, content, language) {
-        const exports = [];
+        const exports$1 = [];
         const visit = (node2) => {
           if (node2.type === "export_statement") {
             const name = this.extractNodeName(node2, "name") || "unknown";
-            exports.push({
+            exports$1.push({
               name,
               type: "variable",
               startPosition: {
@@ -6922,7 +6919,7 @@ var init_ast_parser = __esm({
           node2.children?.forEach((child) => visit(child));
         };
         visit(node);
-        return exports;
+        return exports$1;
       }
       convertTypeScriptAST(node) {
         return {
@@ -7472,7 +7469,7 @@ var init_dependency_analyzer = __esm({
             const parsed = JSON.parse(parseResult.output);
             if (parsed.success && parsed.result) {
               const imports = parsed.result.imports || [];
-              const exports = parsed.result.exports || [];
+              const exports$1 = parsed.result.exports || [];
               const dependencies = await this.resolveImportPaths(
                 imports,
                 filePath,
@@ -7483,7 +7480,7 @@ var init_dependency_analyzer = __esm({
                 filePath: path8__default.relative(rootPath, filePath),
                 absolutePath: filePath,
                 imports,
-                exports,
+                exports: exports$1,
                 dependencies,
                 dependents: [],
                 isEntryPoint: false,
@@ -16290,14 +16287,14 @@ var init_types = __esm({
     onumber = () => numberType().optional();
     oboolean = () => booleanType().optional();
     coerce = {
-      string: ((arg) => ZodString.create({ ...arg, coerce: true })),
-      number: ((arg) => ZodNumber.create({ ...arg, coerce: true })),
-      boolean: ((arg) => ZodBoolean.create({
+      string: (arg) => ZodString.create({ ...arg, coerce: true }),
+      number: (arg) => ZodNumber.create({ ...arg, coerce: true }),
+      boolean: (arg) => ZodBoolean.create({
         ...arg,
         coerce: true
-      })),
-      bigint: ((arg) => ZodBigInt.create({ ...arg, coerce: true })),
-      date: ((arg) => ZodDate.create({ ...arg, coerce: true }))
+      }),
+      bigint: (arg) => ZodBigInt.create({ ...arg, coerce: true }),
+      date: (arg) => ZodDate.create({ ...arg, coerce: true })
     };
     NEVER = INVALID;
   }
@@ -19176,7 +19173,6 @@ EOF`;
                 }
                 return await this.bash.execute(command);
               }
-            // Advanced Tools
             case "multi_file_edit":
               switch (args.operation) {
                 case "begin_transaction":
@@ -22829,17 +22825,13 @@ var init_plan_visualization_orchestrator = __esm({
           case "research":
           case "design":
             return 0;
-          // Analysis
           case "implement":
             return 1;
-          // Implementation
           case "test":
             return 2;
-          // Testing
           case "deploy":
           case "document":
             return 3;
-          // Deployment
           default:
             return 1;
         }
@@ -26978,10 +26970,8 @@ ${guardrail.createdFrom ? `- Created from incident: ${guardrail.createdFrom}` : 
             return context?.files && context.files.some((f) => !existsSync(f));
           case "check_permissions":
             return false;
-          // Would need actual permission check
           case "check_dependencies":
             return false;
-          // Would need dependency analysis
           default:
             return operation.toLowerCase().includes(pattern.toLowerCase());
         }
@@ -27050,7 +27040,7 @@ var init_package = __esm({
     package_default = {
       type: "module",
       name: "@xagent/one-shot",
-      version: "1.2.6",
+      version: "1.2.7",
       description: "An open-source AI agent that brings advanced AI capabilities directly into your terminal with automatic documentation updates.",
       main: "dist/index.js",
       module: "dist/index.js",
@@ -27146,7 +27136,7 @@ var init_package = __esm({
         openai: "^5.10.1",
         react: "^18.3.1",
         "ripgrep-node": "^1.0.0",
-        "terminal-image": "^4.0.0",
+        "terminal-image": "^1.1.0",
         tiktoken: "^1.0.21"
       },
       devDependencies: {
@@ -27161,7 +27151,7 @@ var init_package = __esm({
         husky: "^9.1.7",
         "lint-staged": "^16.2.4",
         prettier: "^3.6.2",
-        tsup: "^8.5.0",
+        tsup: "^8.1.0",
         tsx: "^4.0.0"
       },
       engines: {
@@ -32892,11 +32882,11 @@ var init_toggle_confirmations = __esm({
 
 // package.json
 var require_package = __commonJS({
-  "package.json"(exports, module) {
+  "package.json"(exports$1, module) {
     module.exports = {
       type: "module",
       name: "@xagent/one-shot",
-      version: "1.2.6",
+      version: "1.2.7",
       description: "An open-source AI agent that brings advanced AI capabilities directly into your terminal with automatic documentation updates.",
       main: "dist/index.js",
       module: "dist/index.js",
@@ -32992,7 +32982,7 @@ var require_package = __commonJS({
         openai: "^5.10.1",
         react: "^18.3.1",
         "ripgrep-node": "^1.0.0",
-        "terminal-image": "^4.0.0",
+        "terminal-image": "^1.1.0",
         tiktoken: "^1.0.21"
       },
       devDependencies: {
@@ -33007,7 +32997,7 @@ var require_package = __commonJS({
         husky: "^9.1.7",
         "lint-staged": "^16.2.4",
         prettier: "^3.6.2",
-        tsup: "^8.5.0",
+        tsup: "^8.1.0",
         tsx: "^4.0.0"
       },
       engines: {
@@ -33217,5 +33207,5 @@ try {
   process.exit(1);
 }
 var loadModel2;
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=out.js.map
 //# sourceMappingURL=index.js.map
