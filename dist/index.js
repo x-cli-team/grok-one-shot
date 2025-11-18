@@ -27050,7 +27050,7 @@ var init_package = __esm({
     package_default = {
       type: "module",
       name: "@xagent/one-shot",
-      version: "1.2.9",
+      version: "1.2.10",
       description: "An open-source AI agent that brings advanced AI capabilities directly into your terminal with automatic documentation updates.",
       main: "dist/index.js",
       module: "dist/index.js",
@@ -32899,7 +32899,7 @@ var require_package = __commonJS({
     module.exports = {
       type: "module",
       name: "@xagent/one-shot",
-      version: "1.2.9",
+      version: "1.2.10",
       description: "An open-source AI agent that brings advanced AI capabilities directly into your terminal with automatic documentation updates.",
       main: "dist/index.js",
       module: "dist/index.js",
