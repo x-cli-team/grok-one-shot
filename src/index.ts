@@ -85,7 +85,7 @@ try {
         const manager = getSettingsManager();
         model = manager.getCurrentModel?.();
       } catch {
-        model = "grok-4-fast-non-reasoning";  // Default model
+        model = process.env.GROK_MODEL || "grok-beta";  // Use env or fallback
       }
     }
     return model;

@@ -1,0 +1,1 @@
+console.log('Initial TTY:', process.stdin.isTTY); process.stdin.resume(); process.stdin.setEncoding('utf8'); setTimeout(() => { console.log('After resume:', process.stdin.isTTY); console.log('Readable:', process.stdin.readableEnded ? 'false' : 'true'); console.log('Columns/Rows:', process.stdout.columns || 'N/A', process.stdout.rows || 'N/A'); }, 100);

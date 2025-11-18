@@ -385,7 +385,7 @@ Updated By: Agent System Generator during /init-agent
 \`\`\`typescript
 {
   baseURL: "https://api.x.ai/v1",
-  defaultModel: "grok-4-fast-non-reasoning",
+  defaultModel: "grok-4.1",
   apiKey: process.env.X_API_KEY
 }
 \`\`\`

@@ -49,7 +49,7 @@ export interface GrokResponse {
 
 export class GrokClient {
   private client: OpenAI;
-  private currentModel: string = "grok-4-fast-non-reasoning";
+  private currentModel: string = "grok-4.1";
   private defaultMaxTokens: number;
 
   constructor(apiKey?: string, model?: string, baseURL?: string) {

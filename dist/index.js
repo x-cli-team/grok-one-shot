@@ -70,7 +70,7 @@ var init_client = __esm({
   "src/grok/client.ts"() {
     GrokClient = class {
       constructor(apiKey, model, baseURL) {
-        this.currentModel = "grok-4-fast-non-reasoning";
+        this.currentModel = "grok-4.1";
         apiKey = apiKey || process.env.OPENAI_API_KEY || process.env.GROK_API_KEY || process.env.XAI_API_KEY;
         this.client = new OpenAI({
           apiKey,
@@ -391,9 +391,9 @@ var init_settings_manager = __esm({
   "src/utils/settings-manager.ts"() {
     DEFAULT_USER_SETTINGS = {
       baseURL: "https://api.x.ai/v1",
-      defaultModel: "grok-4-fast-non-reasoning",
+      defaultModel: "grok-code-fast-1",
       models: [
-        "grok-4-fast-non-reasoning",
+        "grok-code-fast-1",
         "grok-4-fast-reasoning",
         "grok-4-0709",
         "grok-4-latest",
@@ -410,7 +410,7 @@ var init_settings_manager = __esm({
       requireConfirmation: true
     };
     DEFAULT_PROJECT_SETTINGS = {
-      model: "grok-4-fast-non-reasoning"
+      model: "grok-code-fast-1"
     };
     SettingsManager = class _SettingsManager {
       constructor() {
@@ -585,7 +585,7 @@ var init_settings_manager = __esm({
         if (userDefaultModel) {
           return userDefaultModel;
         }
-        return DEFAULT_PROJECT_SETTINGS.model || "grok-4-fast-non-reasoning";
+        return DEFAULT_PROJECT_SETTINGS.model || "grok-4.1";
       }
       /**
        * Get the appropriate model for a task based on its characteristics
@@ -24305,7 +24305,7 @@ Updated By: Agent System Generator during /init-agent
 \`\`\`typescript
 {
   baseURL: "https://api.x.ai/v1",
-  defaultModel: "grok-4-fast-non-reasoning",
+  defaultModel: "grok-4.1",
   apiKey: process.env.X_API_KEY
 }
 \`\`\`
@@ -27071,7 +27071,7 @@ var init_package = __esm({
         "package.json"
       ],
       scripts: {
-        local: "bun run build && bun dist/index.js",
+        local: "bun run build && node dist/index.js",
         "local-watch": "bun --watch src/index.ts",
         "test-agent": "bun run build && ./dist/index.js -p",
         "test-log": 'bun run build && ./dist/index.js -p "$1" 2>&1 | tee agent-test.log',
@@ -29572,7 +29572,7 @@ function useContextInfo(agent) {
       let loadedFiles = [];
       let contextHealth = "optimal";
       if (agent) {
-        const modelName = agent.getCurrentModel?.() || "grok-4-fast-non-reasoning";
+        const modelName = agent.getCurrentModel?.() || "grok-4.1";
         const maxTokens = getMaxTokensForModel(modelName);
         const sessionTokens = agent.getSessionTokenCount?.() || 0;
         messagesCount = agent.getMessageCount?.() || 0;
@@ -29707,7 +29707,7 @@ function getMemoryPressure() {
 }
 function getMaxTokensForModel(modelName) {
   const modelLimits = {
-    "grok-4-fast-non-reasoning": 128e3,
+    "grok-4.1": 128e3,
     "grok-4-fast-reasoning": 2e5,
     "grok-4-0709": 2e5,
     "grok-4-latest": 2e5,
@@ -32917,7 +32917,7 @@ var require_package = __commonJS({
         "package.json"
       ],
       scripts: {
-        local: "bun run build && bun dist/index.js",
+        local: "bun run build && node dist/index.js",
         "local-watch": "bun --watch src/index.ts",
         "test-agent": "bun run build && ./dist/index.js -p",
         "test-log": 'bun run build && ./dist/index.js -p "$1" 2>&1 | tee agent-test.log',
@@ -33075,7 +33075,7 @@ try {
         const manager = getSettingsManager2();
         model = manager.getCurrentModel?.();
       } catch {
-        model = "grok-4-fast-non-reasoning";
+        model = process.env.GROK_MODEL || "grok-beta";
       }
     }
     return model;

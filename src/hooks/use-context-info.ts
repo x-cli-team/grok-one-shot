@@ -60,7 +60,7 @@ export function useContextInfo(agent?: any) {
 
       if (agent) {
         // Get model information
-        const modelName = agent.getCurrentModel?.() || "grok-4-fast-non-reasoning";
+        const modelName = agent.getCurrentModel?.() || "grok-4.1";
         const maxTokens = getMaxTokensForModel(modelName);
 
         // Get real data from agent
@@ -231,7 +231,7 @@ function getMemoryPressure(): 'low' | 'medium' | 'high' {
 // Helper functions for agent context data
 function getMaxTokensForModel(modelName: string): number {
   const modelLimits: Record<string, number> = {
-    "grok-4-fast-non-reasoning": 128000,
+    "grok-4.1": 128000,
     "grok-4-fast-reasoning": 200000,
     "grok-4-0709": 200000,
     "grok-4-latest": 200000,

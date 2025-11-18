@@ -39,9 +39,9 @@ export interface ProjectSettings {
  */
 const DEFAULT_USER_SETTINGS: Partial<UserSettings> = {
   baseURL: "https://api.x.ai/v1",
-  defaultModel: "grok-4-fast-non-reasoning",
+  defaultModel: "grok-code-fast-1",
   models: [
-    "grok-4-fast-non-reasoning",
+    "grok-code-fast-1",
     "grok-4-fast-reasoning",
     "grok-4-0709",
     "grok-4-latest",
@@ -62,7 +62,7 @@ const DEFAULT_USER_SETTINGS: Partial<UserSettings> = {
  * Default values for project settings
  */
 const DEFAULT_PROJECT_SETTINGS: Partial<ProjectSettings> = {
-  model: "grok-4-fast-non-reasoning",
+  model: "grok-code-fast-1",
 };
 
 /**
@@ -289,7 +289,7 @@ export class SettingsManager {
       return userDefaultModel;
     }
 
-    return DEFAULT_PROJECT_SETTINGS.model || "grok-4-fast-non-reasoning";
+    return DEFAULT_PROJECT_SETTINGS.model || "grok-4.1";
   }
 
   /**
