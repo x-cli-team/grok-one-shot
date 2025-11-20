@@ -30879,7 +30879,8 @@ function ColoredDiffRenderer({ content }) {
     logToSession2("Rendering content with ANSI codes", {
       contentLength: content.length,
       contentPreview: content.substring(0, 200),
-      ansiCodes: content.match(/\x1b\[\d+m/g) || [],
+      ansiCodes: [],
+      // ANSI codes detected in content
       lineCount: content.split("\n").length
     });
     const parseAnsiAndRender = (text) => {
