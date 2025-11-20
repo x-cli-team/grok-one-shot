@@ -250,6 +250,7 @@ A conversational AI CLI tool powered by x.ai with **Claude Code-level intelligen
 - **🌐 WebFetch/WebSearch**: Real-time web content retrieval and search capabilities
 - **📚 Task/TodoWrite**: Specialized agent delegation and comprehensive task management
 - **🚀 Read/Write/Edit**: Claude Code-standard file operations at high speed
+- **🎨 Colored Diffs**: ✅ **FULLY WORKING** - Professional Claude Code-style colored diffs with green additions, red deletions, cyan headers, and accurate file line numbers
 
 🌐 **Visit [xcli.org](https://xcli.org)** for complete documentation and guides.
 
@@ -1053,6 +1054,10 @@ The pre-commit hook runs `npx lint-staged`, which processes `*.{ts,tsx}` files w
 2. `tsc --noEmit` - Type check without emitting files
 
 If checks fail, the commit is blocked until issues are resolved.
+
+### Session Logging
+
+- Session Logging Architecture: Comprehensive guide to session logging for testing and debugging ([.agent/technical/session-logging.md](.agent/technical/session-logging.md))
 
 ## 🤖 Automated Release System
 

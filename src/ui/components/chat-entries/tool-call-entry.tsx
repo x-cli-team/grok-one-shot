@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Box, Text } from "ink";
 import { ChatEntry } from "../../../agent/grok-agent.js";
 import { DiffRenderer } from "../diff-renderer.js";
+import { ColoredDiffRenderer } from "../colored-diff-renderer.js";
 import { FileContentRenderer } from "../content-renderers/file-content-renderer.js";
 import { ToolBrevityService, type BrevityMode } from "../../../services/tool-brevity-service.js";
 import { MarkdownRenderer } from "../../utils/markdown-renderer.js";
@@ -178,8 +179,11 @@ export function ToolCallEntry({ entry, verbosityLevel, explainLevel }: ToolCallE
   const explanation = getExplanation(toolName, filePath, isExecuting);
   const { preview, hasMore, totalLines } = truncateToClaudeStyle(entry.content || '');
   
-  // Claude Code style: use ultra-brief format in quiet mode
-  const useClaudeCodeFormat = verbosityLevel === 'quiet' && brevitySummary.hasContent;
+  // Claude Code style: use ultra-brief format in quiet mode (but preserve colored diffs)
+  const useClaudeCodeFormat = verbosityLevel === 'quiet' && brevitySummary.hasContent && !brevitySummary.metadata.isColoredDiff;
+
+  // For colored diffs, always show full content regardless of verbosity
+  const forceShowColoredDiff = brevitySummary.metadata.isColoredDiff;
 
   return (
     <Box flexDirection="column" marginTop={1}>
@@ -231,8 +235,8 @@ export function ToolCallEntry({ entry, verbosityLevel, explainLevel }: ToolCallE
                 </Box>
               )}
             </Box>
-          ) : shouldShowDiff && shouldShowFullContent ? (
-            // For diff results, show only the summary line, not the raw content
+          ) : shouldShowDiff && shouldShowFullContent && !brevitySummary.metadata.isColoredDiff ? (
+            // For diff results, show only the summary line, not the raw content (unless it's a colored diff)
             <Text color="gray">⎿ {entry.content.split("\n")[0]}</Text>
           ) : !shouldShowFullContent ? (
             <Text color="gray">⎿ Completed</Text>
@@ -265,13 +269,17 @@ export function ToolCallEntry({ entry, verbosityLevel, explainLevel }: ToolCallE
           )}
         </Box>
       )}
-      {shouldShowDiff && !isExecuting && shouldShowFullContent && !useClaudeCodeFormat && (
+      {((shouldShowDiff && !isExecuting && shouldShowFullContent && !useClaudeCodeFormat) || (forceShowColoredDiff && !isExecuting)) && (
         <Box marginLeft={4} flexDirection="column">
-          <DiffRenderer
-            diffContent={entry.content}
-            filename={filePath}
-            terminalWidth={80}
-          />
+          {forceShowColoredDiff ? (
+            <ColoredDiffRenderer content={entry.content} />
+          ) : (
+            <DiffRenderer
+              diffContent={entry.content}
+              filename={filePath}
+              terminalWidth={80}
+            />
+          )}
         </Box>
       )}
     </Box>

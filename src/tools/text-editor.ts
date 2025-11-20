@@ -1,4 +1,5 @@
 import * as ops from "fs";
+import { createTwoFilesPatch } from "diff";
 
 const pathExists = async (filePath: string): Promise<boolean> => {
   try {
@@ -17,6 +18,31 @@ import { writeFile as writeFilePromise } from "fs/promises";
 
 import { ToolResult, EditorCommand } from "../types/index.js";
 import { ConfirmationService } from "../utils/confirmation-service.js";
+
+// Session logging helper - use the main session log file
+function logToSession(message: string, data?: any) {
+  try {
+    const timestamp = new Date().toISOString();
+    const logEntry = `\n[${timestamp}] 🔧 TEXT EDITOR TOOL - ${message}\n=====================================\n${data ? JSON.stringify(data, null, 2) : 'No additional data'}\n=====================================\n`;
+
+    // Find the current session log file in the logs directory
+    const workingDir = process.cwd();
+    const logsDir = path.join(workingDir, 'logs');
+    const fs = ops;
+    if (fs.existsSync(logsDir)) {
+      const sessionFiles = fs.readdirSync(logsDir).filter(f => f.startsWith('session-') && f.endsWith('.log'));
+
+      if (sessionFiles.length > 0) {
+        // Use the most recent session file
+        const sessionFile = path.join(logsDir, sessionFiles[sessionFiles.length - 1]);
+        fs.appendFileSync(sessionFile, logEntry);
+      }
+    }
+  } catch (error) {
+    // Fallback to console if session logging fails
+    console.log(`[TextEditorTool] ${message}`, data);
+  }
+}
 
 export class TextEditorTool {
   private editHistory: EditorCommand[] = [];
@@ -170,7 +196,7 @@ export class TextEditorTool {
 
       const oldLines = content.split("\n");
       const newLines = newContent.split("\n");
-      const diff = this.generateDiff(oldLines, newLines, filePath);
+      const diff = this.generateColoredDiff(oldLines, newLines, filePath);
 
       return {
         success: true,
@@ -688,6 +714,154 @@ export class TextEditorTool {
     }
     
     return diff.trim();
+  }
+
+  /**
+   * Generate colored diff with ANSI color codes for terminal display
+   */
+  private generateColoredDiff(oldLines: string[], newLines: string[], filePath: string): string {
+    logToSession('generateColoredDiff called', { filePath, oldLinesCount: oldLines.length, newLinesCount: newLines.length });
+
+    // Handle empty content cases
+    if (oldLines.length === 0 && newLines.length === 0) {
+      return `No changes in ${filePath}`;
+    }
+
+    if (oldLines.length === 0 && newLines.length > 0) {
+      // New file creation
+      logToSession('Handling new file creation');
+      const addedCount = newLines.length;
+      let diff = `\x1b[32m✅ Created ${filePath} with ${addedCount} line${addedCount !== 1 ? 's' : ''}\x1b[0m\n\n`;
+      diff += `\x1b[36m--- /dev/null\x1b[0m\n`;
+      diff += `\x1b[36m+++ b/${filePath}\x1b[0m\n`;
+      diff += `\x1b[36m@@ -0,0 +1,${addedCount} @@\x1b[0m\n`;
+
+      newLines.forEach(line => {
+        diff += `\x1b[32m+${line}\x1b[0m\n`;
+      });
+
+      return diff.trim();
+    }
+
+    try {
+      logToSession('Generating unified diff with createTwoFilesPatch');
+      // Generate unified diff using diff library
+      const patch = createTwoFilesPatch(
+        `a/${filePath}`,
+        `b/${filePath}`,
+        oldLines.join('\n'),
+        newLines.join('\n'),
+        '', // old header
+        '', // new header
+        { context: 3 }
+      );
+      logToSession('createTwoFilesPatch completed', { patchLength: patch.length });
+
+      // Colorize the unified diff
+      return this.colorizeUnifiedDiff(patch, filePath);
+    } catch (error: any) {
+      logToSession('CRITICAL: createTwoFilesPatch failed', {
+        error: error.message,
+        errorName: error.name,
+        errorStack: error.stack?.substring(0, 500),
+        filePath
+      });
+      // Fallback to simple summary on diff generation failure
+      return `\x1b[32m✅ Updated ${filePath}\x1b[0m\n\x1b[32m+ (diff generation failed - ${error.message})\x1b[0m`;
+    }
+  }
+
+  /**
+   * Colorize unified diff output with ANSI color codes
+   */
+  private colorizeUnifiedDiff(diff: string, filePath: string): string {
+    logToSession('colorizeUnifiedDiff called', { diffLength: diff.length });
+
+    try {
+      const lines = diff.split('\n');
+      logToSession('Split into lines', { lineCount: lines.length });
+      let colorizedLines: string[] = [];
+      let addedLines = 0;
+      let removedLines = 0;
+
+      // Count changes for summary
+      for (const line of lines) {
+        if (line.startsWith('+') && !line.startsWith('+++')) addedLines++;
+        if (line.startsWith('-') && !line.startsWith('---')) removedLines++;
+      }
+      logToSession('Change counts', { added: addedLines, removed: removedLines });
+
+      // Add colored summary
+      if (addedLines > 0 || removedLines > 0) {
+        let summary = `\x1b[32m✅ Updated ${filePath}\x1b[0m`;
+        if (addedLines > 0 && removedLines > 0) {
+          summary += ` with \x1b[32m${addedLines} addition${addedLines !== 1 ? 's' : ''}\x1b[0m and \x1b[31m${removedLines} removal${removedLines !== 1 ? 's' : ''}\x1b[0m`;
+        } else if (addedLines > 0) {
+          summary += ` with \x1b[32m${addedLines} addition${addedLines !== 1 ? 's' : ''}\x1b[0m`;
+        } else if (removedLines > 0) {
+          summary += ` with \x1b[31m${removedLines} removal${removedLines !== 1 ? 's' : ''}\x1b[0m`;
+        }
+        colorizedLines.push(summary);
+        colorizedLines.push(''); // Empty line for spacing
+      }
+
+      // Parse diff and add line numbers like Claude Code
+      let oldLineNum = 1;
+      let newLineNum = 1;
+
+      for (const line of lines) {
+        if (line.startsWith('---') || line.startsWith('+++')) {
+          // Skip file headers - don't show these with line numbers
+          continue;
+        } else if (line.startsWith('@@')) {
+          // Parse hunk header to get starting line numbers
+          logToSession('Processing hunk header', { header: line });
+          const hunkMatch = line.match(/@@ -(\d+),?\d* \+(\d+),?\d* @@/);
+          if (hunkMatch) {
+            oldLineNum = parseInt(hunkMatch[1]);
+            newLineNum = parseInt(hunkMatch[2]);
+            logToSession('Parsed line numbers', { old: oldLineNum, new: newLineNum });
+          } else {
+            logToSession('Failed to parse hunk header', { header: line });
+          }
+          // Skip hunk headers in output
+          continue;
+        } else if (line.startsWith('+')) {
+          // Addition: show new line number
+          const content = line.substring(1); // Remove the '+'
+          colorizedLines.push(`     \x1b[32m${newLineNum.toString().padStart(3)} +\x1b[0m  ${content}`);
+          newLineNum++;
+        } else if (line.startsWith('-')) {
+          // Deletion: show old line number
+          const content = line.substring(1); // Remove the '-'
+          colorizedLines.push(`     \x1b[31m${oldLineNum.toString().padStart(3)} -\x1b[0m  ${content}`);
+          oldLineNum++;
+        } else if (line.startsWith(' ')) {
+          // Context line: show line number without + or -
+          const content = line.substring(1); // Remove the ' '
+          colorizedLines.push(`     ${oldLineNum.toString().padStart(3)}    ${content}`);
+          oldLineNum++;
+          newLineNum++;
+        } else if (line.trim() === '') {
+          // Skip empty lines from diff header
+          continue;
+        }
+      }
+
+      const result = colorizedLines.join('\n');
+      logToSession('colorizeUnifiedDiff completed', { resultLength: result.length });
+      return result;
+    } catch (error: any) {
+      logToSession('CRITICAL: colorizeUnifiedDiff failed', {
+        error: error.message,
+        errorName: error.name,
+        errorStack: error.stack?.substring(0, 500),
+        filePath,
+        diffPreview: diff.substring(0, 500)
+      });
+      // Fallback on colorization failure - include diff markers for detection
+      return `\x1b[32m✅ Updated ${filePath}\x1b[0m\n\x1b[32m+ (diff colorization failed - ${error.message})\x1b[0m`;
+    }
   }
 
   getEditHistory(): EditorCommand[] {

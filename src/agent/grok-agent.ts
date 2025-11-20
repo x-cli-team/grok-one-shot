@@ -37,6 +37,7 @@ import { ResearchRecommendService } from "../services/research-recommend.js";
 import { ExecutionOrchestrator } from "../services/execution-orchestrator.js";
 import { PlanModeState } from "../types/plan-mode.js";
 import { ReadOnlyFilesystemOverlay } from "../services/readonly-filesystem-overlay.js";
+import { RegexHelper } from "../utils/regex-helper.js";
 
 export interface ChatEntry {
   type: "user" | "assistant" | "tool_result" | "tool_call";
@@ -240,6 +241,12 @@ IMPORTANT RESPONSE GUIDELINES:
 - Only provide necessary explanations or next steps if relevant to the task
 - Keep responses concise and focused on the actual work being done
 - If a tool execution completes the user's request, you can remain silent or give a brief confirmation
+
+🎨 COLORED DIFF OUTPUT RULES:
+- When str_replace_editor returns colored diff output with ANSI escape codes, ALWAYS show the full tool output directly
+- NEVER summarize or paraphrase tool results that contain colored diffs - show the complete output
+- If the tool output contains ANSI color codes (\\x1b[), display it exactly as returned by the tool
+- Show the full colored diff with line numbers, not just a summary like "✅ Changed X to Y"
 
 Current working directory: ${process.cwd()}`,
     });
@@ -1049,9 +1056,9 @@ Current working directory: ${process.cwd()}`,
             return await this.wrapWithChainValidation(toolCall, result);
           } catch (error: any) {
             console.warn(`str_replace_editor tool failed, falling back to bash: ${error.message}`);
-            // Fallback to bash sed for replacement
-            const escapedOld = args.old_str.replace(/[\/&]/g, '\\$&');
-            const escapedNew = args.new_str.replace(/[\/&]/g, '\\$&');
+            // Fallback to bash sed for replacement with proper regex escaping
+            const escapedOld = RegexHelper.sanitizeForRegex(args.old_str);
+            const escapedNew = RegexHelper.sanitizeForRegex(args.new_str);
             const sedCommand = args.replace_all
               ? `sed -i 's/${escapedOld}/${escapedNew}/g' "${args.path}"`
               : `sed -i '0,/${escapedOld}/s/${escapedOld}/${escapedNew}/' "${args.path}"`;

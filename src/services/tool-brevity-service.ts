@@ -17,6 +17,7 @@ export interface ToolBrevitySummary {
     fileCount?: number;     // For directory operations
     status?: string;        // For command operations
     errorCount?: number;    // For operations with errors
+    isColoredDiff?: boolean; // For colored diff rendering
   };
 }
 
@@ -36,13 +37,19 @@ export class ToolBrevityService {
     const metadata = this.extractMetadata(normalizedToolName, result);
     const summary = this.generateSummary(normalizedToolName, result, metadata);
     
+    // ✅ For colored diffs, preserve the original content for expansion
+    const hasColoredDiff = this.hasColoredDiffContent(result);
+    
     return {
       toolName: normalizedToolName,
       summary,
-      expansionHint: result.length > 0 ? "(ctrl+r to expand)" : "",
+      expansionHint: result.length > 0 ? (hasColoredDiff ? "(ctrl+r to expand diff)" : "(ctrl+r to expand)") : "",
       hasContent: result.length > 0,
       originalContent: result,
-      metadata
+      metadata: {
+        ...metadata,
+        isColoredDiff: hasColoredDiff // Flag for UI rendering
+      }
     };
   }
 
@@ -124,6 +131,11 @@ export class ToolBrevityService {
     // Handle empty/error content
     if (!content || content.trim().length === 0) {
       return `${this.capitalizeFirst(tool)} (no output)`;
+    }
+    
+    // ✅ PRESERVE COLORED DIFFS - Don't summarize enhanced diff output
+    if (this.hasColoredDiffContent(content)) {
+      return this.extractDiffSummary(content);
     }
     
     switch (tool) {
@@ -257,6 +269,55 @@ export class ToolBrevityService {
     // Look for numbered results or result blocks
     const resultMatches = content.match(/result\s+\d+/gi);
     return resultMatches ? resultMatches.length : 1;
+  }
+
+  /**
+   * Check if content contains colored diff output from enhanced TextEditorTool
+   */
+  private static hasColoredDiffContent(content: string): boolean {
+    // Look for ANSI color codes + diff patterns
+    const ansiEscape = String.fromCharCode(27);
+    const hasAnsiColors = new RegExp(`${ansiEscape.replace(/[.*+?^${}()|\\[\\]\\\\]/g, '\\$&')}\\[\\d+m`).test(content);
+    const hasDiffMarkers = /^[\+\-\s].*$/m.test(content);
+    const hasDiffSummary = /✅\s+(Updated|Created)/.test(content);
+    
+    return hasAnsiColors && (hasDiffMarkers || hasDiffSummary);
+  }
+
+  /**
+   * Extract summary from colored diff content 
+   */
+  private static extractDiffSummary(content: string): string {
+    // Look for our enhanced diff summary line (with ✅ and colors)
+    const summaryMatch = content.match(/✅\s+((?:Updated|Created)[^✓\n\r]*)/);
+    if (summaryMatch) {
+      // Strip ANSI color codes from summary
+      const ansiEscape = String.fromCharCode(27);
+      return summaryMatch[1].replace(new RegExp(`${ansiEscape.replace(/[.*+?^${}()|\\[\\]\\\\]/g, '\\$&')}\\[\\d+m`, 'g'), '').trim();
+    }
+
+    // Fallback: look for filename in diff headers
+    const fileMatch = content.match(/\+\+\+\s+b\/([^\s\n]+)/);
+    if (fileMatch) {
+      const filename = fileMatch[1];
+      
+      // Count additions and deletions
+      const additionCount = (content.match(/^\+[^+]/gm) || []).length;
+      const deletionCount = (content.match(/^-[^-]/gm) || []).length;
+      
+      if (additionCount > 0 && deletionCount > 0) {
+        return `Updated ${filename} with ${additionCount} additions and ${deletionCount} deletions`;
+      } else if (additionCount > 0) {
+        return `Updated ${filename} with ${additionCount} additions`;
+      } else if (deletionCount > 0) {
+        return `Updated ${filename} with ${deletionCount} deletions`;
+      } else {
+        return `Updated ${filename}`;
+      }
+    }
+
+    // Final fallback
+    return "File updated";
   }
 
   /**

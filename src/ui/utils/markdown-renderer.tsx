@@ -1,8 +1,59 @@
 import React from 'react';
 import { Text } from 'ink';
+import { ColoredDiffRenderer } from '../components/colored-diff-renderer.js';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+
+// Session logging helper - use the main session log file
+function logToSession(message: string, data?: any) {
+  try {
+    const timestamp = new Date().toISOString();
+    const logEntry = `\n[${timestamp}] 🎨 MARKDOWN RENDERER - ${message}\n=====================================\n${data ? JSON.stringify(data, null, 2) : 'No additional data'}\n=====================================\n`;
+    
+    // Find the current session log file in the logs directory
+    const workingDir = process.cwd();
+    const logsDir = path.join(workingDir, 'logs');
+    const sessionFiles = fs.readdirSync(logsDir).filter(f => f.startsWith('session-') && f.endsWith('.log'));
+
+    if (sessionFiles.length > 0) {
+      // Use the most recent session file
+      const sessionFile = path.join(logsDir, sessionFiles[sessionFiles.length - 1]);
+      fs.appendFileSync(sessionFile, logEntry);
+    } else {
+      // Fallback to console if no session file found
+      console.log(`[MarkdownRenderer] ${message}`, data);
+    }
+  } catch (error) {
+    // Fallback to console if session logging fails
+    console.log(`[MarkdownRenderer] ${message}`, data);
+    console.error('[MarkdownRenderer] Session logging failed:', error);
+  }
+}
 
 export function MarkdownRenderer({ content }: { content: string }) {
   try {
+    // Check if content contains colored diff (ANSI escape codes)
+    const ansiEscape = String.fromCharCode(27);
+    const hasAnsiColors = new RegExp(`${ansiEscape.replace(/[.*+?^${}()|\\[\\]\\\\]/g, '\\$&')}\\[\\d+m`).test(content);
+    const hasDiffMarkers = /^[\+\-\s].*$/m.test(content);
+    
+    // Enhanced debugging with session logging
+    logToSession('Content analysis', {
+      contentLength: content.length,
+      contentPreview: content.substring(0, 200),
+      hasAnsiColors,
+      hasDiffMarkers,
+      ansiEscapeUsed: ansiEscape.charCodeAt(0),
+      regexPattern: `${ansiEscape.replace(/[.*+?^${}()|\\[\\]\\\\]/g, '\\$&')}\\[\\d+m`
+    });
+    
+    if (hasAnsiColors && hasDiffMarkers) {
+      logToSession('Using ColoredDiffRenderer for ANSI + diff content');
+      // For colored diffs, use specialized renderer
+      return <ColoredDiffRenderer content={content} />;
+    }
+    
     // Simple approach: just handle inline formatting, keep everything else natural
     return <InlineMarkdown content={content} />;
   } catch (error) {

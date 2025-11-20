@@ -12,6 +12,7 @@ import os__default from 'os';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { exec, execSync, spawn } from 'child_process';
 import { promisify } from 'util';
+import { createTwoFilesPatch } from 'diff';
 import fs3, { writeFile } from 'fs/promises';
 import * as ops6 from 'fs-extra';
 import { parse } from '@typescript-eslint/typescript-estree';
@@ -1913,6 +1914,29 @@ STDERR: ${stderr}` : "");
     };
   }
 });
+function logToSession(message, data) {
+  try {
+    const timestamp = (/* @__PURE__ */ new Date()).toISOString();
+    const logEntry = `
+[${timestamp}] \u{1F527} TEXT EDITOR TOOL - ${message}
+=====================================
+${data ? JSON.stringify(data, null, 2) : "No additional data"}
+=====================================
+`;
+    const workingDir = process.cwd();
+    const logsDir = path8.join(workingDir, "logs");
+    const fs19 = fs7;
+    if (fs19.existsSync(logsDir)) {
+      const sessionFiles = fs19.readdirSync(logsDir).filter((f) => f.startsWith("session-") && f.endsWith(".log"));
+      if (sessionFiles.length > 0) {
+        const sessionFile = path8.join(logsDir, sessionFiles[sessionFiles.length - 1]);
+        fs19.appendFileSync(sessionFile, logEntry);
+      }
+    }
+  } catch (error) {
+    console.log(`[TextEditorTool] ${message}`, data);
+  }
+}
 var pathExists, TextEditorTool;
 var init_text_editor = __esm({
   "src/tools/text-editor.ts"() {
@@ -2045,7 +2069,7 @@ ${numberedLines}${additionalLinesMessage}`
           });
           const oldLines = content.split("\n");
           const newLines = newContent.split("\n");
-          const diff = this.generateDiff(oldLines, newLines, filePath);
+          const diff = this.generateColoredDiff(oldLines, newLines, filePath);
           return {
             success: true,
             output: diff
@@ -2433,6 +2457,134 @@ ${numberedLines}${additionalLinesMessage}`
           }
         }
         return diff.trim();
+      }
+      /**
+       * Generate colored diff with ANSI color codes for terminal display
+       */
+      generateColoredDiff(oldLines, newLines, filePath) {
+        logToSession("generateColoredDiff called", { filePath, oldLinesCount: oldLines.length, newLinesCount: newLines.length });
+        if (oldLines.length === 0 && newLines.length === 0) {
+          return `No changes in ${filePath}`;
+        }
+        if (oldLines.length === 0 && newLines.length > 0) {
+          logToSession("Handling new file creation");
+          const addedCount = newLines.length;
+          let diff = `\x1B[32m\u2705 Created ${filePath} with ${addedCount} line${addedCount !== 1 ? "s" : ""}\x1B[0m
+
+`;
+          diff += `\x1B[36m--- /dev/null\x1B[0m
+`;
+          diff += `\x1B[36m+++ b/${filePath}\x1B[0m
+`;
+          diff += `\x1B[36m@@ -0,0 +1,${addedCount} @@\x1B[0m
+`;
+          newLines.forEach((line) => {
+            diff += `\x1B[32m+${line}\x1B[0m
+`;
+          });
+          return diff.trim();
+        }
+        try {
+          logToSession("Generating unified diff with createTwoFilesPatch");
+          const patch = createTwoFilesPatch(
+            `a/${filePath}`,
+            `b/${filePath}`,
+            oldLines.join("\n"),
+            newLines.join("\n"),
+            "",
+            // old header
+            "",
+            // new header
+            { context: 3 }
+          );
+          logToSession("createTwoFilesPatch completed", { patchLength: patch.length });
+          return this.colorizeUnifiedDiff(patch, filePath);
+        } catch (error) {
+          logToSession("CRITICAL: createTwoFilesPatch failed", {
+            error: error.message,
+            errorName: error.name,
+            errorStack: error.stack?.substring(0, 500),
+            filePath
+          });
+          return `\x1B[32m\u2705 Updated ${filePath}\x1B[0m
+\x1B[32m+ (diff generation failed - ${error.message})\x1B[0m`;
+        }
+      }
+      /**
+       * Colorize unified diff output with ANSI color codes
+       */
+      colorizeUnifiedDiff(diff, filePath) {
+        logToSession("colorizeUnifiedDiff called", { diffLength: diff.length });
+        try {
+          const lines = diff.split("\n");
+          logToSession("Split into lines", { lineCount: lines.length });
+          let colorizedLines = [];
+          let addedLines = 0;
+          let removedLines = 0;
+          for (const line of lines) {
+            if (line.startsWith("+") && !line.startsWith("+++")) addedLines++;
+            if (line.startsWith("-") && !line.startsWith("---")) removedLines++;
+          }
+          logToSession("Change counts", { added: addedLines, removed: removedLines });
+          if (addedLines > 0 || removedLines > 0) {
+            let summary = `\x1B[32m\u2705 Updated ${filePath}\x1B[0m`;
+            if (addedLines > 0 && removedLines > 0) {
+              summary += ` with \x1B[32m${addedLines} addition${addedLines !== 1 ? "s" : ""}\x1B[0m and \x1B[31m${removedLines} removal${removedLines !== 1 ? "s" : ""}\x1B[0m`;
+            } else if (addedLines > 0) {
+              summary += ` with \x1B[32m${addedLines} addition${addedLines !== 1 ? "s" : ""}\x1B[0m`;
+            } else if (removedLines > 0) {
+              summary += ` with \x1B[31m${removedLines} removal${removedLines !== 1 ? "s" : ""}\x1B[0m`;
+            }
+            colorizedLines.push(summary);
+            colorizedLines.push("");
+          }
+          let oldLineNum = 1;
+          let newLineNum = 1;
+          for (const line of lines) {
+            if (line.startsWith("---") || line.startsWith("+++")) {
+              continue;
+            } else if (line.startsWith("@@")) {
+              logToSession("Processing hunk header", { header: line });
+              const hunkMatch = line.match(/@@ -(\d+),?\d* \+(\d+),?\d* @@/);
+              if (hunkMatch) {
+                oldLineNum = parseInt(hunkMatch[1]);
+                newLineNum = parseInt(hunkMatch[2]);
+                logToSession("Parsed line numbers", { old: oldLineNum, new: newLineNum });
+              } else {
+                logToSession("Failed to parse hunk header", { header: line });
+              }
+              continue;
+            } else if (line.startsWith("+")) {
+              const content = line.substring(1);
+              colorizedLines.push(`     \x1B[32m${newLineNum.toString().padStart(3)} +\x1B[0m  ${content}`);
+              newLineNum++;
+            } else if (line.startsWith("-")) {
+              const content = line.substring(1);
+              colorizedLines.push(`     \x1B[31m${oldLineNum.toString().padStart(3)} -\x1B[0m  ${content}`);
+              oldLineNum++;
+            } else if (line.startsWith(" ")) {
+              const content = line.substring(1);
+              colorizedLines.push(`     ${oldLineNum.toString().padStart(3)}    ${content}`);
+              oldLineNum++;
+              newLineNum++;
+            } else if (line.trim() === "") {
+              continue;
+            }
+          }
+          const result = colorizedLines.join("\n");
+          logToSession("colorizeUnifiedDiff completed", { resultLength: result.length });
+          return result;
+        } catch (error) {
+          logToSession("CRITICAL: colorizeUnifiedDiff failed", {
+            error: error.message,
+            errorName: error.name,
+            errorStack: error.stack?.substring(0, 500),
+            filePath,
+            diffPreview: diff.substring(0, 500)
+          });
+          return `\x1B[32m\u2705 Updated ${filePath}\x1B[0m
+\x1B[32m+ (diff colorization failed - ${error.message})\x1B[0m`;
+        }
       }
       getEditHistory() {
         return [...this.editHistory];
@@ -7562,10 +7714,10 @@ var init_dependency_analyzer = __esm({
         const circularDeps = [];
         const visited = /* @__PURE__ */ new Set();
         const visiting = /* @__PURE__ */ new Set();
-        const dfs = (filePath, path39) => {
+        const dfs = (filePath, path41) => {
           if (visiting.has(filePath)) {
-            const cycleStart = path39.indexOf(filePath);
-            const cycle = path39.slice(cycleStart).concat([filePath]);
+            const cycleStart = path41.indexOf(filePath);
+            const cycle = path41.slice(cycleStart).concat([filePath]);
             circularDeps.push({
               cycle: cycle.map((fp) => graph.nodes.get(fp)?.filePath || fp),
               severity: cycle.length <= 2 ? "error" : "warning",
@@ -7581,7 +7733,7 @@ var init_dependency_analyzer = __esm({
           if (node) {
             for (const dependency of node.dependencies) {
               if (graph.nodes.has(dependency)) {
-                dfs(dependency, [...path39, filePath]);
+                dfs(dependency, [...path41, filePath]);
               }
             }
           }
@@ -12328,6 +12480,184 @@ ${option.id}) ${option.title}`);
   }
 });
 
+// src/utils/regex-helper.ts
+var RegexHelper;
+var init_regex_helper = __esm({
+  "src/utils/regex-helper.ts"() {
+    RegexHelper = class {
+      /**
+       * Sanitize input strings for safe regex construction
+       * Escapes all regex special characters to prevent pattern errors
+       */
+      static sanitizeForRegex(input) {
+        if (typeof input !== "string") {
+          console.log("RegexHelper.sanitizeForRegex: input is not a string", { input });
+          return "";
+        }
+        const sanitized = input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        console.log("RegexHelper.sanitizeForRegex completed", {
+          originalLength: input.length,
+          sanitizedLength: sanitized.length
+        });
+        return sanitized;
+      }
+      /**
+       * Create a RegExp safely with error handling
+       * Returns null if regex construction fails
+       */
+      static createSafeRegex(pattern, flags = "i") {
+        try {
+          const regex = new RegExp(pattern, flags);
+          console.log("RegexHelper.createSafeRegex success", {
+            pattern: pattern.substring(0, 50),
+            flags
+          });
+          return regex;
+        } catch (error) {
+          console.log("RegexHelper.createSafeRegex failed", {
+            pattern: pattern.substring(0, 50),
+            flags,
+            error: error.message,
+            errorName: error.name
+          });
+          return null;
+        }
+      }
+      /**
+       * Find fuzzy match with multiple fallback strategies
+       * Progressive fallbacks: exact match -> sanitized regex -> Levenshtein distance
+       */
+      static findFuzzyMatch(content, searchStr) {
+        if (typeof content !== "string" || typeof searchStr !== "string") {
+          console.log("RegexHelper.findFuzzyMatch: invalid input types", {
+            contentType: typeof content,
+            searchStrType: typeof searchStr
+          });
+          return null;
+        }
+        console.log("RegexHelper.findFuzzyMatch started", {
+          contentLength: content.length,
+          searchStrLength: searchStr.length,
+          searchStrPreview: searchStr.substring(0, 50)
+        });
+        try {
+          if (content.includes(searchStr)) {
+            console.log("RegexHelper.findFuzzyMatch: exact match found");
+            return searchStr;
+          }
+          const sanitized = this.sanitizeForRegex(searchStr);
+          const fuzzyPattern = sanitized.split(/\s+/).map((word) => this.sanitizeForRegex(word)).join("\\s*");
+          const regex = this.createSafeRegex(`\\b${fuzzyPattern}\\b`, "i");
+          if (regex) {
+            const match = content.match(regex);
+            if (match) {
+              console.log("RegexHelper.findFuzzyMatch: fuzzy regex match found", {
+                matched: match[0].substring(0, 50)
+              });
+              return match[0];
+            }
+          }
+          const lines = content.split("\n");
+          let bestMatch = null;
+          let bestDistance = Infinity;
+          const maxDistance = Math.min(searchStr.length / 2, 5);
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed.length === 0) continue;
+            const distance = this.levenshteinDistance(trimmed, searchStr);
+            if (distance < bestDistance && distance <= maxDistance) {
+              bestDistance = distance;
+              bestMatch = trimmed;
+            }
+          }
+          if (bestMatch) {
+            console.log("RegexHelper.findFuzzyMatch: Levenshtein match found", {
+              distance: bestDistance,
+              matched: bestMatch.substring(0, 50)
+            });
+          } else {
+            console.log("RegexHelper.findFuzzyMatch: no match found");
+          }
+          return bestMatch;
+        } catch (error) {
+          console.log("RegexHelper.findFuzzyMatch critical error", {
+            error: error.message,
+            errorName: error.name,
+            errorStack: error.stack?.substring(0, 500),
+            searchStrPreview: searchStr.substring(0, 50)
+          });
+          return null;
+        }
+      }
+      /**
+       * Calculate Levenshtein distance between two strings
+       * Used as fallback when regex fails
+       */
+      static levenshteinDistance(a, b) {
+        if (a.length === 0) return b.length;
+        if (b.length === 0) return a.length;
+        const matrix = [];
+        for (let i = 0; i <= b.length; i++) {
+          matrix[i] = [i];
+        }
+        for (let j = 0; j <= a.length; j++) {
+          matrix[0][j] = j;
+        }
+        for (let i = 1; i <= b.length; i++) {
+          for (let j = 1; j <= a.length; j++) {
+            if (b.charAt(i - 1) === a.charAt(j - 1)) {
+              matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+              matrix[i][j] = Math.min(
+                matrix[i - 1][j - 1] + 1,
+                // substitution
+                matrix[i][j - 1] + 1,
+                // insertion
+                matrix[i - 1][j] + 1
+                // deletion
+              );
+            }
+          }
+        }
+        return matrix[b.length][a.length];
+      }
+      /**
+       * Validate if a string contains potentially dangerous regex patterns
+       * Useful for input validation before processing
+       */
+      static hasDangerousPatterns(input) {
+        const openBrackets = (input.match(/\[/g) || []).length;
+        const closeBrackets = (input.match(/\]/g) || []).length;
+        if (openBrackets !== closeBrackets) {
+          console.log("RegexHelper.hasDangerousPatterns: unbalanced brackets detected", {
+            open: openBrackets,
+            close: closeBrackets
+          });
+          return true;
+        }
+        const dangerousPatterns = [
+          /\\[dws]/,
+          // Incomplete escape sequences
+          /\(\?/,
+          // Incomplete lookbehind/lookahead
+          /\{[^}]*$/
+          // Unclosed quantifier
+        ];
+        for (const pattern of dangerousPatterns) {
+          if (pattern.test(input)) {
+            console.log("RegexHelper.hasDangerousPatterns: dangerous pattern detected", {
+              pattern: pattern.source,
+              inputPreview: input.substring(0, 50)
+            });
+            return true;
+          }
+        }
+        return false;
+      }
+    };
+  }
+});
+
 // node_modules/zod/v3/helpers/util.js
 var util, objectUtil, ZodParsedType, getParsedType;
 var init_util = __esm({
@@ -12740,8 +13070,8 @@ var init_parseUtil = __esm({
     init_errors();
     init_en();
     makeIssue = (params) => {
-      const { data, path: path39, errorMaps, issueData } = params;
-      const fullPath = [...path39, ...issueData.path || []];
+      const { data, path: path41, errorMaps, issueData } = params;
+      const fullPath = [...path41, ...issueData.path || []];
       const fullIssue = {
         ...issueData,
         path: fullPath
@@ -13049,11 +13379,11 @@ var init_types = __esm({
     init_parseUtil();
     init_util();
     ParseInputLazyPath = class {
-      constructor(parent, value, path39, key) {
+      constructor(parent, value, path41, key) {
         this._cachedPath = [];
         this.parent = parent;
         this.data = value;
-        this._path = path39;
+        this._path = path41;
         this._key = key;
       }
       get path() {
@@ -18371,6 +18701,7 @@ var init_grok_agent = __esm({
     init_settings_manager();
     init_research_recommend();
     init_execution_orchestrator();
+    init_regex_helper();
     GrokAgent = class extends EventEmitter {
       constructor(apiKey, baseURL, model, maxToolRounds, contextPack, verbosityLevel, explainLevel) {
         super();
@@ -18518,6 +18849,12 @@ IMPORTANT RESPONSE GUIDELINES:
 - Only provide necessary explanations or next steps if relevant to the task
 - Keep responses concise and focused on the actual work being done
 - If a tool execution completes the user's request, you can remain silent or give a brief confirmation
+
+\u{1F3A8} COLORED DIFF OUTPUT RULES:
+- When str_replace_editor returns colored diff output with ANSI escape codes, ALWAYS show the full tool output directly
+- NEVER summarize or paraphrase tool results that contain colored diffs - show the complete output
+- If the tool output contains ANSI color codes (\\x1b[), display it exactly as returned by the tool
+- Show the full colored diff with line numbers, not just a summary like "\u2705 Changed X to Y"
 
 Current working directory: ${process.cwd()}`
         });
@@ -19098,10 +19435,10 @@ Current working directory: ${process.cwd()}`
                 return await this.textEditor.view(args.path, range);
               } catch (error) {
                 console.warn(`view_file tool failed, falling back to bash: ${error.message}`);
-                const path39 = args.path;
-                let command = `cat "${path39}"`;
+                const path41 = args.path;
+                let command = `cat "${path41}"`;
                 if (args.start_line && args.end_line) {
-                  command = `sed -n '${args.start_line},${args.end_line}p' "${path39}"`;
+                  command = `sed -n '${args.start_line},${args.end_line}p' "${path41}"`;
                 }
                 return await this.bash.execute(command);
               }
@@ -19128,8 +19465,8 @@ EOF`;
                 return await this.wrapWithChainValidation(toolCall, result);
               } catch (error) {
                 console.warn(`str_replace_editor tool failed, falling back to bash: ${error.message}`);
-                const escapedOld = args.old_str.replace(/[\/&]/g, "\\$&");
-                const escapedNew = args.new_str.replace(/[\/&]/g, "\\$&");
+                const escapedOld = RegexHelper.sanitizeForRegex(args.old_str);
+                const escapedNew = RegexHelper.sanitizeForRegex(args.new_str);
                 const sedCommand = args.replace_all ? `sed -i 's/${escapedOld}/${escapedNew}/g' "${args.path}"` : `sed -i '0,/${escapedOld}/s/${escapedOld}/${escapedNew}/' "${args.path}"`;
                 const result = await this.bash.execute(sedCommand);
                 return await this.wrapWithChainValidation(toolCall, result);
@@ -27137,6 +27474,7 @@ var init_package = __esm({
         chokidar: "^4.0.3",
         "cli-highlight": "^2.1.11",
         commander: "^12.0.0",
+        diff: "^8.0.2",
         dotenv: "^16.4.0",
         enquirer: "^2.4.1",
         "fs-extra": "^11.2.0",
@@ -30513,8 +30851,122 @@ var init_user_message_entry = __esm({
     };
   }
 });
+function logToSession2(message, data) {
+  try {
+    const timestamp = (/* @__PURE__ */ new Date()).toISOString();
+    const logEntry = `
+[${timestamp}] \u{1F3A8} COLORED DIFF RENDERER - ${message}
+=====================================
+${data ? JSON.stringify(data, null, 2) : "No additional data"}
+=====================================
+`;
+    const workingDir = process.cwd();
+    const logsDir = path8__default.join(workingDir, "logs");
+    const sessionFiles = fs7__default.readdirSync(logsDir).filter((f) => f.startsWith("session-") && f.endsWith(".log"));
+    if (sessionFiles.length > 0) {
+      const sessionFile = path8__default.join(logsDir, sessionFiles[sessionFiles.length - 1]);
+      fs7__default.appendFileSync(sessionFile, logEntry);
+    } else {
+      console.log(`[ColoredDiffRenderer] ${message}`, data);
+    }
+  } catch (error) {
+    console.log(`[ColoredDiffRenderer] ${message}`, data);
+    console.error("[ColoredDiffRenderer] Session logging failed:", error);
+  }
+}
+function ColoredDiffRenderer({ content }) {
+  try {
+    logToSession2("Rendering content with ANSI codes", {
+      contentLength: content.length,
+      contentPreview: content.substring(0, 200),
+      ansiCodes: content.match(/\x1b\[\d+m/g) || [],
+      lineCount: content.split("\n").length
+    });
+    const parseAnsiAndRender = (text) => {
+      const parts = [];
+      const lines = text.split("\n");
+      lines.forEach((line, lineIndex) => {
+        if (lineIndex > 0) {
+          parts.push("\n");
+        }
+        if (line.includes("\x1B[32m") && line.includes(" +")) {
+          const ansiEscape = String.fromCharCode(27);
+          const cleanLine = line.replace(new RegExp(`${ansiEscape.replace(/[.*+?^${}()|\\[\\]\\\\]/g, "\\$&")}\\[\\d+m`, "g"), "");
+          parts.push(/* @__PURE__ */ jsx(Text, { color: "green", children: cleanLine }, `${lineIndex}-green`));
+        } else if (line.includes("\x1B[31m") && line.includes(" -")) {
+          const ansiEscape = String.fromCharCode(27);
+          const cleanLine = line.replace(new RegExp(`${ansiEscape.replace(/[.*+?^${}()|\\[\\]\\\\]/g, "\\$&")}\\[\\d+m`, "g"), "");
+          parts.push(/* @__PURE__ */ jsx(Text, { color: "red", children: cleanLine }, `${lineIndex}-red`));
+        } else if (line.includes("\x1B[32m") && line.includes("\u2705")) {
+          const ansiEscape = String.fromCharCode(27);
+          const cleanLine = line.replace(new RegExp(`${ansiEscape.replace(/[.*+?^${}()|\\[\\]\\\\]/g, "\\$&")}\\[\\d+m`, "g"), "");
+          parts.push(/* @__PURE__ */ jsx(Text, { color: "green", children: cleanLine }, `${lineIndex}-summary`));
+        } else if (line.includes("\x1B[36m")) {
+          const ansiEscape = String.fromCharCode(27);
+          const cleanLine = line.replace(new RegExp(`${ansiEscape.replace(/[.*+?^${}()|\\[\\]\\\\]/g, "\\$&")}\\[\\d+m`, "g"), "");
+          parts.push(/* @__PURE__ */ jsx(Text, { color: "cyan", children: cleanLine }, `${lineIndex}-cyan`));
+        } else {
+          const ansiEscape = String.fromCharCode(27);
+          const cleanLine = line.replace(new RegExp(`${ansiEscape.replace(/[.*+?^${}()|\\[\\]\\\\]/g, "\\$&")}\\[\\d+m`, "g"), "");
+          parts.push(/* @__PURE__ */ jsx(Text, { children: cleanLine }, `${lineIndex}-context`));
+        }
+      });
+      return parts;
+    };
+    return /* @__PURE__ */ jsx(Text, { wrap: "wrap", dimColor: false, children: parseAnsiAndRender(content) });
+  } catch (error) {
+    return /* @__PURE__ */ jsxs(Text, { wrap: "wrap", dimColor: false, color: "red", children: [
+      "Error rendering colored diff: ",
+      error.message,
+      "\n",
+      content
+    ] });
+  }
+}
+var init_colored_diff_renderer = __esm({
+  "src/ui/components/colored-diff-renderer.tsx"() {
+  }
+});
+function logToSession3(message, data) {
+  try {
+    const timestamp = (/* @__PURE__ */ new Date()).toISOString();
+    const logEntry = `
+[${timestamp}] \u{1F3A8} MARKDOWN RENDERER - ${message}
+=====================================
+${data ? JSON.stringify(data, null, 2) : "No additional data"}
+=====================================
+`;
+    const workingDir = process.cwd();
+    const logsDir = path8__default.join(workingDir, "logs");
+    const sessionFiles = fs7__default.readdirSync(logsDir).filter((f) => f.startsWith("session-") && f.endsWith(".log"));
+    if (sessionFiles.length > 0) {
+      const sessionFile = path8__default.join(logsDir, sessionFiles[sessionFiles.length - 1]);
+      fs7__default.appendFileSync(sessionFile, logEntry);
+    } else {
+      console.log(`[MarkdownRenderer] ${message}`, data);
+    }
+  } catch (error) {
+    console.log(`[MarkdownRenderer] ${message}`, data);
+    console.error("[MarkdownRenderer] Session logging failed:", error);
+  }
+}
 function MarkdownRenderer({ content }) {
   try {
+    const ansiEscape = String.fromCharCode(27);
+    const hasAnsiColors = new RegExp(`${ansiEscape.replace(/[.*+?^${}()|\\[\\]\\\\]/g, "\\$&")}\\[\\d+m`).test(content);
+    const hasDiffMarkers = /^[\+\-\s].*$/m.test(content);
+    logToSession3("Content analysis", {
+      contentLength: content.length,
+      contentPreview: content.substring(0, 200),
+      hasAnsiColors,
+      hasDiffMarkers,
+      ansiEscapeUsed: ansiEscape.charCodeAt(0),
+      regexPattern: `${ansiEscape.replace(/[.*+?^${}()|\\[\\]\\\\]/g, "\\$&")}\\[\\d+m`
+    });
+    if (hasAnsiColors && hasDiffMarkers) {
+      logToSession3("Using ColoredDiffRenderer for ANSI + diff content");
+      return /* @__PURE__ */ jsx(ColoredDiffRenderer, { content });
+    }
     return /* @__PURE__ */ jsx(InlineMarkdown, { content });
   } catch (error) {
     console.error("Markdown rendering error:", error);
@@ -30673,6 +31125,7 @@ function parseInlineMarkdown(content) {
 }
 var init_markdown_renderer = __esm({
   "src/ui/utils/markdown-renderer.tsx"() {
+    init_colored_diff_renderer();
   }
 });
 function AssistantMessageEntry({ entry, verbosityLevel: _verbosityLevel }) {
@@ -30958,13 +31411,18 @@ var init_tool_brevity_service = __esm({
         const normalizedToolName = this.normalizeToolName(toolName);
         const metadata = this.extractMetadata(normalizedToolName, result);
         const summary = this.generateSummary(normalizedToolName, result, metadata);
+        const hasColoredDiff = this.hasColoredDiffContent(result);
         return {
           toolName: normalizedToolName,
           summary,
-          expansionHint: result.length > 0 ? "(ctrl+r to expand)" : "",
+          expansionHint: result.length > 0 ? hasColoredDiff ? "(ctrl+r to expand diff)" : "(ctrl+r to expand)" : "",
           hasContent: result.length > 0,
           originalContent: result,
-          metadata
+          metadata: {
+            ...metadata,
+            isColoredDiff: hasColoredDiff
+            // Flag for UI rendering
+          }
         };
       }
       /**
@@ -31024,6 +31482,9 @@ var init_tool_brevity_service = __esm({
         const tool = toolName.toLowerCase();
         if (!content || content.trim().length === 0) {
           return `${this.capitalizeFirst(tool)} (no output)`;
+        }
+        if (this.hasColoredDiffContent(content)) {
+          return this.extractDiffSummary(content);
         }
         switch (tool) {
           case "read":
@@ -31128,6 +31589,42 @@ var init_tool_brevity_service = __esm({
       static countSearchResults(content) {
         const resultMatches = content.match(/result\s+\d+/gi);
         return resultMatches ? resultMatches.length : 1;
+      }
+      /**
+       * Check if content contains colored diff output from enhanced TextEditorTool
+       */
+      static hasColoredDiffContent(content) {
+        const ansiEscape = String.fromCharCode(27);
+        const hasAnsiColors = new RegExp(`${ansiEscape.replace(/[.*+?^${}()|\\[\\]\\\\]/g, "\\$&")}\\[\\d+m`).test(content);
+        const hasDiffMarkers = /^[\+\-\s].*$/m.test(content);
+        const hasDiffSummary = /✅\s+(Updated|Created)/.test(content);
+        return hasAnsiColors && (hasDiffMarkers || hasDiffSummary);
+      }
+      /**
+       * Extract summary from colored diff content 
+       */
+      static extractDiffSummary(content) {
+        const summaryMatch = content.match(/✅\s+((?:Updated|Created)[^✓\n\r]*)/);
+        if (summaryMatch) {
+          const ansiEscape = String.fromCharCode(27);
+          return summaryMatch[1].replace(new RegExp(`${ansiEscape.replace(/[.*+?^${}()|\\[\\]\\\\]/g, "\\$&")}\\[\\d+m`, "g"), "").trim();
+        }
+        const fileMatch = content.match(/\+\+\+\s+b\/([^\s\n]+)/);
+        if (fileMatch) {
+          const filename = fileMatch[1];
+          const additionCount = (content.match(/^\+[^+]/gm) || []).length;
+          const deletionCount = (content.match(/^-[^-]/gm) || []).length;
+          if (additionCount > 0 && deletionCount > 0) {
+            return `Updated ${filename} with ${additionCount} additions and ${deletionCount} deletions`;
+          } else if (additionCount > 0) {
+            return `Updated ${filename} with ${additionCount} additions`;
+          } else if (deletionCount > 0) {
+            return `Updated ${filename} with ${deletionCount} deletions`;
+          } else {
+            return `Updated ${filename}`;
+          }
+        }
+        return "File updated";
       }
       /**
        * Capitalize first letter of string
@@ -31277,7 +31774,8 @@ function ToolCallEntry({ entry, verbosityLevel, explainLevel }) {
   );
   const explanation = getExplanation(toolName, filePath);
   const { preview, hasMore, totalLines } = truncateToClaudeStyle(entry.content || "");
-  const useClaudeCodeFormat = verbosityLevel === "quiet" && brevitySummary.hasContent;
+  const useClaudeCodeFormat = verbosityLevel === "quiet" && brevitySummary.hasContent && !brevitySummary.metadata.isColoredDiff;
+  const forceShowColoredDiff = brevitySummary.metadata.isColoredDiff;
   return /* @__PURE__ */ jsxs(Box, { flexDirection: "column", marginTop: 1, children: [
     /* @__PURE__ */ jsxs(Box, { children: [
       /* @__PURE__ */ jsx(Text, { color: "gray", children: "\u23BF" }),
@@ -31311,8 +31809,8 @@ function ToolCallEntry({ entry, verbosityLevel, explainLevel }) {
     ] }) : /* @__PURE__ */ jsxs(Box, { flexDirection: "column", children: [
       /* @__PURE__ */ jsx(Text, { color: "gray", children: "\u23BF File contents:" }),
       /* @__PURE__ */ jsx(Box, { marginLeft: 2, flexDirection: "column", children: /* @__PURE__ */ jsx(FileContentRenderer, { content: entry.content }) })
-    ] }) }) : shouldShowDiff && shouldShowFullContent ? (
-      // For diff results, show only the summary line, not the raw content
+    ] }) }) : shouldShowDiff && shouldShowFullContent && !brevitySummary.metadata.isColoredDiff ? (
+      // For diff results, show only the summary line, not the raw content (unless it's a colored diff)
       /* @__PURE__ */ jsxs(Text, { color: "gray", children: [
         "\u23BF ",
         entry.content.split("\n")[0]
@@ -31334,7 +31832,7 @@ function ToolCallEntry({ entry, verbosityLevel, explainLevel }) {
       /* @__PURE__ */ jsx(Text, { color: "gray", children: "\u23BF " }),
       /* @__PURE__ */ jsx(Box, { flexDirection: "column", width: "100%", children: /* @__PURE__ */ jsx(MarkdownRenderer, { content: formatToolContent(entry.content, toolName) }) })
     ] }) }),
-    shouldShowDiff && !isExecuting && shouldShowFullContent && !useClaudeCodeFormat && /* @__PURE__ */ jsx(Box, { marginLeft: 4, flexDirection: "column", children: /* @__PURE__ */ jsx(
+    (shouldShowDiff && !isExecuting && shouldShowFullContent && !useClaudeCodeFormat || forceShowColoredDiff && !isExecuting) && /* @__PURE__ */ jsx(Box, { marginLeft: 4, flexDirection: "column", children: forceShowColoredDiff ? /* @__PURE__ */ jsx(ColoredDiffRenderer, { content: entry.content }) : /* @__PURE__ */ jsx(
       DiffRenderer,
       {
         diffContent: entry.content,
@@ -31348,6 +31846,7 @@ var truncateContent2;
 var init_tool_call_entry = __esm({
   "src/ui/components/chat-entries/tool-call-entry.tsx"() {
     init_diff_renderer();
+    init_colored_diff_renderer();
     init_file_content_renderer();
     init_tool_brevity_service();
     init_markdown_renderer();
@@ -32387,10 +32886,11 @@ var init_session_logger = __esm({
     SessionLogger = class {
       constructor() {
         this.sessionId = (/* @__PURE__ */ new Date()).toISOString().replace(/[:.]/g, "-");
-        this.logPath = path8__default.join(process.cwd(), `session-${this.sessionId}.log`);
+        this.logPath = path8__default.join(process.cwd(), "logs", `session-${this.sessionId}.log`);
         this.init();
       }
       init() {
+        fs7__default.mkdirSync(path8__default.dirname(this.logPath), { recursive: true });
         const header = `
 =================================================================
 \u{1F9EA} GROK ONE-SHOT TESTING SESSION
@@ -32986,6 +33486,7 @@ var require_package = __commonJS({
         chokidar: "^4.0.3",
         "cli-highlight": "^2.1.11",
         commander: "^12.0.0",
+        diff: "^8.0.2",
         dotenv: "^16.4.0",
         enquirer: "^2.4.1",
         "fs-extra": "^11.2.0",

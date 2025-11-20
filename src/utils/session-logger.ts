@@ -8,11 +8,14 @@ class SessionLogger {
   
   constructor() {
     this.sessionId = new Date().toISOString().replace(/[:.]/g, '-');
-    this.logPath = path.join(process.cwd(), `session-${this.sessionId}.log`);
+    this.logPath = path.join(process.cwd(), 'logs', `session-${this.sessionId}.log`);
     this.init();
   }
   
   private init() {
+    // Ensure logs directory exists
+    fs.mkdirSync(path.dirname(this.logPath), { recursive: true });
+
     const header = `
 =================================================================
 🧪 GROK ONE-SHOT TESTING SESSION
