@@ -399,6 +399,50 @@ grok
 > Focusing on [NEW TOPIC], ignoring previous discussion about [OLD TOPIC]
 ```
 
+## Real-Time Status Indicators
+
+Grok One-Shot displays real-time context metrics below the input prompt to help users monitor context usage and system state.
+
+### Display Format
+
+The status line shows three key metrics in compact format:
+
+```
+🧠 1.3k/128.0k (1%) │ 📁 0 files │ 💬 2 msgs
+```
+
+### Metric Details
+
+- **🧠 Token Usage**: Current tokens used / maximum context window (percentage)
+  - Current: Formatted as 1.3k (1300 tokens)
+  - Max: 128.0k (128,000 tokens, Grok's context window)
+  - Percent: Current usage as percentage of max
+  - Color-coded: Green (<60%), Blue (60-80%), Yellow (80-90%), Red (>90%)
+
+- **📁 Files**: Number of files currently loaded in workspace context
+  - Shows files actively referenced in conversation
+  - Helps monitor context breadth
+
+- **💬 Messages**: Total number of messages in current conversation session
+  - Includes system prompt, user messages, and AI responses
+  - Indicates conversation length and context depth
+
+### Additional Indicators
+
+When memory pressure is high, additional indicators may appear:
+- **⚠️ Memory Pressure**: Shows when system is under memory stress (medium/high/critical)
+
+### Usage Tips
+
+- Monitor token usage to avoid hitting context limits
+- Start new sessions (/exit) when approaching 80% token usage
+- Use Ctrl+I for detailed context information and tooltip
+- Files count helps gauge context specificity
+
+### Implementation
+
+These metrics are rendered by the `ContextIndicator` component in compact mode, providing constant visibility without cluttering the interface.
+
 ## Technical Details
 
 ### Implementation

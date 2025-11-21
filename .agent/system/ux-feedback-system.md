@@ -43,9 +43,15 @@ Consistent visual language reduces user anxiety and increases perceived intellig
 - Real-time workspace/session updates
 
 **Context Indicator** (`context-indicator.tsx`)
-- Token usage display: current/max with percentage
-- File & message counts
-- Memory pressure warnings
+- Real-time context metrics below input prompt
+- **🧠 Token Usage**: Current tokens / max context window (percentage)
+  - Formatted as 1.3k/128.0k (1%)
+  - Color-coded: Green (<60%), Blue (60-80%), Yellow (80-90%), Red (>90%)
+- **📁 Files**: Number of files loaded in workspace context
+- **💬 Messages**: Total messages in conversation session
+- Memory pressure warnings when system stress detected
+- Compact display for constant visibility without clutter
+- Triggers automatic context compaction at 90% usage to prevent token limit rejections
 
 ### Design System (`src/ui/colors.ts`)
 
