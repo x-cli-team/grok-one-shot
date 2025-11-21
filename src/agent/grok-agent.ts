@@ -1463,18 +1463,8 @@ Current working directory: ${process.cwd()}`,
         });
       }
 
-      // If operation failed, log chain context for debugging
-      if (!result.success) {
-        console.warn(`[GrokAgent] Tool chain validation failed at ${toolCall.function.name}:`, {
-          operationId: this.toolChainContext.operationId,
-          chainLength: this.toolChainContext.chainedOperations.length,
-          previousOperations: this.toolChainContext.chainedOperations.slice(-3).map(op => ({
-            tool: op.toolName,
-            success: op.success,
-            ago: Date.now() - op.timestamp
-          }))
-        });
-      }
+      // Tool chain validation - operation tracking only, no logging
+      // Previously logged failures here, but suppressed for cleaner output
 
       // Clean up old chain data after 50 operations to prevent memory leaks
       if (this.toolChainContext.chainedOperations.length > 50) {

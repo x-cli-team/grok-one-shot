@@ -7,6 +7,7 @@
 
 import { ToolResult } from '../../types/index.js';
 import { AutonomousExecutor, TaskPlan } from '../../services/autonomous-executor.js';
+import { AgentFramework } from '../../services/agent-framework.js';
 
 export interface AutonomousTaskArgs {
   goal: string;
@@ -29,9 +30,13 @@ export class AutonomousTaskTool {
   description = 'Execute complex multi-step coding tasks autonomously using AI-powered planning and execution. Handles refactoring, feature implementation, bug fixes, and more.';
 
   private executor: AutonomousExecutor | null = null;
+  private agentFramework: AgentFramework | null = null;
   private isExecuting = false;
+  private currentSession: string | null = null;
 
   async execute(args: AutonomousTaskArgs): Promise<ToolResult> {
+    console.log(`🔧 AutonomousTaskTool.execute called with args:`, JSON.stringify(args, null, 2));
+
     try {
       const {
         goal,
@@ -43,8 +48,12 @@ export class AutonomousTaskTool {
         timeoutMs = 5 * 60 * 1000
       } = args;
 
-      // Initialize executor if needed
+      console.log(`📋 Parsed args - goal: "${goal}", action: "${action}", rootPath: "${rootPath}"`);
+
+      // Initialize executor and agent framework if needed
       if (!this.executor) {
+
+
         this.executor = new AutonomousExecutor({
           rootPath,
           maxSteps,
@@ -52,6 +61,17 @@ export class AutonomousTaskTool {
           validationEnabled: true,
           backupEnabled: true
         });
+
+        this.agentFramework = new AgentFramework(this.executor);
+        await this.agentFramework.initialize();
+      }
+
+      // Create or get session for this user/context
+      if (!this.currentSession) {
+        const session = await this.agentFramework!.createSession('default_user');
+        if (session) {
+          this.currentSession = session.id;
+        }
       }
 
       switch (action) {
@@ -62,7 +82,7 @@ export class AutonomousTaskTool {
               error: 'Goal is required for task execution. Example: "refactor the authentication system to use JWT tokens"'
             };
           }
-          return await this.handleExecute(goal, description);
+          return await this.handleExecute(goal, description, maxSteps, timeoutMs);
 
         case 'status':
           if (!taskId) {
@@ -100,7 +120,7 @@ export class AutonomousTaskTool {
     }
   }
 
-  private async handleExecute(goal: string, description: string): Promise<ToolResult> {
+  private async handleExecute(goal: string, description: string, maxSteps: number = 50, timeoutMs: number = 5 * 60 * 1000): Promise<ToolResult> {
     if (this.isExecuting) {
       return {
         success: false,
@@ -110,14 +130,28 @@ export class AutonomousTaskTool {
 
     try {
       this.isExecuting = true;
-      
-      console.log(`🤖 Starting autonomous task execution...`);
-      const taskPlan = await this.executor!.executeTask(goal, description);
-      
-      const output = this.formatTaskResult(taskPlan);
-      
+
+      console.log(`🤖 Starting autonomous task execution in agent session...`);
+
+      // Use agent framework for execution with memory and learning
+      const result = await this.agentFramework!.executeInSession(
+        this.currentSession!,
+        goal,
+        { description, maxSteps, timeoutMs }
+      );
+
+      // Learn from the execution
+      await this.agentFramework!.learnFromInteraction(this.currentSession!, {
+        goal,
+        description,
+        outcome: result.status === 'completed' ? 'success' : 'failure',
+        result
+      });
+
+      const output = this.formatTaskResult(result);
+
       return {
-        success: taskPlan.status === 'completed',
+        success: result.status === 'completed',
         output
       };
 
@@ -192,8 +226,18 @@ export class AutonomousTaskTool {
   }
 
   private async handleCancel(taskId: string): Promise<ToolResult> {
+    // Try to cancel through agent framework first
+    if (this.agentFramework && this.currentSession) {
+      try {
+        // For now, fall back to executor cancellation
+        // In a full implementation, agent framework would handle task cancellation
+      } catch {
+        // Continue to executor cancellation
+      }
+    }
+
     const cancelled = this.executor!.cancelTask(taskId);
-    
+
     if (cancelled) {
       this.isExecuting = false;
       return {
@@ -206,6 +250,15 @@ export class AutonomousTaskTool {
       success: false,
       error: `Task ${taskId} not found or already completed`
     };
+  }
+
+  /**
+   * Clean up agent sessions and memory
+   */
+  async cleanup(): Promise<void> {
+    if (this.agentFramework) {
+      await this.agentFramework.cleanupInactiveSessions();
+    }
   }
 
   private formatTaskResult(task: TaskPlan): string {

@@ -417,7 +417,7 @@ The status line shows three key metrics in compact format:
   - Current: Formatted as 1.3k (1300 tokens)
   - Max: 128.0k (128,000 tokens, Grok's context window)
   - Percent: Current usage as percentage of max
-  - Color-coded: Green (<60%), Blue (60-80%), Yellow (80-90%), Red (>90%)
+  - Color-coded: Green (less than 60%), Blue (60-80%), Yellow (80-90%), Red (more than 90%)
 
 - **📁 Files**: Number of files currently loaded in workspace context
   - Shows files actively referenced in conversation
