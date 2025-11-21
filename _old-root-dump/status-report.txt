@@ -1,6 +1,0 @@
-Local commits ahead of remote main. Manual merge required for push. Commits:
-fc29e53 chore: resolve rebase formatting for github-actions.md
-0054416 chore: final prettier formatting for github-actions doc
-f7d01e8 chore: apply prettier formatting to github-actions doc
-3c41921 fix: unignore .agent/parity and .agent/tasks in gitignore
-d2f8cc1 feat: update tool parity doc for phase1 claude alignment
