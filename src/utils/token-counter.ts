@@ -2,8 +2,10 @@ import { get_encoding, encoding_for_model, Tiktoken } from 'tiktoken';
 
 export class TokenCounter {
   private encoder: Tiktoken;
+  private model: string;
 
   constructor(model: string = 'gpt-4') {
+    this.model = model;
     try {
       // Try to get encoding for specific model
       this.encoder = encoding_for_model(model as any);
@@ -56,6 +58,27 @@ export class TokenCounter {
    */
   estimateStreamingTokens(accumulatedContent: string): number {
     return this.countTokens(accumulatedContent);
+  }
+
+  /**
+   * Get maximum context window tokens for the current model
+   */
+  getMaxTokens(): number {
+    const modelName = this.model.toLowerCase();
+
+    // Grok models
+    if (modelName.includes('grok-2')) return 128000;
+    if (modelName.includes('grok-1')) return 128000;
+    if (modelName.includes('grok-beta')) return 128000;
+
+    // OpenAI models (fallback)
+    if (modelName.includes('gpt-4o')) return 128000;
+    if (modelName.includes('gpt-4-turbo')) return 128000;
+    if (modelName.includes('gpt-4')) return 8192;
+    if (modelName.includes('gpt-3.5')) return 4096;
+
+    // Default
+    return 4096;
   }
 
   /**

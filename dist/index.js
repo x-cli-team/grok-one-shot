@@ -409,7 +409,8 @@ var init_settings_manager = __esm({
       ],
       verbosityLevel: "quiet",
       explainLevel: "brief",
-      requireConfirmation: true
+      requireConfirmation: true,
+      tokenThreshold: 0.9
     };
     DEFAULT_PROJECT_SETTINGS = {
       model: "grok-code-fast-1"
@@ -13425,6 +13426,7 @@ var init_token_counter = __esm({
   "src/utils/token-counter.ts"() {
     TokenCounter = class {
       constructor(model = "gpt-4") {
+        this.model = model;
         try {
           this.encoder = encoding_for_model(model);
         } catch {
@@ -13464,6 +13466,20 @@ var init_token_counter = __esm({
        */
       estimateStreamingTokens(accumulatedContent) {
         return this.countTokens(accumulatedContent);
+      }
+      /**
+       * Get maximum context window tokens for the current model
+       */
+      getMaxTokens() {
+        const modelName = this.model.toLowerCase();
+        if (modelName.includes("grok-2")) return 128e3;
+        if (modelName.includes("grok-1")) return 128e3;
+        if (modelName.includes("grok-beta")) return 128e3;
+        if (modelName.includes("gpt-4o")) return 128e3;
+        if (modelName.includes("gpt-4-turbo")) return 128e3;
+        if (modelName.includes("gpt-4")) return 8192;
+        if (modelName.includes("gpt-3.5")) return 4096;
+        return 4096;
       }
       /**
        * Clean up resources
@@ -14384,6 +14400,355 @@ ${option.id}) ${option.title}`);
   }
 });
 
+// src/subagents/subagent-framework.ts
+var SubagentFramework;
+var init_subagent_framework = __esm({
+  "src/subagents/subagent-framework.ts"() {
+    SubagentFramework = class {
+      constructor() {
+        this.activeTasks = /* @__PURE__ */ new Map();
+        this.results = /* @__PURE__ */ new Map();
+        this.configs = /* @__PURE__ */ new Map();
+        this.initializeConfigs();
+      }
+      initializeConfigs() {
+        const defaultConfigs = {
+          "docgen": {
+            type: "docgen",
+            contextLimit: 2e3,
+            timeout: 3e4,
+            maxRetries: 2
+          },
+          "prd-assistant": {
+            type: "prd-assistant",
+            contextLimit: 2e3,
+            timeout: 2e4,
+            maxRetries: 1
+          },
+          "delta": {
+            type: "delta",
+            contextLimit: 1500,
+            timeout: 15e3,
+            maxRetries: 1
+          },
+          "token-optimizer": {
+            type: "token-optimizer",
+            contextLimit: 1e3,
+            timeout: 1e4,
+            maxRetries: 1
+          },
+          "summarizer": {
+            type: "summarizer",
+            contextLimit: 2e3,
+            timeout: 25e3,
+            maxRetries: 2
+          },
+          "sentinel": {
+            type: "sentinel",
+            contextLimit: 1e3,
+            timeout: 1e4,
+            maxRetries: 1
+          },
+          "regression-hunter": {
+            type: "regression-hunter",
+            contextLimit: 1500,
+            timeout: 15e3,
+            maxRetries: 1
+          },
+          "guardrail": {
+            type: "guardrail",
+            contextLimit: 1e3,
+            timeout: 1e4,
+            maxRetries: 1
+          }
+        };
+        for (const [type, config2] of Object.entries(defaultConfigs)) {
+          this.configs.set(type, config2);
+        }
+      }
+      async spawnSubagent(task) {
+        const taskId = this.generateTaskId();
+        const fullTask = {
+          ...task,
+          id: taskId,
+          createdAt: Date.now()
+        };
+        this.activeTasks.set(taskId, fullTask);
+        this.executeSubagent(fullTask);
+        return taskId;
+      }
+      async executeSubagent(task) {
+        const config2 = this.configs.get(task.type);
+        if (!config2) {
+          this.setResult(task.id, {
+            taskId: task.id,
+            type: task.type,
+            success: false,
+            error: "Unknown subagent type",
+            tokensUsed: 0,
+            executionTime: 0,
+            summary: "Failed to execute: unknown type"
+          });
+          return;
+        }
+        const startTime = Date.now();
+        try {
+          const context = {
+            id: this.generateContextId(),
+            type: task.type,
+            prompt: this.generatePromptForType(task.type, task.input),
+            data: task.input,
+            startTime,
+            tokenBudget: config2.contextLimit
+          };
+          const result = await this.executeInIsolatedContext(context, config2);
+          this.setResult(task.id, {
+            taskId: task.id,
+            type: task.type,
+            success: true,
+            output: result.output,
+            tokensUsed: result.tokensUsed,
+            executionTime: Date.now() - startTime,
+            summary: result.summary
+          });
+        } catch (error) {
+          this.setResult(task.id, {
+            taskId: task.id,
+            type: task.type,
+            success: false,
+            error: error.message,
+            tokensUsed: 0,
+            executionTime: Date.now() - startTime,
+            summary: `Failed: ${error.message}`
+          });
+        }
+        this.activeTasks.delete(task.id);
+      }
+      async executeInIsolatedContext(context, _config) {
+        switch (context.type) {
+          case "docgen":
+            return this.simulateDocGenAgent(context);
+          case "prd-assistant":
+            return this.simulatePRDAssistantAgent(context);
+          case "delta":
+            return this.simulateDeltaAgent(context);
+          case "token-optimizer":
+            return this.simulateTokenOptimizerAgent(context);
+          case "summarizer":
+            return this.simulateSummarizerAgent(context);
+          case "sentinel":
+            return this.simulateSentinelAgent(context);
+          case "regression-hunter":
+            return this.simulateRegressionHunterAgent(context);
+          case "guardrail":
+            return this.simulateGuardrailAgent(context);
+          default:
+            throw new Error(`Unsupported subagent type: ${context.type}`);
+        }
+      }
+      async simulateDocGenAgent(context) {
+        const { projectPath, docType } = context.data;
+        await this.delay(2e3);
+        return {
+          output: {
+            documentType: docType,
+            content: `# Generated ${docType}
+
+This is a generated document for ${projectPath}.
+
+*Generated by DocGenAgent*`,
+            metadata: {
+              projectPath,
+              generatedAt: (/* @__PURE__ */ new Date()).toISOString(),
+              wordCount: 150
+            }
+          },
+          tokensUsed: 1500,
+          summary: `Generated ${docType} documentation (150 words)`
+        };
+      }
+      async simulatePRDAssistantAgent(context) {
+        const { prdPath: _prdPath, prdContent: _prdContent } = context.data;
+        await this.delay(1500);
+        return {
+          output: {
+            suggestions: [
+              "Consider existing MCP integration patterns",
+              "Reference user-settings.json structure",
+              "Check CLI command naming conventions"
+            ],
+            conflicts: [],
+            similarTasks: ["user-management-prd.md"],
+            architectureImpact: "May need new tools/ folder"
+          },
+          tokensUsed: 1200,
+          summary: `Analyzed PRD: 3 suggestions, 1 similar task found`
+        };
+      }
+      async simulateDeltaAgent(context) {
+        const { fromCommit, toCommit: _toCommit } = context.data;
+        await this.delay(1e3);
+        return {
+          output: {
+            filesChanged: ["src/tools/documentation/", "src/hooks/use-input-handler.ts"],
+            architectureChanges: true,
+            newFeatures: ["documentation system"],
+            impact: "Major feature addition - documentation generation"
+          },
+          tokensUsed: 800,
+          summary: `Analyzed changes from ${fromCommit}: 2 files, architecture changes detected`
+        };
+      }
+      async simulateTokenOptimizerAgent(context) {
+        const { currentTokens, targetReduction: _targetReduction } = context.data;
+        await this.delay(500);
+        return {
+          output: {
+            currentUsage: currentTokens,
+            optimizedUsage: Math.floor(currentTokens * 0.3),
+            reduction: Math.floor(currentTokens * 0.7),
+            suggestions: [
+              "Compress conversation history",
+              "Archive old tool results",
+              "Summarize repeated patterns"
+            ]
+          },
+          tokensUsed: 300,
+          summary: `Token optimization: ${Math.floor(currentTokens * 0.7)} tokens can be saved (70% reduction)`
+        };
+      }
+      async simulateSummarizerAgent(context) {
+        const { content, compressionTarget } = context.data;
+        await this.delay(2500);
+        const originalLength = content.length;
+        const targetLength = Math.floor(originalLength * (compressionTarget || 0.3));
+        return {
+          output: {
+            originalLength,
+            compressedLength: targetLength,
+            compressionRatio: 1 - (compressionTarget || 0.3),
+            summary: content.substring(0, targetLength) + "...",
+            keyPoints: [
+              "Main objectives completed",
+              "Documentation system implemented",
+              "Multiple commands added"
+            ]
+          },
+          tokensUsed: 1800,
+          summary: `Compressed content from ${originalLength} to ${targetLength} chars (${Math.round((1 - (compressionTarget || 0.3)) * 100)}% reduction)`
+        };
+      }
+      async simulateSentinelAgent(context) {
+        const { errorLogs: _errorLogs, recentCommands: _recentCommands } = context.data;
+        await this.delay(800);
+        return {
+          output: {
+            errorsDetected: 0,
+            patternsFound: [],
+            recommendations: ["System running normally"],
+            alertLevel: "green"
+          },
+          tokensUsed: 400,
+          summary: "System monitoring: No issues detected"
+        };
+      }
+      async simulateRegressionHunterAgent(context) {
+        const { proposedChanges: _proposedChanges, knownFailures: _knownFailures } = context.data;
+        await this.delay(1200);
+        return {
+          output: {
+            riskLevel: "low",
+            potentialIssues: [],
+            recommendations: ["Changes appear safe to proceed"],
+            testsSuggested: []
+          },
+          tokensUsed: 900,
+          summary: "Regression analysis: Low risk, no conflicts with known failures"
+        };
+      }
+      async simulateGuardrailAgent(context) {
+        const { planDescription: _planDescription, rules: _rules } = context.data;
+        await this.delay(600);
+        return {
+          output: {
+            violationsFound: [],
+            warnings: [],
+            compliance: "passed",
+            newRuleSuggestions: []
+          },
+          tokensUsed: 350,
+          summary: "Guardrail check: All rules satisfied"
+        };
+      }
+      delay(ms) {
+        return new Promise((resolve8) => setTimeout(resolve8, ms));
+      }
+      generateTaskId() {
+        return `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      }
+      generateContextId() {
+        return `ctx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      }
+      generatePromptForType(type, input) {
+        const prompts = {
+          "docgen": `Generate documentation for the provided project. Focus on clarity and completeness. Input: ${JSON.stringify(input)}`,
+          "prd-assistant": `Analyze this PRD for potential issues, suggestions, and conflicts with existing project context. Input: ${JSON.stringify(input)}`,
+          "delta": `Analyze the changes between commits and summarize the impact. Input: ${JSON.stringify(input)}`,
+          "token-optimizer": `Analyze token usage and suggest optimizations. Input: ${JSON.stringify(input)}`,
+          "summarizer": `Summarize and compress the provided content while preserving key information. Input: ${JSON.stringify(input)}`,
+          "sentinel": `Monitor for errors and patterns in the provided logs/commands. Input: ${JSON.stringify(input)}`,
+          "regression-hunter": `Check proposed changes against known failure patterns. Input: ${JSON.stringify(input)}`,
+          "guardrail": `Validate the plan against established rules and constraints. Input: ${JSON.stringify(input)}`
+        };
+        return prompts[type];
+      }
+      setResult(taskId, result) {
+        this.results.set(taskId, result);
+      }
+      async getResult(taskId) {
+        return this.results.get(taskId) || null;
+      }
+      async waitForResult(taskId, timeoutMs = 3e4) {
+        const startTime = Date.now();
+        while (Date.now() - startTime < timeoutMs) {
+          const result = await this.getResult(taskId);
+          if (result) {
+            return result;
+          }
+          await this.delay(100);
+        }
+        throw new Error(`Subagent task ${taskId} timed out after ${timeoutMs}ms`);
+      }
+      getActiveTaskCount() {
+        return this.activeTasks.size;
+      }
+      getCompletedTaskCount() {
+        return this.results.size;
+      }
+      getPerformanceMetrics() {
+        const results = Array.from(this.results.values());
+        const avgExecTime = results.length > 0 ? results.reduce((sum, r) => sum + r.executionTime, 0) / results.length : 0;
+        const totalTokens = results.reduce((sum, r) => sum + r.tokensUsed, 0);
+        return {
+          totalTasks: this.activeTasks.size + this.results.size,
+          activeTasks: this.activeTasks.size,
+          completedTasks: this.results.size,
+          averageExecutionTime: Math.round(avgExecTime),
+          totalTokensUsed: totalTokens
+        };
+      }
+      clearOldResults(maxAge = 36e5) {
+        const now = Date.now();
+        for (const [taskId, result] of this.results.entries()) {
+          if (now - result.executionTime > maxAge) {
+            this.results.delete(taskId);
+          }
+        }
+      }
+    };
+  }
+});
+
 // src/utils/regex-helper.ts
 var RegexHelper;
 var init_regex_helper = __esm({
@@ -14559,6 +14924,239 @@ var init_regex_helper = __esm({
         return false;
       }
     };
+  }
+});
+
+// src/services/ui-state.ts
+var ui_state_exports = {};
+__export(ui_state_exports, {
+  onUIEvent: () => onUIEvent,
+  uiState: () => uiState,
+  useUIState: () => useUIState
+});
+function useUIState() {
+  return uiState;
+}
+function onUIEvent(eventType, listener) {
+  uiState.on(eventType, listener);
+  return () => uiState.off(eventType, listener);
+}
+var UIStateService, uiState;
+var init_ui_state = __esm({
+  "src/services/ui-state.ts"() {
+    UIStateService = class _UIStateService extends EventEmitter {
+      constructor() {
+        super();
+        this.currentSpinner = null;
+        this.activeProgress = /* @__PURE__ */ new Map();
+        this.backgroundActivities = /* @__PURE__ */ new Map();
+        this.notifications = [];
+        this.setMaxListeners(50);
+      }
+      static getInstance() {
+        if (!_UIStateService.instance) {
+          _UIStateService.instance = new _UIStateService();
+        }
+        return _UIStateService.instance;
+      }
+      // Spinner management
+      startSpinner(event) {
+        this.currentSpinner = event;
+        this.emit("spinner:start", event);
+      }
+      updateSpinner(updates) {
+        if (this.currentSpinner) {
+          this.currentSpinner = { ...this.currentSpinner, ...updates };
+          this.emit("spinner:update", this.currentSpinner);
+        }
+      }
+      stopSpinner() {
+        this.currentSpinner = null;
+        this.emit("spinner:stop");
+      }
+      getCurrentSpinner() {
+        return this.currentSpinner;
+      }
+      // Progress management
+      startProgress(id, event) {
+        this.activeProgress.set(id, { ...event, startTime: event.startTime || Date.now() });
+        this.emit("progress:start", { id, ...event });
+      }
+      updateProgress(id, updates) {
+        const existing = this.activeProgress.get(id);
+        if (existing) {
+          const updated = { ...existing, ...updates };
+          this.activeProgress.set(id, updated);
+          this.emit("progress:update", { id, ...updated });
+        }
+      }
+      completeProgress(id) {
+        const progress = this.activeProgress.get(id);
+        if (progress) {
+          this.activeProgress.delete(id);
+          this.emit("progress:complete", { id, ...progress });
+        }
+      }
+      getProgress(id) {
+        return this.activeProgress.get(id);
+      }
+      getAllProgress() {
+        return new Map(this.activeProgress);
+      }
+      // Background activity management
+      startBackgroundActivity(id, event) {
+        this.backgroundActivities.set(id, event);
+        const eventType = `background:${event.activity}:start`;
+        this.emit(eventType, { id, ...event });
+      }
+      updateBackgroundActivity(id, updates) {
+        const existing = this.backgroundActivities.get(id);
+        if (existing) {
+          const updated = { ...existing, ...updates };
+          this.backgroundActivities.set(id, updated);
+          const eventType = `background:${updated.activity}:progress`;
+          this.emit(eventType, { id, ...updated });
+        }
+      }
+      stopBackgroundActivity(id) {
+        const activity = this.backgroundActivities.get(id);
+        if (activity) {
+          this.backgroundActivities.delete(id);
+          const eventType = `background:${activity.activity}:complete`;
+          this.emit(eventType, { id, ...activity });
+        }
+      }
+      getBackgroundActivities() {
+        return new Map(this.backgroundActivities);
+      }
+      // Notification management
+      showNotification(notification) {
+        this.notifications.push(notification);
+        this.emit("notification:show", notification);
+        if (notification.duration) {
+          setTimeout(() => {
+            this.hideNotification(notification);
+          }, notification.duration);
+        }
+      }
+      hideNotification(notification) {
+        const index = this.notifications.indexOf(notification);
+        if (index !== -1) {
+          this.notifications.splice(index, 1);
+          this.emit("notification:hide", notification);
+        }
+      }
+      getNotifications() {
+        return [...this.notifications];
+      }
+      // Convenience methods for common operations
+      showWorkspaceIndexing(totalFiles, currentFile) {
+        this.startProgress("workspace-indexing", {
+          operation: "indexing",
+          current: 0,
+          total: totalFiles,
+          message: currentFile ? `Indexing ${currentFile}` : "Indexing workspace"
+        });
+        this.startBackgroundActivity("workspace-watcher", {
+          activity: "indexing",
+          details: `0/${totalFiles} files`
+        });
+      }
+      updateWorkspaceIndexing(current, total, currentFile) {
+        this.updateProgress("workspace-indexing", {
+          current,
+          message: currentFile ? `Indexing ${currentFile}` : void 0
+        });
+        this.updateBackgroundActivity("workspace-watcher", {
+          details: `${current}/${total} files`
+        });
+      }
+      completeWorkspaceIndexing() {
+        this.completeProgress("workspace-indexing");
+        this.stopBackgroundActivity("workspace-watcher");
+        this.showNotification({
+          message: "Workspace indexing complete",
+          type: "success",
+          icon: "\u2705",
+          duration: 3e3
+        });
+      }
+      showTokenCompaction(usedTokens, targetTokens) {
+        this.startSpinner({
+          operation: "compact",
+          message: `Compacting context (${usedTokens}\u2192${targetTokens} tokens)`
+        });
+        this.startProgress("token-compaction", {
+          operation: "compacting",
+          current: 0,
+          total: usedTokens
+        });
+      }
+      updateTokenCompaction(compactedTokens) {
+        this.updateProgress("token-compaction", {
+          current: compactedTokens
+        });
+        const progress = this.getProgress("token-compaction");
+        if (progress) {
+          const percentage = Math.round(compactedTokens / progress.total * 100);
+          this.updateSpinner({
+            progress: percentage
+          });
+        }
+      }
+      completeTokenCompaction() {
+        this.completeProgress("token-compaction");
+        this.stopSpinner();
+        this.showNotification({
+          message: "Context compaction complete",
+          type: "success",
+          icon: "\u{1F504}",
+          duration: 2e3
+        });
+      }
+      // Error handling
+      showError(message, details) {
+        this.showNotification({
+          message: details ? `${message}: ${details}` : message,
+          type: "error",
+          icon: "\u274C",
+          duration: 5e3
+        });
+      }
+      showSuccess(message) {
+        this.showNotification({
+          message,
+          type: "success",
+          icon: "\u2705",
+          duration: 3e3
+        });
+      }
+      showInfo(message) {
+        this.showNotification({
+          message,
+          type: "info",
+          icon: "\u2139\uFE0F",
+          duration: 4e3
+        });
+      }
+      // Debug helpers
+      getState() {
+        return {
+          spinner: this.currentSpinner,
+          progress: Object.fromEntries(this.activeProgress),
+          backgroundActivities: Object.fromEntries(this.backgroundActivities),
+          notifications: this.notifications
+        };
+      }
+      reset() {
+        this.currentSpinner = null;
+        this.activeProgress.clear();
+        this.backgroundActivities.clear();
+        this.notifications = [];
+        this.emit("ui:reset");
+      }
+    };
+    uiState = UIStateService.getInstance();
   }
 });
 
@@ -20604,6 +21202,7 @@ var init_grok_agent = __esm({
     init_custom_instructions();
     init_settings_manager();
     init_research_recommend();
+    init_subagent_framework();
     init_execution_orchestrator();
     init_regex_helper();
     GrokAgent = class extends EventEmitter {
@@ -20611,6 +21210,7 @@ var init_grok_agent = __esm({
         super();
         this.chatHistory = [];
         this.messages = [];
+        this.totalTokensUsed = 0;
         this.abortController = null;
         this.mcpInitialized = false;
         this.lastToolExecutionTime = 0;
@@ -20894,6 +21494,14 @@ Current working directory: ${process.cwd()}`
         const maxToolRounds = this.maxToolRounds;
         let toolRounds = 0;
         try {
+          const settings = getSettingsManager().getUserSettings();
+          const currentTokens = this.tokenCounter.countMessageTokens(this.messages);
+          const maxTokens = this.tokenCounter.getMaxTokens();
+          const threshold = settings.tokenThreshold || 0.9;
+          this.totalTokensUsed = Math.max(this.totalTokensUsed, currentTokens);
+          if (currentTokens > threshold * maxTokens) {
+            await this.performAutomaticCompaction();
+          }
           const tools = await getAllGrokTools();
           let currentResponse = await this.grokClient.chat(
             this.messages,
@@ -20999,6 +21607,80 @@ Current working directory: ${process.cwd()}`
           return [userEntry, errorEntry];
         }
       }
+      /**
+       * Perform automatic context compaction when token threshold is exceeded
+       */
+      async performAutomaticCompaction() {
+        try {
+          const { uiState: uiState2 } = await Promise.resolve().then(() => (init_ui_state(), ui_state_exports));
+          const currentTokens = this.tokenCounter.countMessageTokens(this.messages);
+          uiState2.showTokenCompaction(currentTokens, this.tokenCounter.getMaxTokens());
+          const systemMessages = this.messages.filter((m) => m.role === "system");
+          const recentMessages = this.messages.slice(-5);
+          const messagesToCompress = this.messages.filter(
+            (_, i) => !systemMessages.includes(this.messages[i]) && !recentMessages.includes(this.messages[i])
+          );
+          if (messagesToCompress.length === 0) {
+            uiState2.completeTokenCompaction();
+            return;
+          }
+          const contentToCompress = messagesToCompress.map((m) => `${m.role}: ${m.content}`).join("\n");
+          const subagentFramework = new SubagentFramework();
+          const taskId = await subagentFramework.spawnSubagent({
+            type: "summarizer",
+            input: {
+              content: contentToCompress,
+              compressionTarget: 0.3
+              // 70% reduction
+            },
+            priority: "high"
+          });
+          const result = await subagentFramework.waitForResult(taskId, 3e4);
+          if (result.success && result.summary) {
+            const compactedChatHistory = [];
+            const compactedMessages = [];
+            systemMessages.forEach((msg) => {
+              compactedMessages.push(msg);
+              const entry = this.chatHistory.find((e) => e.content === msg.content && e.type === "user");
+              if (entry) compactedChatHistory.push(entry);
+            });
+            const summaryEntry = {
+              type: "assistant",
+              content: `\u{1F9F9} **Context Compacted Automatically**
+
+${result.summary}
+
+*Older conversation history has been summarized to prevent token limit issues.*`,
+              timestamp: /* @__PURE__ */ new Date()
+            };
+            compactedChatHistory.push(summaryEntry);
+            compactedMessages.push({ role: "assistant", content: summaryEntry.content });
+            recentMessages.forEach((msg) => {
+              compactedMessages.push(msg);
+              const entry = this.chatHistory.find(
+                (e) => e.content === msg.content && (e.type === "user" && msg.role === "user" || e.type === "assistant" && msg.role === "assistant")
+              );
+              if (entry) compactedChatHistory.push(entry);
+            });
+            this.chatHistory = compactedChatHistory;
+            this.messages = compactedMessages;
+            this.totalTokensUsed = this.tokenCounter.countMessageTokens(this.messages);
+            uiState2.updateTokenCompaction(this.totalTokensUsed);
+            uiState2.completeTokenCompaction();
+            console.log(`Context compacted: ${messagesToCompress.length} messages -> ${compactedMessages.length} messages`);
+          } else {
+            uiState2.completeTokenCompaction();
+            console.warn("Automatic compaction failed");
+          }
+        } catch (error) {
+          console.error("Error during automatic compaction:", error);
+          try {
+            const { uiState: uiState2 } = await Promise.resolve().then(() => (init_ui_state(), ui_state_exports));
+            uiState2.completeTokenCompaction();
+          } catch {
+          }
+        }
+      }
       messageReducer(previous, item) {
         const reduce = (acc, delta) => {
           acc = { ...acc };
@@ -21047,6 +21729,14 @@ Current working directory: ${process.cwd()}`
         let totalOutputTokens = 0;
         let lastTokenUpdate = 0;
         try {
+          const settings = getSettingsManager().getUserSettings();
+          const currentTokens = this.tokenCounter.countMessageTokens(this.messages);
+          const maxTokens = this.tokenCounter.getMaxTokens();
+          const threshold = settings.tokenThreshold || 0.9;
+          this.totalTokensUsed = Math.max(this.totalTokensUsed, currentTokens);
+          if (currentTokens > threshold * maxTokens) {
+            await this.performAutomaticCompaction();
+          }
           while (toolRounds < maxToolRounds) {
             if (this.abortController?.signal.aborted) {
               yield {
@@ -28497,355 +29187,6 @@ Updated By: /update-agent-docs after detecting changes${recentChangesSection}`
           message += "\n";
         }
         return message;
-      }
-    };
-  }
-});
-
-// src/subagents/subagent-framework.ts
-var SubagentFramework;
-var init_subagent_framework = __esm({
-  "src/subagents/subagent-framework.ts"() {
-    SubagentFramework = class {
-      constructor() {
-        this.activeTasks = /* @__PURE__ */ new Map();
-        this.results = /* @__PURE__ */ new Map();
-        this.configs = /* @__PURE__ */ new Map();
-        this.initializeConfigs();
-      }
-      initializeConfigs() {
-        const defaultConfigs = {
-          "docgen": {
-            type: "docgen",
-            contextLimit: 2e3,
-            timeout: 3e4,
-            maxRetries: 2
-          },
-          "prd-assistant": {
-            type: "prd-assistant",
-            contextLimit: 2e3,
-            timeout: 2e4,
-            maxRetries: 1
-          },
-          "delta": {
-            type: "delta",
-            contextLimit: 1500,
-            timeout: 15e3,
-            maxRetries: 1
-          },
-          "token-optimizer": {
-            type: "token-optimizer",
-            contextLimit: 1e3,
-            timeout: 1e4,
-            maxRetries: 1
-          },
-          "summarizer": {
-            type: "summarizer",
-            contextLimit: 2e3,
-            timeout: 25e3,
-            maxRetries: 2
-          },
-          "sentinel": {
-            type: "sentinel",
-            contextLimit: 1e3,
-            timeout: 1e4,
-            maxRetries: 1
-          },
-          "regression-hunter": {
-            type: "regression-hunter",
-            contextLimit: 1500,
-            timeout: 15e3,
-            maxRetries: 1
-          },
-          "guardrail": {
-            type: "guardrail",
-            contextLimit: 1e3,
-            timeout: 1e4,
-            maxRetries: 1
-          }
-        };
-        for (const [type, config2] of Object.entries(defaultConfigs)) {
-          this.configs.set(type, config2);
-        }
-      }
-      async spawnSubagent(task) {
-        const taskId = this.generateTaskId();
-        const fullTask = {
-          ...task,
-          id: taskId,
-          createdAt: Date.now()
-        };
-        this.activeTasks.set(taskId, fullTask);
-        this.executeSubagent(fullTask);
-        return taskId;
-      }
-      async executeSubagent(task) {
-        const config2 = this.configs.get(task.type);
-        if (!config2) {
-          this.setResult(task.id, {
-            taskId: task.id,
-            type: task.type,
-            success: false,
-            error: "Unknown subagent type",
-            tokensUsed: 0,
-            executionTime: 0,
-            summary: "Failed to execute: unknown type"
-          });
-          return;
-        }
-        const startTime = Date.now();
-        try {
-          const context = {
-            id: this.generateContextId(),
-            type: task.type,
-            prompt: this.generatePromptForType(task.type, task.input),
-            data: task.input,
-            startTime,
-            tokenBudget: config2.contextLimit
-          };
-          const result = await this.executeInIsolatedContext(context, config2);
-          this.setResult(task.id, {
-            taskId: task.id,
-            type: task.type,
-            success: true,
-            output: result.output,
-            tokensUsed: result.tokensUsed,
-            executionTime: Date.now() - startTime,
-            summary: result.summary
-          });
-        } catch (error) {
-          this.setResult(task.id, {
-            taskId: task.id,
-            type: task.type,
-            success: false,
-            error: error.message,
-            tokensUsed: 0,
-            executionTime: Date.now() - startTime,
-            summary: `Failed: ${error.message}`
-          });
-        }
-        this.activeTasks.delete(task.id);
-      }
-      async executeInIsolatedContext(context, _config) {
-        switch (context.type) {
-          case "docgen":
-            return this.simulateDocGenAgent(context);
-          case "prd-assistant":
-            return this.simulatePRDAssistantAgent(context);
-          case "delta":
-            return this.simulateDeltaAgent(context);
-          case "token-optimizer":
-            return this.simulateTokenOptimizerAgent(context);
-          case "summarizer":
-            return this.simulateSummarizerAgent(context);
-          case "sentinel":
-            return this.simulateSentinelAgent(context);
-          case "regression-hunter":
-            return this.simulateRegressionHunterAgent(context);
-          case "guardrail":
-            return this.simulateGuardrailAgent(context);
-          default:
-            throw new Error(`Unsupported subagent type: ${context.type}`);
-        }
-      }
-      async simulateDocGenAgent(context) {
-        const { projectPath, docType } = context.data;
-        await this.delay(2e3);
-        return {
-          output: {
-            documentType: docType,
-            content: `# Generated ${docType}
-
-This is a generated document for ${projectPath}.
-
-*Generated by DocGenAgent*`,
-            metadata: {
-              projectPath,
-              generatedAt: (/* @__PURE__ */ new Date()).toISOString(),
-              wordCount: 150
-            }
-          },
-          tokensUsed: 1500,
-          summary: `Generated ${docType} documentation (150 words)`
-        };
-      }
-      async simulatePRDAssistantAgent(context) {
-        const { prdPath: _prdPath, prdContent: _prdContent } = context.data;
-        await this.delay(1500);
-        return {
-          output: {
-            suggestions: [
-              "Consider existing MCP integration patterns",
-              "Reference user-settings.json structure",
-              "Check CLI command naming conventions"
-            ],
-            conflicts: [],
-            similarTasks: ["user-management-prd.md"],
-            architectureImpact: "May need new tools/ folder"
-          },
-          tokensUsed: 1200,
-          summary: `Analyzed PRD: 3 suggestions, 1 similar task found`
-        };
-      }
-      async simulateDeltaAgent(context) {
-        const { fromCommit, toCommit: _toCommit } = context.data;
-        await this.delay(1e3);
-        return {
-          output: {
-            filesChanged: ["src/tools/documentation/", "src/hooks/use-input-handler.ts"],
-            architectureChanges: true,
-            newFeatures: ["documentation system"],
-            impact: "Major feature addition - documentation generation"
-          },
-          tokensUsed: 800,
-          summary: `Analyzed changes from ${fromCommit}: 2 files, architecture changes detected`
-        };
-      }
-      async simulateTokenOptimizerAgent(context) {
-        const { currentTokens, targetReduction: _targetReduction } = context.data;
-        await this.delay(500);
-        return {
-          output: {
-            currentUsage: currentTokens,
-            optimizedUsage: Math.floor(currentTokens * 0.3),
-            reduction: Math.floor(currentTokens * 0.7),
-            suggestions: [
-              "Compress conversation history",
-              "Archive old tool results",
-              "Summarize repeated patterns"
-            ]
-          },
-          tokensUsed: 300,
-          summary: `Token optimization: ${Math.floor(currentTokens * 0.7)} tokens can be saved (70% reduction)`
-        };
-      }
-      async simulateSummarizerAgent(context) {
-        const { content, compressionTarget } = context.data;
-        await this.delay(2500);
-        const originalLength = content.length;
-        const targetLength = Math.floor(originalLength * (compressionTarget || 0.3));
-        return {
-          output: {
-            originalLength,
-            compressedLength: targetLength,
-            compressionRatio: 1 - (compressionTarget || 0.3),
-            summary: content.substring(0, targetLength) + "...",
-            keyPoints: [
-              "Main objectives completed",
-              "Documentation system implemented",
-              "Multiple commands added"
-            ]
-          },
-          tokensUsed: 1800,
-          summary: `Compressed content from ${originalLength} to ${targetLength} chars (${Math.round((1 - (compressionTarget || 0.3)) * 100)}% reduction)`
-        };
-      }
-      async simulateSentinelAgent(context) {
-        const { errorLogs: _errorLogs, recentCommands: _recentCommands } = context.data;
-        await this.delay(800);
-        return {
-          output: {
-            errorsDetected: 0,
-            patternsFound: [],
-            recommendations: ["System running normally"],
-            alertLevel: "green"
-          },
-          tokensUsed: 400,
-          summary: "System monitoring: No issues detected"
-        };
-      }
-      async simulateRegressionHunterAgent(context) {
-        const { proposedChanges: _proposedChanges, knownFailures: _knownFailures } = context.data;
-        await this.delay(1200);
-        return {
-          output: {
-            riskLevel: "low",
-            potentialIssues: [],
-            recommendations: ["Changes appear safe to proceed"],
-            testsSuggested: []
-          },
-          tokensUsed: 900,
-          summary: "Regression analysis: Low risk, no conflicts with known failures"
-        };
-      }
-      async simulateGuardrailAgent(context) {
-        const { planDescription: _planDescription, rules: _rules } = context.data;
-        await this.delay(600);
-        return {
-          output: {
-            violationsFound: [],
-            warnings: [],
-            compliance: "passed",
-            newRuleSuggestions: []
-          },
-          tokensUsed: 350,
-          summary: "Guardrail check: All rules satisfied"
-        };
-      }
-      delay(ms) {
-        return new Promise((resolve8) => setTimeout(resolve8, ms));
-      }
-      generateTaskId() {
-        return `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      }
-      generateContextId() {
-        return `ctx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      }
-      generatePromptForType(type, input) {
-        const prompts = {
-          "docgen": `Generate documentation for the provided project. Focus on clarity and completeness. Input: ${JSON.stringify(input)}`,
-          "prd-assistant": `Analyze this PRD for potential issues, suggestions, and conflicts with existing project context. Input: ${JSON.stringify(input)}`,
-          "delta": `Analyze the changes between commits and summarize the impact. Input: ${JSON.stringify(input)}`,
-          "token-optimizer": `Analyze token usage and suggest optimizations. Input: ${JSON.stringify(input)}`,
-          "summarizer": `Summarize and compress the provided content while preserving key information. Input: ${JSON.stringify(input)}`,
-          "sentinel": `Monitor for errors and patterns in the provided logs/commands. Input: ${JSON.stringify(input)}`,
-          "regression-hunter": `Check proposed changes against known failure patterns. Input: ${JSON.stringify(input)}`,
-          "guardrail": `Validate the plan against established rules and constraints. Input: ${JSON.stringify(input)}`
-        };
-        return prompts[type];
-      }
-      setResult(taskId, result) {
-        this.results.set(taskId, result);
-      }
-      async getResult(taskId) {
-        return this.results.get(taskId) || null;
-      }
-      async waitForResult(taskId, timeoutMs = 3e4) {
-        const startTime = Date.now();
-        while (Date.now() - startTime < timeoutMs) {
-          const result = await this.getResult(taskId);
-          if (result) {
-            return result;
-          }
-          await this.delay(100);
-        }
-        throw new Error(`Subagent task ${taskId} timed out after ${timeoutMs}ms`);
-      }
-      getActiveTaskCount() {
-        return this.activeTasks.size;
-      }
-      getCompletedTaskCount() {
-        return this.results.size;
-      }
-      getPerformanceMetrics() {
-        const results = Array.from(this.results.values());
-        const avgExecTime = results.length > 0 ? results.reduce((sum, r) => sum + r.executionTime, 0) / results.length : 0;
-        const totalTokens = results.reduce((sum, r) => sum + r.tokensUsed, 0);
-        return {
-          totalTasks: this.activeTasks.size + this.results.size,
-          activeTasks: this.activeTasks.size,
-          completedTasks: this.results.size,
-          averageExecutionTime: Math.round(avgExecTime),
-          totalTokensUsed: totalTokens
-        };
-      }
-      clearOldResults(maxAge = 36e5) {
-        const now = Date.now();
-        for (const [taskId, result] of this.results.entries()) {
-          if (now - result.executionTime > maxAge) {
-            this.results.delete(taskId);
-          }
-        }
       }
     };
   }

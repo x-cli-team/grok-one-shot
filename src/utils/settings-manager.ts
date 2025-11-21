@@ -16,6 +16,7 @@ export interface UserSettings {
     lines?: number; // Auto-compact when session exceeds this many lines (default: 800)
     bytes?: number; // Auto-compact when session exceeds this many bytes (default: 200000)
   };
+  tokenThreshold?: number; // Auto-compact when token usage exceeds this fraction of max context (default: 0.9)
   verbosityLevel?: 'quiet' | 'normal' | 'verbose'; // Output verbosity level
   explainLevel?: 'off' | 'brief' | 'detailed'; // Explanation detail level
   interactivityLevel?: 'chat' | 'balanced' | 'repl'; // Interaction mode
@@ -56,6 +57,7 @@ const DEFAULT_USER_SETTINGS: Partial<UserSettings> = {
   verbosityLevel: 'quiet',
   explainLevel: 'brief',
   requireConfirmation: true,
+  tokenThreshold: 0.9,
 };
 
 /**

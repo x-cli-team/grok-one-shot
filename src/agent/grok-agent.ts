@@ -35,6 +35,7 @@ import { loadCustomInstructions } from "../utils/custom-instructions.js";
 import { getSettingsManager } from "../utils/settings-manager.js";
 import { ContextPack } from "../utils/context-loader.js";
 import { ResearchRecommendService } from "../services/research-recommend.js";
+import { SubagentFramework } from "../subagents/subagent-framework.js";
 import { ExecutionOrchestrator } from "../services/execution-orchestrator.js";
 import { PlanModeState } from "../types/plan-mode.js";
 import { ReadOnlyFilesystemOverlay } from "../services/readonly-filesystem-overlay.js";
@@ -93,6 +94,7 @@ export class GrokAgent extends EventEmitter {
   private chatHistory: ChatEntry[] = [];
   private messages: GrokMessage[] = [];
   private tokenCounter: TokenCounter;
+  private totalTokensUsed: number = 0;
   private abortController: AbortController | null = null;
   private mcpInitialized: boolean = false;
   private maxToolRounds: number;
@@ -419,6 +421,18 @@ Current working directory: ${process.cwd()}`,
     let toolRounds = 0;
 
     try {
+      // Token monitoring for automatic compaction
+      const settings = getSettingsManager().getUserSettings();
+      const currentTokens = this.tokenCounter.countMessageTokens(this.messages);
+      const maxTokens = this.tokenCounter.getMaxTokens();
+      const threshold = settings.tokenThreshold || 0.9;
+
+      this.totalTokensUsed = Math.max(this.totalTokensUsed, currentTokens);
+
+      if (currentTokens > threshold * maxTokens) {
+        await this.performAutomaticCompaction();
+      }
+
       const tools = await getAllGrokTools();
       let currentResponse = await this.grokClient.chat(
         this.messages,
@@ -567,6 +581,108 @@ Current working directory: ${process.cwd()}`,
     }
   }
 
+  /**
+   * Perform automatic context compaction when token threshold is exceeded
+   */
+  private async performAutomaticCompaction(): Promise<void> {
+    try {
+      // Start UI feedback
+      const { uiState } = await import('../services/ui-state.js');
+      const currentTokens = this.tokenCounter.countMessageTokens(this.messages);
+      uiState.showTokenCompaction(currentTokens, this.tokenCounter.getMaxTokens());
+
+      // Preserve system messages and recent messages (last 5)
+      const systemMessages = this.messages.filter(m => m.role === 'system');
+      const recentMessages = this.messages.slice(-5);
+      const messagesToCompress = this.messages.filter((_, i) =>
+        !systemMessages.includes(this.messages[i]) &&
+        !recentMessages.includes(this.messages[i])
+      );
+
+      if (messagesToCompress.length === 0) {
+        // Nothing to compress
+        uiState.completeTokenCompaction();
+        return;
+      }
+
+      // Create content to compress
+      const contentToCompress = messagesToCompress.map(m => `${m.role}: ${m.content}`).join('\n');
+
+      // Use subagent for summarization
+      const subagentFramework = new SubagentFramework();
+      const taskId = await subagentFramework.spawnSubagent({
+        type: 'summarizer',
+        input: {
+          content: contentToCompress,
+          compressionTarget: 0.3 // 70% reduction
+        },
+        priority: 'high'
+      });
+
+      const result = await subagentFramework.waitForResult(taskId, 30000); // 30s timeout
+
+      if (result.success && result.summary) {
+        // Create compacted chat history
+        const compactedChatHistory: ChatEntry[] = [];
+        const compactedMessages: GrokMessage[] = [];
+
+        // Add system messages
+        systemMessages.forEach(msg => {
+          compactedMessages.push(msg);
+          // Find corresponding chat entry if exists
+          const entry = this.chatHistory.find(e => e.content === msg.content && e.type === 'user');
+          if (entry) compactedChatHistory.push(entry);
+        });
+
+        // Add summary entry
+        const summaryEntry: ChatEntry = {
+          type: 'assistant',
+          content: `🧹 **Context Compacted Automatically**\n\n${result.summary}\n\n*Older conversation history has been summarized to prevent token limit issues.*`,
+          timestamp: new Date(),
+        };
+        compactedChatHistory.push(summaryEntry);
+        compactedMessages.push({ role: 'assistant', content: summaryEntry.content });
+
+        // Add recent messages
+        recentMessages.forEach(msg => {
+          compactedMessages.push(msg);
+          const entry = this.chatHistory.find(e =>
+            e.content === msg.content &&
+            ((e.type === 'user' && msg.role === 'user') || (e.type === 'assistant' && msg.role === 'assistant'))
+          );
+          if (entry) compactedChatHistory.push(entry);
+        });
+
+        // Update the conversation
+        this.chatHistory = compactedChatHistory;
+        this.messages = compactedMessages;
+
+        // Update total tokens
+        this.totalTokensUsed = this.tokenCounter.countMessageTokens(this.messages);
+
+        // Complete UI feedback
+        uiState.updateTokenCompaction(this.totalTokensUsed);
+        uiState.completeTokenCompaction();
+
+        console.log(`Context compacted: ${messagesToCompress.length} messages -> ${compactedMessages.length} messages`);
+      } else {
+        // Failed, just complete without compaction
+        uiState.completeTokenCompaction();
+        console.warn('Automatic compaction failed');
+      }
+    } catch (error) {
+      console.error('Error during automatic compaction:', error);
+      // Try to complete UI feedback
+      try {
+        const { uiState } = await import('../services/ui-state.js');
+        uiState.completeTokenCompaction();
+      } catch (error) {
+        // Ignore UI feedback errors
+        console.warn('Failed to complete compaction UI feedback:', error);
+      }
+    }
+  }
+
   private messageReducer(previous: any, item: any): any {
     const reduce = (acc: any, delta: any) => {
       acc = { ...acc };
@@ -627,6 +743,18 @@ Current working directory: ${process.cwd()}`,
     let lastTokenUpdate = 0;
 
     try {
+      // Token monitoring for automatic compaction
+      const settings = getSettingsManager().getUserSettings();
+      const currentTokens = this.tokenCounter.countMessageTokens(this.messages);
+      const maxTokens = this.tokenCounter.getMaxTokens();
+      const threshold = settings.tokenThreshold || 0.9;
+
+      this.totalTokensUsed = Math.max(this.totalTokensUsed, currentTokens);
+
+      if (currentTokens > threshold * maxTokens) {
+        await this.performAutomaticCompaction();
+      }
+
       // Agent loop - continue until no more tool calls or max rounds reached
       while (toolRounds < maxToolRounds) {
         // Check if operation was cancelled
