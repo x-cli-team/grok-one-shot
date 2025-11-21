@@ -21677,7 +21677,8 @@ ${result.summary}
           try {
             const { uiState: uiState2 } = await Promise.resolve().then(() => (init_ui_state(), ui_state_exports));
             uiState2.completeTokenCompaction();
-          } catch {
+          } catch (error2) {
+            console.warn("Failed to complete compaction UI feedback:", error2);
           }
         }
       }
