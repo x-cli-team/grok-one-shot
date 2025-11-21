@@ -815,7 +815,8 @@ For `UserPromptSubmit` hooks, you can inject context using either method:
 
 - Exit code 0 with stdout: Grok sees the context (special case for `UserPromptSubmit`)
 - JSON output: Provides more control over the behavior
-  </Note>
+
+</Note>
 
 ```python theme={null}
 #!/usr/bin/env python3

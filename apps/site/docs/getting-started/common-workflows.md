@@ -55,7 +55,8 @@ Tips:
 - Start with broad questions, then narrow down to specific areas
 - Ask about coding conventions and patterns used in the project
 - Request a glossary of project-specific terms
-  </Tip>
+
+</Tip>
 
 ### Find relevant code
 
