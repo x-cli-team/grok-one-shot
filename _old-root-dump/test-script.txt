@@ -1,0 +1,21 @@
+# Create test file with problematic regex special characters
+create test-regex-chars.js
+const pattern = /[a-z]+[0-9]*/;
+const regex = new RegExp("test[abc]", "g");
+const complex = /[]{}()*+?.^$|\/\\[]/;
+console.log("Testing: []{}()*+?.^$|/\\");
+
+# Test basic edit with special chars in oldStr/newStr (should show colored diff with line numbers)
+str_replace_editor test-regex-chars.js "console.log(\"Testing: []{}()*+?.^$|/\\\\\");" "console.log(\"Updated: [special] {chars} (test) *plus+ ?more. ^caret$ |pipe /slash \\\\backslash\");"
+
+# Test fuzzy matching (exact match fails, should fallback safely)
+str_replace_editor test-regex-chars.js "console.log(\"Not an exact match\");" "console.log(\"Fuzzy match success\");"
+
+# Test edge case: edit with complex regex chars in pattern
+str_replace_editor test-regex-chars.js "const complex = /[]{}()*+?.^$|\/\\\\[]/;" "const complex = /[]{}()*+?.^$|\/\\\\[]/; // updated"
+
+# Test error resilience: try invalid operation (should show fallback diff)
+str_replace_editor nonexistent.js "old" "new"
+
+# Clean up test file
+rm test-regex-chars.js

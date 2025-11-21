@@ -1,0 +1,154 @@
+{
+  "type": "module",
+  "name": "@xagent/one-shot",
+  "version": "1.2.15",
+  "description": "An open-source AI agent that brings advanced AI capabilities directly into your terminal with automatic documentation updates.",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "grok-one-shot": "./dist/index.js",
+    "grok": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "package.json"
+  ],
+  "scripts": {
+    "local": "bun run build && node dist/index.js",
+    "local-watch": "bun --watch src/index.ts",
+    "test-agent": "bun run build && ./dist/index.js -p",
+    "test-log": "bun run build && ./dist/index.js -p \"$1\" 2>&1 | tee agent-test.log",
+    "test-iterative": "./scripts/test-agent-iterative.sh",
+    "test-self": "./scripts/agent-self-test.js",
+    "build": "tsup src/index.ts --format esm --dts",
+    "dev": "tsx watch src/index.ts",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "test": "./scripts/test-core-features.sh",
+    "test:core": "./scripts/test-core-features.sh",
+    "test:tools": "./scripts/test-all-tools.sh",
+    "test:tools:quick": "./scripts/test-tools-quick.sh",
+    "test:tools:validate": "./scripts/validate-tool-code.sh",
+    "security:review": "npm audit && npm outdated",
+    "security:critical": "npm audit --audit-level=critical",
+    "security:report": "npm audit --json > security-report.json || true",
+    "prepare": "husky install",
+    "dev:site": "cd apps/site && npm run start",
+    "build:site": "cd apps/site && npm run build",
+    "sync:docs": "cd apps/site && node src/scripts/sync-agent-docs.js",
+    "update-agent-docs-auto": "tsx ./scripts/update-agent-docs-auto.mjs",
+    "docs-workflow-test": "npm run update-agent-docs-auto && npm run sync:docs",
+    "prettier": "prettier",
+    "smart-push": "./scripts/smart-push.sh",
+    "push": "echo '🚨 BLOCKED: Use npm run smart-push instead' && echo '💡 Direct git push bypasses automation' && exit 1",
+    "git-push": "echo '🚨 BLOCKED: Use npm run smart-push instead' && echo '💡 Direct git push bypasses automation' && exit 1"
+  },
+  "lint-staged": {
+    ".agent/**/*.{md,mdx}": "prettier --write",
+    "apps/site/docs/**/*.{md,mdx}": "prettier --write",
+    "*.{ts,tsx}": [
+      "eslint --fix --ignore-pattern 'dist/**'"
+    ],
+    "*.{js,jsx,mjs}": [
+      "eslint --fix --ignore-pattern 'dist/**'"
+    ],
+    "*.{md,mdx}": [
+      "prettier --write"
+    ],
+    "*.{json,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "keywords": [
+    "cli",
+    "agent",
+    "text-editor",
+    "ai",
+    "x-ai"
+  ],
+  "author": "x-cli-team",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "@types/marked-terminal": "^6.1.1",
+    "@typescript-eslint/typescript-estree": "^8.46.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "axios": "^1.7.0",
+    "cfonts": "^3.3.0",
+    "chalk": "^5.3.0",
+    "chokidar": "^4.0.3",
+    "cli-highlight": "^2.1.11",
+    "commander": "^12.0.0",
+    "diff": "^8.0.2",
+    "dotenv": "^16.4.0",
+    "enquirer": "^2.4.1",
+    "fs-extra": "^11.2.0",
+    "fuse.js": "^7.1.0",
+    "glob": "^11.0.3",
+    "ink": "^4.4.1",
+    "js-yaml": "^4.1.0",
+    "marked": "^15.0.12",
+    "marked-terminal": "^7.3.0",
+    "openai": "^5.10.1",
+    "react": "^18.3.1",
+    "ripgrep-node": "^1.0.0",
+    "terminal-image": "^4.1.0",
+    "tiktoken": "^1.0.21"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.37.0",
+    "@types/fs-extra": "^11.0.2",
+    "@types/node": "^20.8.0",
+    "@types/react": "^18.3.3",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
+    "esbuild": "^0.25.10",
+    "eslint": "^9.31.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.4",
+    "prettier": "^3.6.2",
+    "tsup": "^8.5.1",
+    "tsx": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "preferGlobal": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/x-cli-team/grok-one-shot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/x-cli-team/grok-one-shot/issues"
+  },
+  "homepage": "https://grok-one-shot.org",
+  "icon": "apps/site/static/img/logo.svg",
+  "publishConfig": {
+    "access": "public"
+  },
+  "installConfig": {
+    "hoisting": false
+  },
+  "optionalDependencies": {
+    "tree-sitter": "^0.21.1",
+    "tree-sitter-javascript": "^0.23.4",
+    "tree-sitter-python": "^0.21.0",
+    "tree-sitter-typescript": "^0.21.2"
+  },
+  "trustedDependencies": [
+    "esbuild",
+    "tree-sitter",
+    "tree-sitter-javascript",
+    "tree-sitter-python",
+    "tree-sitter-typescript"
+  ]
+}

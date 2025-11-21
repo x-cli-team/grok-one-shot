@@ -1,0 +1,58 @@
+# X CLI Community Testimonials
+# This file is automatically managed by GitHub Actions
+# Submit testimonials via: https://github.com/x-cli-team/grok-one-shot/issues/new?template=testimonial.yml
+
+- name: Alex Chen
+  title: Senior Software Engineer
+  company: TechCorp
+  quote: >-
+    X CLI transformed my development workflow. The AI assistance is
+    incredible and it never leaves my terminal.
+  link: https://github.com/alexchen
+  avatar: https://github.com/alexchen.png
+  featured: true
+  tags:
+    - productivity
+    - ai-assistance
+    - terminal
+  submittedAt: "2025-10-18T19:30:00Z"
+- name: Sarah Johnson
+  title: DevOps Engineer
+  company: CloudStartup
+  quote: >-
+    Finally, an AI coding assistant that works seamlessly with my existing
+    tools. The tool system is brilliant.
+  link: https://linkedin.com/in/sarahjohnson
+  avatar: https://github.com/sarahj.png
+  featured: true
+  tags:
+    - devops
+    - automation
+    - tools
+  submittedAt: "2025-10-18T19:30:00Z"
+- name: Mike Rodriguez
+  title: Full Stack Developer
+  company: Startup Inc
+  quote: >-
+    Open source excellence! The community-driven approach and transparent
+    development make this my go-to AI assistant.
+  link: https://github.com/mikerodriguez
+  avatar: https://github.com/mikerodriguez.png
+  featured: true
+  tags:
+    - open-source
+    - community
+    - developer-experience
+  submittedAt: "2025-10-18T19:30:00Z"
+- name: Michael Jackson
+  title: Singer
+  company: Thriller
+  quote: Dance with me
+  link: github.com/dance
+  avatar: https://github.com/dance.png
+  featured: false
+  tags:
+    - I
+    - I
+    - I
+  submittedAt: "2025-10-19T06:12:22.295Z"

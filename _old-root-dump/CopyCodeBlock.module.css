@@ -1,0 +1,100 @@
+.codeBlock {
+  background: #1a1a1a;
+  border-radius: 8px;
+  margin: 1rem 0;
+  overflow: hidden;
+  border: 1px solid #333;
+}
+
+.filename {
+  background: #2a2a2a;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: #ccc;
+  border-bottom: 1px solid #333;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: #252525;
+  border-bottom: 1px solid #333;
+}
+
+.language {
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.copyButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: 1px solid #444;
+  color: #ccc;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copyButton:hover {
+  background: #333;
+  border-color: #555;
+  color: white;
+}
+
+.copyButton svg {
+  width: 14px;
+  height: 14px;
+}
+
+.copyText {
+  font-size: 0.75rem;
+}
+
+.code {
+  margin: 0;
+  padding: 1rem;
+  background: #1a1a1a;
+  color: #e6e6e6;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-x: auto;
+}
+
+.code code {
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* Dark mode compatibility */
+html[data-theme='dark'] .codeBlock {
+  background: #1a1a1a;
+  border-color: #444;
+}
+
+html[data-theme='dark'] .header {
+  background: #252525;
+  border-color: #444;
+}
+
+html[data-theme='dark'] .copyButton {
+  border-color: #555;
+  color: #ccc;
+}
+
+html[data-theme='dark'] .copyButton:hover {
+  background: #333;
+  border-color: #666;
+  color: white;
+}

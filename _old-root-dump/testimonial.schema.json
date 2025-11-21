@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "grok-one-shotTestimonials",
+  "description": "Schema for community testimonials about X-CLI",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["name", "title", "company", "quote", "link", "avatar"],
+    "properties": {
+      "name": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 50,
+        "description": "Full name of the person giving the testimonial"
+      },
+      "title": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 80,
+        "description": "Job title or role"
+      },
+      "company": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 50,
+        "description": "Company or organization name"
+      },
+      "quote": {
+        "type": "string",
+        "minLength": 10,
+        "maxLength": 480,
+        "description": "The testimonial quote (max 480 characters for UI display)"
+      },
+      "link": {
+        "type": "string",
+        "format": "uri",
+        "description": "Link to person's profile (GitHub, LinkedIn, personal website)"
+      },
+      "avatar": {
+        "type": "string",
+        "format": "uri",
+        "description": "URL to person's avatar image"
+      },
+      "featured": {
+        "type": "boolean",
+        "default": false,
+        "description": "Whether to feature this testimonial prominently"
+      },
+      "tags": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "productivity",
+            "ai-assistance",
+            "terminal",
+            "automation",
+            "developer-experience",
+            "tools",
+            "workflow",
+            "open-source",
+            "community",
+            "performance",
+            "ease-of-use",
+            "innovation"
+          ]
+        },
+        "maxItems": 3,
+        "description": "Tags categorizing the testimonial focus"
+      },
+      "submittedAt": {
+        "type": "string",
+        "format": "date-time",
+        "description": "When the testimonial was submitted"
+      }
+    },
+    "additionalProperties": false
+  }
+}

@@ -1,0 +1,265 @@
+name: Create Testimonial PR from Issue
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  create-testimonial-pr:
+    if: contains(github.event.issue.labels.*.name, 'testimonial')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          npm install js-yaml ajv ajv-formats
+
+      - name: Parse issue and create testimonial entry
+        id: parse-testimonial
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_USER: ${{ github.event.issue.user.login }}
+          ISSUE_USER_AVATAR: ${{ github.event.issue.user.avatar_url }}
+        run: |
+          node - <<'EOF'
+          const fs = require('fs');
+          const yaml = require('js-yaml');
+
+          // Parse issue form data
+          const issueBody = process.env.ISSUE_BODY;
+          const issueNumber = process.env.ISSUE_NUMBER;
+          const issueUser = process.env.ISSUE_USER;
+          const userAvatar = process.env.ISSUE_USER_AVATAR;
+
+          console.log('Parsing issue body...');
+
+          // Extract form fields using regex patterns
+          const extractField = (fieldId) => {
+            const regex = new RegExp(`### ${fieldId}[\\s\\S]*?\\n\\n([^\\n]+)`, 'i');
+            const match = issueBody.match(regex);
+            return match ? match[1].trim() : '';
+          };
+
+          // Extract multi-line field (for quote)
+          const extractTextarea = (fieldId) => {
+            const regex = new RegExp(`### ${fieldId}[\\s\\S]*?\\n\\n([\\s\\S]*?)(?=\\n### |$)`, 'i');
+            const match = issueBody.match(regex);
+            return match ? match[1].trim() : '';
+          };
+
+          // Extract tags (checkbox selections)
+          const extractTags = () => {
+            const tagRegex = /- \[x\] ([a-z-]+)/gi;
+            const tags = [];
+            let match;
+            while ((match = tagRegex.exec(issueBody)) !== null) {
+              tags.push(match[1]);
+            }
+            return tags.slice(0, 3); // Limit to 3 tags
+          };
+
+          // Create testimonial object
+          const name = extractField('👤 Your Name') || extractField('Your Name');
+          const title = extractField('💼 Job Title') || extractField('Job Title');
+          const company = extractField('🏢 Company/Organization') || extractField('Company');
+          const quote = extractTextarea('💬 Your Experience with Grok One Shot') || extractTextarea('Your Experience');
+          const link = extractField('🔗 Your Profile Link') || extractField('Profile Link');
+          const tags = extractTags();
+
+          // Determine avatar URL
+          let avatar = userAvatar;
+          if (link && link.includes('github.com')) {
+            const githubUser = link.split('/').pop();
+            avatar = `https://github.com/${githubUser}.png`;
+          }
+
+          const testimonial = {
+            name: name,
+            title: title,
+            company: company,
+            quote: quote,
+            link: link,
+            avatar: avatar,
+            featured: false, // Default to not featured
+            tags: tags,
+            submittedAt: new Date().toISOString()
+          };
+
+          console.log('Created testimonial:', JSON.stringify(testimonial, null, 2));
+
+          // Validate required fields
+          const required = ['name', 'title', 'company', 'quote', 'link'];
+          for (const field of required) {
+            if (!testimonial[field] || testimonial[field].length === 0) {
+              throw new Error(`Missing required field: ${field}`);
+            }
+          }
+
+          // Load existing testimonials
+          let testimonials = [];
+          try {
+            const yamlContent = fs.readFileSync('data/testimonials.yml', 'utf8');
+            testimonials = yaml.load(yamlContent) || [];
+          } catch (e) {
+            console.log('Creating new testimonials file');
+          }
+
+          // Check for duplicates
+          const isDuplicate = testimonials.some(t => 
+            t.name.toLowerCase() === testimonial.name.toLowerCase() ||
+            t.link === testimonial.link
+          );
+
+          if (isDuplicate) {
+            throw new Error(`Testimonial from ${testimonial.name} already exists`);
+          }
+
+          // Add new testimonial
+          testimonials.push(testimonial);
+
+          // Write back to file
+          const header = '# Grok One Shot Community Testimonials\\n# This file is automatically managed by GitHub Actions\\n# Submit testimonials via: https://github.com/x-cli-team/grok-one-shot/issues/new?template=testimonial.yml\\n\\n';
+
+          fs.writeFileSync('data/testimonials.yml', header + yaml.dump(testimonials));
+
+          console.log('Testimonial added successfully');
+          console.log(`BRANCH_NAME=testimonial-${issueNumber}`);
+
+          // Output for GitHub Actions
+          console.log(`::set-output name=name::${testimonial.name}`);
+          console.log(`::set-output name=quote::${testimonial.quote.substring(0, 100)}...`);
+          EOF
+
+      - name: Create Pull Request
+        id: create-pr
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: testimonial-${{ github.event.issue.number }}
+          commit-message: "Add testimonial from ${{ steps.parse-testimonial.outputs.name }} (#${{ github.event.issue.number }})"
+          title: "✨ Add testimonial: ${{ steps.parse-testimonial.outputs.name }}"
+          body: |
+            ## 📝 New Testimonial Submission
+
+            **From Issue**: #${{ github.event.issue.number }}  
+            **Submitted by**: @${{ github.event.issue.user.login }}  
+            **Testimonial**: "${{ steps.parse-testimonial.outputs.quote }}"
+
+            ### 🤖 Automated Validation Status
+            - [ ] Schema validation
+            - [ ] Content moderation  
+            - [ ] Link verification
+            - [ ] Duplicate check
+            - [ ] File format validation
+
+            ---
+
+            This PR was automatically created from a testimonial submission. 
+            It will **auto-merge** after passing all validation checks.
+
+            **Timeline**: ⚡ Expected to be live within 10 minutes
+
+          labels: |
+            testimonial
+            automerge
+            community
+            automated-pr
+          assignees: ${{ github.event.issue.user.login }}
+
+      - name: Add submitter as repository collaborator
+        run: |
+          curl -X PUT \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/collaborators/${{ github.event.issue.user.login }}" \
+            -d '{"permission": "triage"}'
+          echo "Added @${{ github.event.issue.user.login }} as collaborator"
+
+      - name: Close issue with success message
+        uses: peter-evans/close-issue@v3
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          comment: |
+            ## 🎉 Thank you for your testimonial, @${{ github.event.issue.user.login }}!
+
+            I've automatically created **PR #${{ steps.create-pr.outputs.pull-request-number }}** with your submission.
+
+            ### 🤝 Welcome to the Team!
+
+            You've been **automatically added as a collaborator** to this repository! This means you can:
+            - 💻 Submit pull requests with code improvements
+            - 🐛 Help triage and manage issues  
+            - 📝 Contribute to documentation via PRs
+            - 🚀 Be part of the open-source community
+
+            **Note**: You'll submit changes via pull requests for review before merging.
+
+            Check your email for the collaboration invitation!
+
+            ### ⚡ What happens next:
+
+            1. **Automated validation** (2-3 minutes)
+               - Schema validation
+               - Content moderation 
+               - Link verification
+               - Duplicate checking
+
+            2. **Auto-merge** (when checks pass)
+               - No human approval needed
+               - Automatic merge to main branch
+
+            3. **Live on website** (within 10 minutes total)
+               - Your testimonial will appear on [our landing page](https://grok-one-shot.org)
+               - Full attribution with link to your profile
+
+            ### 🔍 Track Progress:
+            - **PR**: #${{ steps.create-pr.outputs.pull-request-number }}
+            - **Status**: Check the PR for real-time validation progress
+
+            ### ❓ Need Changes?
+            Comment on the PR if you need any modifications before it goes live.
+
+            **Welcome to the Grok One Shot community! 🚀**
+
+      - name: Handle parsing errors
+        if: failure()
+        uses: peter-evans/close-issue@v3
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          comment: |
+            ## ❌ Unable to Process Testimonial
+
+            There was an issue parsing your testimonial submission. This usually happens when:
+
+            - Required fields are missing or empty
+            - The issue form wasn't used (manual text was entered)
+            - A testimonial from you already exists
+
+            ### 🔧 How to fix:
+
+            1. **Use the issue form**: Make sure you fill out the [testimonial form](https://github.com/x-cli-team/grok-one-shot/issues/new?template=testimonial.yml)
+            2. **Complete all fields**: Name, title, company, experience, and profile link are required
+            3. **Check for duplicates**: Only one testimonial per person
+
+            ### 🆘 Need help?
+
+            Join our [Discord community](https://discord.com/channels/1315720379607679066/1315822328139223064) and we'll help you get your testimonial added!
+
+            Thanks for wanting to share your experience! 🙏
