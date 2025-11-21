@@ -46,7 +46,7 @@ When starting or progressing through a sprint:
 
 ### Legacy Sync Note (Resolved)
 
-Previous sync from `.agent/docs/` to site has been replaced by direct editing in `apps/site/docs/`. Husky hooks updated to reflect this change.
+Documentation is now maintained directly in `apps/site/docs/` (Docusaurus site). No more sync from `.agent/docs/`.
 Automatic sync destroys unique branding and interactive elements.
 
 ## Verification
@@ -134,7 +134,7 @@ Settings stored in `~/.grok/settings.json`:
 
 ## Documentation Structure
 
-All detailed documentation lives in `.agent/docs/`:
+All detailed documentation lives in `apps/site/docs/`:
 
 - **Architecture**: System design, data flow, module structure
 - **Development**: Setup, contribution guidelines, testing
@@ -308,13 +308,13 @@ grok-one-shot toggle-confirmations
 2. **Token Efficiency**: Use headless mode for simple queries
 3. **MCP Extensions**: Add custom tools via MCP for domain-specific needs
 4. **Session Review**: Check `~/.grok/sessions/` for session history
-5. **Documentation**: Keep `.agent/docs/` updated via Husky pre-commit hooks
+5. **Documentation**: Keep `apps/site/docs/` updated directly (no sync needed)
 
 ## Integration with CI/CD
 
 Pre-commit hooks automatically:
 
-- Sync `.agent/docs/` to `apps/site/docs/` (Docusaurus)
+- Edit docs directly in `apps/site/docs/` (Docusaurus site)
 - Validate documentation structure
 - Update doc indexes
 
@@ -343,7 +343,7 @@ Check `xcli-startup.log` in current directory for startup diagnostics.
 
 ## Contributing
 
-See `.agent/docs/development/contributing.md` for detailed contribution guidelines.
+See `apps/site/docs/community/contributing.md` for detailed contribution guidelines.
 
 ## License
 
@@ -352,12 +352,12 @@ MIT License - see LICENSE file
 ## Support
 
 - Issues: File in GitHub repository
-- Documentation: See `.agent/docs/` directory
+- Documentation: See `apps/site/docs/` directory
 - Updates: Check `grok-one-shot --version` for latest version
 
 ---
 
-**For detailed documentation, see `docs-index.md` and `.agent/docs/` directory.**
+**For detailed documentation, see `docs-index.md` and `apps/site/docs/` directory.**
 ; then
 echo "⚠️ LANDING PAGE CHANGES DETECTED"
 echo "💡 Skipping automatic doc sync to preserve custom features (badges, PARITY nav)"
@@ -516,7 +516,7 @@ Settings stored in `~/.grok/settings.json`:
 
 ## Documentation Structure
 
-All detailed documentation lives in `.agent/docs/`:
+All detailed documentation lives in `apps/site/docs/`:
 
 - **Architecture**: System design, data flow, module structure
 - **Development**: Setup, contribution guidelines, testing
@@ -690,13 +690,13 @@ grok-one-shot toggle-confirmations
 2. **Token Efficiency**: Use headless mode for simple queries
 3. **MCP Extensions**: Add custom tools via MCP for domain-specific needs
 4. **Session Review**: Check `~/.grok/sessions/` for session history
-5. **Documentation**: Keep `.agent/docs/` updated via Husky pre-commit hooks
+5. **Documentation**: Keep `apps/site/docs/` updated directly (no sync needed)
 
 ## Integration with CI/CD
 
 Pre-commit hooks automatically:
 
-- Sync `.agent/docs/` to `apps/site/docs/` (Docusaurus)
+- Edit docs directly in `apps/site/docs/` (Docusaurus site)
 - Validate documentation structure
 - Update doc indexes
 
@@ -725,7 +725,7 @@ Check `xcli-startup.log` in current directory for startup diagnostics.
 
 ## Contributing
 
-See `.agent/docs/development/contributing.md` for detailed contribution guidelines.
+See `apps/site/docs/community/contributing.md` for detailed contribution guidelines.
 
 ## License
 
@@ -734,9 +734,9 @@ MIT License - see LICENSE file
 ## Support
 
 - Issues: File in GitHub repository
-- Documentation: See `.agent/docs/` directory
+- Documentation: See `apps/site/docs/` directory
 - Updates: Check `grok-one-shot --version` for latest version
 
 ---
 
-**For detailed documentation, see `docs-index.md` and `.agent/docs/` directory.**
+**For detailed documentation, see `docs-index.md` and `apps/site/docs/` directory.**
