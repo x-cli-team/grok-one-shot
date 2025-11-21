@@ -8,6 +8,22 @@
 .docusaurus
 .cache-loader
 
+# Temp / agent garbage
+temp_*
+test-*.txt
+*.backup
+*.png
+*.jpg
+*.zip
+note-to-*.md
+tty-*.js
+demo.js
+*.log
+
+# Only allow real code in proper folders
+!apps/
+!packages/
+
 # Misc
 .DS_Store
 .env.local
