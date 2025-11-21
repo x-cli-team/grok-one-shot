@@ -1,6 +1,7 @@
 ---
 title: Subagents
 ---
+
 # Subagents
 
 > Learn about subagents in Grok One-Shot - specialized AI agents for specific tasks.
@@ -33,6 +34,7 @@ These subagents operate internally and are not directly accessible to users.
 ### What's Not Available Yet
 
 **Claude Code Features:**
+
 - `/agents` command to view and manage subagents
 - Create custom subagents with specialized prompts
 - Configure subagent tool access
@@ -82,10 +84,10 @@ Claude Code will automatically delegate appropriate tasks to specialized subagen
 
 Then select "Create New subagent" and follow the prompts to define:
 
-* Subagent type (e.g., `api-designer`, `performance-optimizer`)
-* When to use it
-* Which tools it can access
-* Its specialized system prompt
+- Subagent type (e.g., `api-designer`, `performance-optimizer`)
+- When to use it
+- Which tools it can access
+- Its specialized system prompt
 
 ### Project-Specific Subagents
 
@@ -111,19 +113,21 @@ While Grok One-Shot doesn't expose subagent management to users, it uses an inte
 **Use Case:** When the system needs to create documentation automatically
 
 **Configuration:**
+
 - Context Limit: 2000 tokens
 - Timeout: 30 seconds
 - Max Retries: 2
 
 **Example Internal Usage:**
+
 ```typescript
 const taskId = await subagentFramework.spawnSubagent({
-type: 'docgen',
-input: {
-projectPath: '/path/to/project',
-docType: 'README'
-},
-priority: 'medium'
+  type: "docgen",
+  input: {
+    projectPath: "/path/to/project",
+    docType: "README",
+  },
+  priority: "medium",
 });
 
 const result = await subagentFramework.waitForResult(taskId);
@@ -137,11 +141,13 @@ const result = await subagentFramework.waitForResult(taskId);
 **Use Case:** When reviewing product requirement documents
 
 **Configuration:**
+
 - Context Limit: 2000 tokens
 - Timeout: 20 seconds
 - Max Retries: 1
 
 **What It Analyzes:**
+
 - Suggestions based on existing project patterns
 - Conflicts with current architecture
 - Similar tasks in the project
@@ -154,11 +160,13 @@ const result = await subagentFramework.waitForResult(taskId);
 **Use Case:** Understanding the impact of code changes
 
 **Configuration:**
+
 - Context Limit: 1500 tokens
 - Timeout: 15 seconds
 - Max Retries: 1
 
 **What It Provides:**
+
 - List of files changed
 - Architecture change detection
 - New features identified
@@ -171,11 +179,13 @@ const result = await subagentFramework.waitForResult(taskId);
 **Use Case:** When conversations become too large
 
 **Configuration:**
+
 - Context Limit: 1000 tokens
 - Timeout: 10 seconds
 - Max Retries: 1
 
 **What It Does:**
+
 - Analyzes current token usage
 - Suggests compression strategies
 - Provides reduction estimates
@@ -188,11 +198,13 @@ const result = await subagentFramework.waitForResult(taskId);
 **Use Case:** When conversation history needs compaction
 
 **Configuration:**
+
 - Context Limit: 2000 tokens
 - Timeout: 25 seconds
 - Max Retries: 2
 
 **Features:**
+
 - Configurable compression ratio
 - Key point extraction
 - Original length tracking
@@ -205,11 +217,13 @@ const result = await subagentFramework.waitForResult(taskId);
 **Use Case:** Continuous system monitoring
 
 **Configuration:**
+
 - Context Limit: 1000 tokens
 - Timeout: 10 seconds
 - Max Retries: 1
 
 **Monitors:**
+
 - Error logs
 - Command patterns
 - System health
@@ -222,11 +236,13 @@ const result = await subagentFramework.waitForResult(taskId);
 **Use Case:** Before applying code changes
 
 **Configuration:**
+
 - Context Limit: 1500 tokens
 - Timeout: 15 seconds
 - Max Retries: 1
 
 **Analyzes:**
+
 - Proposed changes
 - Known failure patterns
 - Risk level assessment
@@ -239,11 +255,13 @@ const result = await subagentFramework.waitForResult(taskId);
 **Use Case:** Ensuring compliance with project constraints
 
 **Configuration:**
+
 - Context Limit: 1000 tokens
 - Timeout: 10 seconds
 - Max Retries: 1
 
 **Checks:**
+
 - Rule violations
 - Warnings
 - Compliance status
@@ -263,6 +281,7 @@ The subagent framework manages tasks through a lifecycle:
 ### Performance Metrics
 
 The framework tracks:
+
 - Total tasks executed
 - Active task count
 - Completed task count
@@ -330,6 +349,7 @@ Define specialized behaviors in your GROK.md:
 ## Code Review Guidelines
 
 When asked to review code:
+
 - Focus on security, performance, and maintainability
 - Check test coverage
 - Verify documentation
@@ -349,6 +369,7 @@ grok -p "Review the following files for security issues: $@"
 ```
 
 Usage:
+
 ```bash
 ./scripts/grok-review.sh src/auth/*.ts
 ```
@@ -358,6 +379,7 @@ Usage:
 ### Roadmap for Full Subagent Support
 
 **Q2 2026 (Sprint 18-20):**
+
 - `/agents` command implementation
 - Subagent creation and management
 - Custom subagent definitions
@@ -366,11 +388,13 @@ Usage:
 **Features to Expect:**
 
 1. **View Subagents**
+
 ```
 > /agents
 ```
 
 2. **Create Subagents**
+
 ```
 > /agents create
 Name: security-auditor
@@ -380,11 +404,13 @@ Prompt: You are a security expert...
 ```
 
 3. **Use Subagents**
+
 ```
 > use security-auditor to check the auth module
 ```
 
 4. **Project Subagents**
+
 ```
 .grok/agents/
 ├── code-reviewer.md
@@ -394,16 +420,16 @@ Prompt: You are a security expert...
 
 ## Comparison: Claude Code vs Grok One-Shot
 
-| Feature | Claude Code | Grok One-Shot |
-|---------|-------------|---------------|
-| **View Subagents** | `/agents` command | Not available |
-| **Create Subagents** | Interactive creation | Not available |
-| **Automatic Delegation** | Yes | Internal only |
-| **Custom Prompts** | Yes | Not available |
-| **Tool Restrictions** | Yes | Internal only |
-| **Project Subagents** | `.claude/agents/` | Not available |
-| **Internal Framework** | Unknown | Implemented |
-| **User API** | Yes | Not available |
+| Feature                  | Claude Code          | Grok One-Shot |
+| ------------------------ | -------------------- | ------------- |
+| **View Subagents**       | `/agents` command    | Not available |
+| **Create Subagents**     | Interactive creation | Not available |
+| **Automatic Delegation** | Yes                  | Internal only |
+| **Custom Prompts**       | Yes                  | Not available |
+| **Tool Restrictions**    | Yes                  | Internal only |
+| **Project Subagents**    | `.claude/agents/`    | Not available |
+| **Internal Framework**   | Unknown              | Implemented   |
+| **User API**             | Yes                  | Not available |
 
 ## Best Practices (for Future Use)
 
@@ -414,16 +440,19 @@ When user-facing subagents become available:
 Keep subagents focused on a single responsibility:
 
 **Good:**
+
 - `security-auditor` - Security reviews only
 - `test-generator` - Test creation only
 - `doc-writer` - Documentation only
 
 **Bad:**
+
 - `code-helper` - Too broad, unclear purpose
 
 ### 2. Use Descriptive Names
 
 Name subagents clearly:
+
 - `api-designer` over `api1`
 - `performance-optimizer` over `perf`
 - `database-schema-reviewer` over `db`
@@ -431,6 +460,7 @@ Name subagents clearly:
 ### 3. Limit Tool Access
 
 Only grant tools that the subagent needs:
+
 - Read-only subagents: `Read`, `Grep`, `Glob`
 - Code generators: `Read`, `Write`, `Edit`
 - Reviewers: `Read`, `Grep`, `Glob`, `Bash` (for running tests)
@@ -440,11 +470,13 @@ Only grant tools that the subagent needs:
 Help Grok know when to use the subagent:
 
 **Good:**
+
 ```
 description: Review Python code for PEP 8 compliance, type hints, and docstrings. Use when checking Python code style or when the user asks for Python code review.
 ```
 
 **Bad:**
+
 ```
 description: Reviews code
 ```
@@ -465,10 +497,10 @@ git push
 
 ```typescript
 interface SubagentConfig {
-type: string;
-contextLimit: number;
-timeout: number;
-maxRetries: number;
+  type: string;
+  contextLimit: number;
+  timeout: number;
+  maxRetries: number;
 }
 ```
 
@@ -476,11 +508,11 @@ maxRetries: number;
 
 ```typescript
 interface SubagentTask {
-id: string;
-type: string;
-input: any;
-priority: 'low' | 'medium' | 'high';
-createdAt: number;
+  id: string;
+  type: string;
+  input: any;
+  priority: "low" | "medium" | "high";
+  createdAt: number;
 }
 ```
 
@@ -488,14 +520,14 @@ createdAt: number;
 
 ```typescript
 interface SubagentResult {
-taskId: string;
-type: string;
-success: boolean;
-output?: any;
-error?: string;
-tokensUsed: number;
-executionTime: number;
-summary: string;
+  taskId: string;
+  type: string;
+  success: boolean;
+  output?: any;
+  error?: string;
+  tokensUsed: number;
+  executionTime: number;
+  summary: string;
 }
 ```
 

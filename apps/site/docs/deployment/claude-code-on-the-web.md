@@ -1,6 +1,7 @@
 ---
 title: Grok One-Shot on the Web
 ---
+
 # Grok One-Shot on the Web
 
 > Claude Code on the web - A Claude.ai exclusive feature
@@ -49,16 +50,16 @@ Claude Code on the web is currently in research preview and only available to Cl
 
 ### Claude Code Web Features (Not Available in Grok One-Shot)
 
-* **Answering questions**: Ask about code architecture and how features are implemented
-* **Bugfixes and routine tasks**: Well-defined tasks that don't require frequent steering
-* **Parallel work**: Tackle multiple bug fixes in parallel
-* **Repositories not on your local machine**: Work on code you don't have checked out locally
-* **Backend changes**: Where AI can write tests and then write code to pass those tests
+- **Answering questions**: Ask about code architecture and how features are implemented
+- **Bugfixes and routine tasks**: Well-defined tasks that don't require frequent steering
+- **Parallel work**: Tackle multiple bug fixes in parallel
+- **Repositories not on your local machine**: Work on code you don't have checked out locally
+- **Backend changes**: Where AI can write tests and then write code to pass those tests
 
 Claude Code is also available on the **Claude iOS app**, which is perfect for:
 
-* **On the go**: Kick off tasks while commuting or away from laptop
-* **Monitoring**: Watch the trajectory and steer the agent's work
+- **On the go**: Kick off tasks while commuting or away from laptop
+- **Monitoring**: Watch the trajectory and steer the agent's work
 
 Developers can also **move Claude Code sessions** from the Claude app to their terminal to continue tasks locally.
 
@@ -69,6 +70,7 @@ While Grok One-Shot doesn't offer web or mobile interfaces, it provides a powerf
 ### Getting Started with Grok One-Shot
 
 1. **Install via npm/bun**:
+
 ```bash
 npm install -g grok
 # or
@@ -76,16 +78,19 @@ bun install -g grok
 ```
 
 2. **Set API key**:
+
 ```bash
 export GROK_API_KEY="your-key-here"
 ```
 
 3. **Run interactively**:
+
 ```bash
 grok
 ```
 
 4. **Run headless tasks**:
+
 ```bash
 grok -p "analyze the authentication flow"
 ```
@@ -174,12 +179,14 @@ Claude Code allows moving sessions between web and terminal - **this is not avai
 ### Cloud Environment (Claude Code Reference)
 
 Claude Code provides:
+
 - **Default image**: Universal image with common toolchains
 - **Language-specific setups**: Python, Node.js, Java, Go, Rust, C++
 - **Environment configuration**: Custom environment variables
 - **Dependency management**: SessionStart hooks
 
 **Grok One-Shot approach**: Uses your local development environment directly:
+
 - Your installed languages and tools
 - Your local dependencies
 - Your environment variables
@@ -188,12 +195,14 @@ Claude Code provides:
 ### Network Access and Security (Claude Code)
 
 Claude Code web provides:
+
 - **Isolated virtual machines**: Each session in isolated VM
 - **Network access controls**: Limited by default
 - **Credential protection**: Secure proxy for git operations
 - **GitHub proxy**: Dedicated proxy for GitHub operations
 
 **Grok One-Shot security model**:
+
 - **Local execution**: All operations on your local machine
 - **Your credentials**: Uses your local git/ssh credentials
 - **Your network**: Full access to local network and internet
@@ -211,16 +220,19 @@ Create a `GROK.md` file in your repository root:
 # Project Guidelines
 
 ## Code Style
+
 - Use TypeScript strict mode
 - Follow Airbnb style guide
 - 2 spaces for indentation
 
 ## Architecture
+
 - Feature-based folder structure
 - Dependency injection for services
 - Unit tests for all business logic
 
 ## Review Criteria
+
 - All tests must pass
 - No console.log statements
 - Update relevant documentation
@@ -232,19 +244,19 @@ Configure `.grok/settings.json`:
 
 ```json
 {
-"hooks": {
-"SessionStart": [
-{
-"matcher": "startup",
-"hooks": [
-{
-"type": "command",
-"command": "npm install"
-}
-]
-}
-]
-}
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npm install"
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
@@ -288,23 +300,24 @@ grok mcp add api-tester http-mcp-server
 
 ## Comparing Approaches
 
-| Feature | Claude Code on Web | Grok One-Shot |
-|---------|-------------------|---------------|
-| **Execution** | Cloud-based managed VMs | Local terminal |
-| **Access** | Browser + mobile app | Terminal only |
-| **Setup** | GitHub integration UI | CLI installation |
-| **Environment** | Anthropic-managed containers | Your local machine |
-| **Network** | Configurable proxy + limits | Full local access |
-| **Sessions** | Move web ↔ terminal | Terminal only |
-| **Parallel tasks** | Multiple cloud sessions | Multiple terminal windows |
-| **Cost** | Rate limits + usage | API calls only |
-| **Privacy** | Code on Anthropic VMs | Code stays local |
-| **Latency** | VM startup + network | Instant local |
-| **Isolation** | Strong VM isolation | Process-level |
+| Feature            | Claude Code on Web           | Grok One-Shot             |
+| ------------------ | ---------------------------- | ------------------------- |
+| **Execution**      | Cloud-based managed VMs      | Local terminal            |
+| **Access**         | Browser + mobile app         | Terminal only             |
+| **Setup**          | GitHub integration UI        | CLI installation          |
+| **Environment**    | Anthropic-managed containers | Your local machine        |
+| **Network**        | Configurable proxy + limits  | Full local access         |
+| **Sessions**       | Move web ↔ terminal         | Terminal only             |
+| **Parallel tasks** | Multiple cloud sessions      | Multiple terminal windows |
+| **Cost**           | Rate limits + usage          | API calls only            |
+| **Privacy**        | Code on Anthropic VMs        | Code stays local          |
+| **Latency**        | VM startup + network         | Instant local             |
+| **Isolation**      | Strong VM isolation          | Process-level             |
 
 ## Use Case Comparison
 
 ### Best for Claude Code on Web:
+
 - Working on the go (mobile)
 - Repositories not checked out locally
 - Parallel tasks on multiple repos
@@ -312,6 +325,7 @@ grok mcp add api-tester http-mcp-server
 - Repositories requiring complex cloud setup
 
 ### Best for Grok One-Shot:
+
 - Local development workflow
 - Fast iteration cycles
 - Projects requiring local tools
@@ -331,6 +345,7 @@ If xAI develops a web interface for Grok, it might include:
 - **GitHub integration**: Direct repository integration UI
 
 Until then, Grok One-Shot's terminal-first approach provides:
+
 - **Simplicity**: Single execution environment
 - **Speed**: No remote VM overhead
 - **Control**: Full access to local environment
@@ -339,11 +354,11 @@ Until then, Grok One-Shot's terminal-first approach provides:
 
 ## Related Resources
 
-* [Grok One-Shot Documentation](/.agent/docs/claude-code/)
-* [GROK.md Configuration Guide](/.agent/docs/claude-code/configuration/memory-claude-md.md)
-* [Session Management](/.agent/docs/claude-code/reference/sessions.md)
-* [MCP Integration](/.agent/docs/claude-code/features/plugin-system.md)
-* [Headless Mode Guide](/.agent/docs/claude-code/getting-started/quickstart.md)
+- [Grok One-Shot Documentation](/.agent/docs/claude-code/)
+- [GROK.md Configuration Guide](/.agent/docs/claude-code/configuration/memory-claude-md.md)
+- [Session Management](/.agent/docs/claude-code/reference/sessions.md)
+- [MCP Integration](/.agent/docs/claude-code/features/plugin-system.md)
+- [Headless Mode Guide](/.agent/docs/claude-code/getting-started/quickstart.md)
 
 ## Terminal-First Philosophy
 

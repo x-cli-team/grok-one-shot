@@ -1,6 +1,7 @@
 ---
 title: Quickstart
 ---
+
 # Quickstart
 
 > Welcome to Grok One-Shot!
@@ -11,9 +12,9 @@ This quickstart guide will have you using AI-powered coding assistance in just a
 
 Make sure you have:
 
-* A terminal or command prompt open
-* A code project to work with
-* A Grok API key from [console.x.ai](https://console.x.ai)
+- A terminal or command prompt open
+- A code project to work with
+- A Grok API key from [console.x.ai](https://console.x.ai)
 
 ## Step 1: Install Grok One-Shot
 
@@ -182,10 +183,10 @@ Or fix existing issues:
 
 Grok One-Shot will:
 
-* Locate the relevant code
-* Understand the context
-* Implement a solution
-* Run tests if available
+- Locate the relevant code
+- Understand the context
+- Implement a solution
+- Run tests if available
 
 ## Step 8: Test out other common workflows
 
@@ -221,14 +222,14 @@ There are a number of ways to work with Grok One-Shot:
 
 Here are the most important commands for daily use:
 
-| Command | What it does | Example |
-| ---------------- | ----------------------------- | ------------------------------------ |
-| `grok` | Start interactive mode | `grok` |
-| `grok "task"` | Run a one-time task | `grok "fix the build error"` |
-| `grok -p "task"` | Run headless, then exit | `grok -p "explain this function"` |
-| `grok -d <dir>` | Change working directory | `grok -d /path/to/project` |
-| `grok --yes` | Auto-approve all confirmations| `grok --yes` |
-| `exit` or Ctrl+C | Exit Grok One-Shot | `> exit` |
+| Command          | What it does                   | Example                           |
+| ---------------- | ------------------------------ | --------------------------------- |
+| `grok`           | Start interactive mode         | `grok`                            |
+| `grok "task"`    | Run a one-time task            | `grok "fix the build error"`      |
+| `grok -p "task"` | Run headless, then exit        | `grok -p "explain this function"` |
+| `grok -d <dir>`  | Change working directory       | `grok -d /path/to/project`        |
+| `grok --yes`     | Auto-approve all confirmations | `grok --yes`                      |
+| `exit` or Ctrl+C | Exit Grok One-Shot             | `> exit`                          |
 
 > ** Parity Gap:** Grok One-Shot does not yet support `--continue`, `--resume`, or `commit` subcommands like Claude Code. Session management features are limited.
 
@@ -272,31 +273,33 @@ Before making changes, let Grok One-Shot understand your code:
 
 **Save time with shortcuts:**
 
-* Press `Shift+Tab` to toggle auto-accept mode
-* Use headless mode (`-p`) for quick queries
-* Set `GROK_API_KEY` once in your shell profile
+- Press `Shift+Tab` to toggle auto-accept mode
+- Use headless mode (`-p`) for quick queries
+- Set `GROK_API_KEY` once in your shell profile
 
 ## What's next?
 
 Now that you've learned the basics, explore more advanced features:
 
 **Learn More:**
+
 - [Common workflows](./common-workflows.md) - Step-by-step guides for common tasks
 - [CLI reference](../reference/cli-reference.md) - Master all commands and options
 - [Configuration](../configuration/settings.md) - Customize Grok One-Shot for your workflow
 
 **Advanced Features:**
+
 - [MCP Integration](../build-with-claude-code/mcp.md) - Connect to external data sources
 - [Hooks](./hooks.md) - Customize behavior with shell hooks
 - [Subagents](../build-with-claude-code/subagents.md) - Use specialized AI agents (planned)
 
 ## Getting help
 
-* **Command help**: Run `grok --help` for CLI options
-* **Documentation**: See GROK.md and docs-index.md in your project
-* **Troubleshooting**: Check [Troubleshooting Guide](../build-with-claude-code/troubleshooting.md)
-* **Logs**: Check `xcli-startup.log` in current directory for startup diagnostics
-* **Issues**: File bugs in the GitHub repository
+- **Command help**: Run `grok --help` for CLI options
+- **Documentation**: See GROK.md and docs-index.md in your project
+- **Troubleshooting**: Check [Troubleshooting Guide](../build-with-claude-code/troubleshooting.md)
+- **Logs**: Check `xcli-startup.log` in current directory for startup diagnostics
+- **Issues**: File bugs in the GitHub repository
 
 ---
 

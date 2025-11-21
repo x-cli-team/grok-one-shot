@@ -1,6 +1,7 @@
 ---
 title: Hooks Reference
 ---
+
 # Hooks Reference
 
 > ** PARITY GAP**: Grok One-Shot does not currently implement the hooks system described in this document. This is a comprehensive Claude Code feature planned for future implementation.
@@ -12,6 +13,7 @@ title: Hooks Reference
 **Priority:** P2 - Workflow automation
 
 **What Hooks Enable (in Claude Code):**
+
 - Deterministic workflow automation
 - Pre/post tool execution control
 - Custom notifications and integrations
@@ -20,6 +22,7 @@ title: Hooks Reference
 - Session lifecycle hooks
 
 **Alternative Approaches:** Until hooks are implemented, use:
+
 - Shell scripts in your repository
 - Git hooks for pre-commit automation
 - MCP servers for external integrations
@@ -37,10 +40,10 @@ For a quickstart guide with examples, see [Get started with Grok One-Shot hooks]
 
 Grok One-Shot hooks would be configured in your [settings files](/en/settings):
 
-* `~/.grok/settings.json` - User settings
-* `.grok/settings.json` - Project settings
-* `.grok/settings.local.json` - Local project settings (not committed)
-* Enterprise managed policy settings
+- `~/.grok/settings.json` - User settings
+- `.grok/settings.json` - Project settings
+- `.grok/settings.local.json` - Local project settings (not committed)
+- Enterprise managed policy settings
 
 ### Structure
 
@@ -48,51 +51,51 @@ Hooks are organized by matchers, where each matcher can have multiple hooks:
 
 ```json theme={null}
 {
-"hooks": {
-"EventName": [
-{
-"matcher": "ToolPattern",
-"hooks": [
-{
-"type": "command",
-"command": "your-command-here"
-}
-]
-}
-]
-}
+  "hooks": {
+    "EventName": [
+      {
+        "matcher": "ToolPattern",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "your-command-here"
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
-* **matcher**: Pattern to match tool names, case-sensitive (only applicable for
-`PreToolUse` and `PostToolUse`)
-* Simple strings match exactly: `Write` matches only the Write tool
-* Supports regex: `Edit|Write` or `Notebook.*`
-* Use `*` to match all tools. You can also use empty string (`""`) or leave
-`matcher` blank.
-* **hooks**: Array of hooks to execute when the pattern matches
-* `type`: Hook execution type - `"command"` for bash commands or `"prompt"` for LLM-based evaluation
-* `command`: (For `type: "command"`) The bash command to execute (can use `$GROK_PROJECT_DIR` environment variable)
-* `prompt`: (For `type: "prompt"`) The prompt to send to the LLM for evaluation
-* `timeout`: (Optional) How long a hook should run, in seconds, before canceling that specific hook
+- **matcher**: Pattern to match tool names, case-sensitive (only applicable for
+  `PreToolUse` and `PostToolUse`)
+- Simple strings match exactly: `Write` matches only the Write tool
+- Supports regex: `Edit|Write` or `Notebook.*`
+- Use `*` to match all tools. You can also use empty string (`""`) or leave
+  `matcher` blank.
+- **hooks**: Array of hooks to execute when the pattern matches
+- `type`: Hook execution type - `"command"` for bash commands or `"prompt"` for LLM-based evaluation
+- `command`: (For `type: "command"`) The bash command to execute (can use `$GROK_PROJECT_DIR` environment variable)
+- `prompt`: (For `type: "prompt"`) The prompt to send to the LLM for evaluation
+- `timeout`: (Optional) How long a hook should run, in seconds, before canceling that specific hook
 
 For events like `UserPromptSubmit`, `Notification`, `Stop`, and `SubagentStop`
 that don't use matchers, you can omit the matcher field:
 
 ```json theme={null}
 {
-"hooks": {
-"UserPromptSubmit": [
-{
-"hooks": [
-{
-"type": "command",
-"command": "/path/to/prompt-validator.py"
-}
-]
-}
-]
-}
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/path/to/prompt-validator.py"
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
@@ -104,19 +107,19 @@ ensuring they work regardless of Grok's current directory:
 
 ```json theme={null}
 {
-"hooks": {
-"PostToolUse": [
-{
-"matcher": "Write|Edit",
-"hooks": [
-{
-"type": "command",
-"command": "\"$GROK_PROJECT_DIR\"/.grok/hooks/check-style.sh"
-}
-]
-}
-]
-}
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$GROK_PROJECT_DIR\"/.grok/hooks/check-style.sh"
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
@@ -128,30 +131,30 @@ ensuring they work regardless of Grok's current directory:
 
 **How plugin hooks work**:
 
-* Plugin hooks are defined in the plugin's `hooks/hooks.json` file or in a file given by a custom path to the `hooks` field.
-* When a plugin is enabled, its hooks are merged with user and project hooks
-* Multiple hooks from different sources can respond to the same event
-* Plugin hooks use the `${GROK_PLUGIN_ROOT}` environment variable to reference plugin files
+- Plugin hooks are defined in the plugin's `hooks/hooks.json` file or in a file given by a custom path to the `hooks` field.
+- When a plugin is enabled, its hooks are merged with user and project hooks
+- Multiple hooks from different sources can respond to the same event
+- Plugin hooks use the `${GROK_PLUGIN_ROOT}` environment variable to reference plugin files
 
 **Example plugin hook configuration**:
 
 ```json theme={null}
 {
-"description": "Automatic code formatting",
-"hooks": {
-"PostToolUse": [
-{
-"matcher": "Write|Edit",
-"hooks": [
-{
-"type": "command",
-"command": "${GROK_PLUGIN_ROOT}/scripts/format.sh",
-"timeout": 30
-}
-]
-}
-]
-}
+  "description": "Automatic code formatting",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${GROK_PLUGIN_ROOT}/scripts/format.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
@@ -165,9 +168,9 @@ Plugin hooks run alongside your custom hooks. If multiple hooks match an event, 
 
 **Environment variables for plugins**:
 
-* `${GROK_PLUGIN_ROOT}`: Absolute path to the plugin directory
-* `${GROK_PROJECT_DIR}`: Project root directory (same as for project hooks)
-* All standard environment variables are available
+- `${GROK_PLUGIN_ROOT}`: Absolute path to the plugin directory
+- `${GROK_PROJECT_DIR}`: Project root directory (same as for project hooks)
+- All standard environment variables are available
 
 See the [plugin components reference](/en/plugins-reference#hooks) for details on creating plugin hooks.
 
@@ -187,28 +190,28 @@ Instead of executing a bash command, prompt-based hooks:
 
 ```json theme={null}
 {
-"hooks": {
-"Stop": [
-{
-"hooks": [
-{
-"type": "prompt",
-"prompt": "Evaluate if Grok should stop: $ARGUMENTS. Check if all tasks are complete."
-}
-]
-}
-]
-}
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Evaluate if Grok should stop: $ARGUMENTS. Check if all tasks are complete."
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
 **Fields:**
 
-* `type`: Must be `"prompt"`
-* `prompt`: The prompt text to send to the LLM
-* Use `$ARGUMENTS` as a placeholder for the hook input JSON
-* If `$ARGUMENTS` is not present, input JSON is appended to the prompt
-* `timeout`: (Optional) Timeout in seconds (default: 30 seconds)
+- `type`: Must be `"prompt"`
+- `prompt`: The prompt text to send to the LLM
+- Use `$ARGUMENTS` as a placeholder for the hook input JSON
+- If `$ARGUMENTS` is not present, input JSON is appended to the prompt
+- `timeout`: (Optional) Timeout in seconds (default: 30 seconds)
 
 ### Response schema
 
@@ -226,38 +229,38 @@ The LLM must respond with JSON containing:
 
 **Response fields:**
 
-* `decision`: `"approve"` allows the action, `"block"` prevents it
-* `reason`: Explanation shown to Grok when decision is `"block"`
-* `continue`: (Optional) If `false`, stops Grok's execution entirely
-* `stopReason`: (Optional) Message shown when `continue` is false
-* `systemMessage`: (Optional) Additional message shown to the user
+- `decision`: `"approve"` allows the action, `"block"` prevents it
+- `reason`: Explanation shown to Grok when decision is `"block"`
+- `continue`: (Optional) If `false`, stops Grok's execution entirely
+- `stopReason`: (Optional) Message shown when `continue` is false
+- `systemMessage`: (Optional) Additional message shown to the user
 
 ### Supported hook events
 
 Prompt-based hooks work with any hook event, but are most useful for:
 
-* **Stop**: Intelligently decide if Grok should continue working
-* **SubagentStop**: Evaluate if a subagent has completed its task
-* **UserPromptSubmit**: Validate user prompts with LLM assistance
-* **PreToolUse**: Make context-aware permission decisions
+- **Stop**: Intelligently decide if Grok should continue working
+- **SubagentStop**: Evaluate if a subagent has completed its task
+- **UserPromptSubmit**: Validate user prompts with LLM assistance
+- **PreToolUse**: Make context-aware permission decisions
 
 ### Example: Intelligent Stop hook
 
 ```json theme={null}
 {
-"hooks": {
-"Stop": [
-{
-"hooks": [
-{
-"type": "prompt",
-"prompt": "You are evaluating whether Grok should stop working. Context: $ARGUMENTS\n\nAnalyze the conversation and determine if:\n1. All user-requested tasks are complete\n2. Any errors need to be addressed\n3. Follow-up work is needed\n\nRespond with JSON: {\"decision\": \"approve\" or \"block\", \"reason\": \"your explanation\"}",
-"timeout": 30
-}
-]
-}
-]
-}
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "You are evaluating whether Grok should stop working. Context: $ARGUMENTS\n\nAnalyze the conversation and determine if:\n1. All user-requested tasks are complete\n2. Any errors need to be addressed\n3. Follow-up work is needed\n\nRespond with JSON: {\"decision\": \"approve\" or \"block\", \"reason\": \"your explanation\"}",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
@@ -265,39 +268,39 @@ Prompt-based hooks work with any hook event, but are most useful for:
 
 ```json theme={null}
 {
-"hooks": {
-"SubagentStop": [
-{
-"hooks": [
-{
-"type": "prompt",
-"prompt": "Evaluate if this subagent should stop. Input: $ARGUMENTS\n\nCheck if:\n- The subagent completed its assigned task\n- Any errors occurred that need fixing\n- Additional context gathering is needed\n\nReturn: {\"decision\": \"approve\" or \"block\", \"reason\": \"explanation\"}"
-}
-]
-}
-]
-}
+  "hooks": {
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Evaluate if this subagent should stop. Input: $ARGUMENTS\n\nCheck if:\n- The subagent completed its assigned task\n- Any errors occurred that need fixing\n- Additional context gathering is needed\n\nReturn: {\"decision\": \"approve\" or \"block\", \"reason\": \"explanation\"}"
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
 ### Comparison with bash command hooks
 
-| Feature | Bash Command Hooks | Prompt-Based Hooks |
+| Feature               | Bash Command Hooks      | Prompt-Based Hooks             |
 | --------------------- | ----------------------- | ------------------------------ |
-| **Execution** | Runs bash script | Queries LLM |
-| **Decision logic** | You implement in code | LLM evaluates context |
-| **Setup complexity** | Requires script file | Just configure prompt |
+| **Execution**         | Runs bash script        | Queries LLM                    |
+| **Decision logic**    | You implement in code   | LLM evaluates context          |
+| **Setup complexity**  | Requires script file    | Just configure prompt          |
 | **Context awareness** | Limited to script logic | Natural language understanding |
-| **Performance** | Fast (local execution) | Slower (API call) |
-| **Use case** | Deterministic rules | Context-aware decisions |
+| **Performance**       | Fast (local execution)  | Slower (API call)              |
+| **Use case**          | Deterministic rules     | Context-aware decisions        |
 
 ### Best practices
 
-* **Be specific in prompts**: Clearly state what you want the LLM to evaluate
-* **Include decision criteria**: List the factors the LLM should consider
-* **Test your prompts**: Verify the LLM makes correct decisions for your use cases
-* **Set appropriate timeouts**: Default is 30 seconds, adjust if needed
-* **Use for complex decisions**: Bash hooks are better for simple, deterministic rules
+- **Be specific in prompts**: Clearly state what you want the LLM to evaluate
+- **Include decision criteria**: List the factors the LLM should consider
+- **Test your prompts**: Verify the LLM makes correct decisions for your use cases
+- **Set appropriate timeouts**: Default is 30 seconds, adjust if needed
+- **Use for complex decisions**: Bash hooks are better for simple, deterministic rules
 
 See the [plugin components reference](/en/plugins-reference#hooks) for details on creating plugin hooks.
 
@@ -309,14 +312,14 @@ Runs after Grok creates tool parameters and before processing the tool call.
 
 **Common matchers:**
 
-* `Task` - Subagent tasks (see [subagents documentation](/en/sub-agents))
-* `Bash` - Shell commands
-* `Glob` - File pattern matching
-* `Grep` - Content search
-* `Read` - File reading
-* `Edit` - File editing
-* `Write` - File writing
-* `WebFetch`, `WebSearch` - Web operations
+- `Task` - Subagent tasks (see [subagents documentation](/en/sub-agents))
+- `Bash` - Shell commands
+- `Glob` - File pattern matching
+- `Grep` - Content search
+- `Read` - File reading
+- `Edit` - File editing
+- `Write` - File writing
+- `WebFetch`, `WebSearch` - Web operations
 
 ### PostToolUse
 
@@ -329,9 +332,9 @@ Recognizes the same matcher values as PreToolUse.
 Runs when Grok One-Shot sends notifications. Notifications are sent when:
 
 1. Grok needs your permission to use a tool. Example: "Grok needs your
-permission to use Bash"
+   permission to use Bash"
 2. The prompt input has been idle for at least 60 seconds. "Grok is waiting
-for your input"
+   for your input"
 
 ### UserPromptSubmit
 
@@ -354,8 +357,8 @@ Runs before Grok One-Shot is about to run a compact operation.
 
 **Matchers:**
 
-* `manual` - Invoked from `/compact`
-* `auto` - Invoked from auto-compact (due to full context window)
+- `manual` - Invoked from `/compact`
+- `auto` - Invoked from auto-compact (due to full context window)
 
 ### SessionStart
 
@@ -365,10 +368,10 @@ development context like existing issues or recent changes to your codebase, ins
 
 **Matchers:**
 
-* `startup` - Invoked from startup
-* `resume` - Invoked from `--resume`, `--continue`, or `/resume`
-* `clear` - Invoked from `/clear`
-* `compact` - Invoked from auto or manual compact.
+- `startup` - Invoked from startup
+- `resume` - Invoked from `--resume`, `--continue`, or `/resume`
+- `clear` - Invoked from `/clear`
+- `compact` - Invoked from auto or manual compact.
 
 #### Persisting environment variables
 
@@ -422,10 +425,10 @@ statistics, or saving session state.
 
 The `reason` field in the hook input will be one of:
 
-* `clear` - Session cleared with /clear command
-* `logout` - User logged out
-* `prompt_input_exit` - User exited while prompt input was visible
-* `other` - Other exit reasons
+- `clear` - Session cleared with /clear command
+- `logout` - User logged out
+- `prompt_input_exit` - User exited while prompt input was visible
+- `other` - Other exit reasons
 
 ## Hook Input
 
@@ -452,16 +455,16 @@ The exact schema for `tool_input` depends on the tool.
 
 ```json theme={null}
 {
-"session_id": "abc123",
-"transcript_path": "/Users/.../.grok/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-"cwd": "/Users/...",
-"permission_mode": "default",
-"hook_event_name": "PreToolUse",
-"tool_name": "Write",
-"tool_input": {
-"file_path": "/path/to/file.txt",
-"content": "file content"
-}
+  "session_id": "abc123",
+  "transcript_path": "/Users/.../.grok/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "/Users/...",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "/path/to/file.txt",
+    "content": "file content"
+  }
 }
 ```
 
@@ -471,20 +474,20 @@ The exact schema for `tool_input` and `tool_response` depends on the tool.
 
 ```json theme={null}
 {
-"session_id": "abc123",
-"transcript_path": "/Users/.../.grok/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-"cwd": "/Users/...",
-"permission_mode": "default",
-"hook_event_name": "PostToolUse",
-"tool_name": "Write",
-"tool_input": {
-"file_path": "/path/to/file.txt",
-"content": "file content"
-},
-"tool_response": {
-"filePath": "/path/to/file.txt",
-"success": true
-}
+  "session_id": "abc123",
+  "transcript_path": "/Users/.../.grok/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "/Users/...",
+  "permission_mode": "default",
+  "hook_event_name": "PostToolUse",
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "/path/to/file.txt",
+    "content": "file content"
+  },
+  "tool_response": {
+    "filePath": "/path/to/file.txt",
+    "success": true
+  }
 }
 ```
 
@@ -492,12 +495,12 @@ The exact schema for `tool_input` and `tool_response` depends on the tool.
 
 ```json theme={null}
 {
-"session_id": "abc123",
-"transcript_path": "/Users/.../.grok/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-"cwd": "/Users/...",
-"permission_mode": "default",
-"hook_event_name": "Notification",
-"message": "Task completed successfully"
+  "session_id": "abc123",
+  "transcript_path": "/Users/.../.grok/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "/Users/...",
+  "permission_mode": "default",
+  "hook_event_name": "Notification",
+  "message": "Task completed successfully"
 }
 ```
 
@@ -505,12 +508,12 @@ The exact schema for `tool_input` and `tool_response` depends on the tool.
 
 ```json theme={null}
 {
-"session_id": "abc123",
-"transcript_path": "/Users/.../.grok/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-"cwd": "/Users/...",
-"permission_mode": "default",
-"hook_event_name": "UserPromptSubmit",
-"prompt": "Write a function to calculate the factorial of a number"
+  "session_id": "abc123",
+  "transcript_path": "/Users/.../.grok/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "/Users/...",
+  "permission_mode": "default",
+  "hook_event_name": "UserPromptSubmit",
+  "prompt": "Write a function to calculate the factorial of a number"
 }
 ```
 
@@ -522,11 +525,11 @@ from running indefinitely.
 
 ```json theme={null}
 {
-"session_id": "abc123",
-"transcript_path": "~/.grok/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-"permission_mode": "default",
-"hook_event_name": "Stop",
-"stop_hook_active": true
+  "session_id": "abc123",
+  "transcript_path": "~/.grok/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "permission_mode": "default",
+  "hook_event_name": "Stop",
+  "stop_hook_active": true
 }
 ```
 
@@ -537,12 +540,12 @@ For `manual`, `custom_instructions` comes from what the user passes into
 
 ```json theme={null}
 {
-"session_id": "abc123",
-"transcript_path": "~/.grok/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-"permission_mode": "default",
-"hook_event_name": "PreCompact",
-"trigger": "manual",
-"custom_instructions": ""
+  "session_id": "abc123",
+  "transcript_path": "~/.grok/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "permission_mode": "default",
+  "hook_event_name": "PreCompact",
+  "trigger": "manual",
+  "custom_instructions": ""
 }
 ```
 
@@ -550,11 +553,11 @@ For `manual`, `custom_instructions` comes from what the user passes into
 
 ```json theme={null}
 {
-"session_id": "abc123",
-"transcript_path": "~/.grok/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-"permission_mode": "default",
-"hook_event_name": "SessionStart",
-"source": "startup"
+  "session_id": "abc123",
+  "transcript_path": "~/.grok/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "permission_mode": "default",
+  "hook_event_name": "SessionStart",
+  "source": "startup"
 }
 ```
 
@@ -562,12 +565,12 @@ For `manual`, `custom_instructions` comes from what the user passes into
 
 ```json theme={null}
 {
-"session_id": "abc123",
-"transcript_path": "~/.grok/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
-"cwd": "/Users/...",
-"permission_mode": "default",
-"hook_event_name": "SessionEnd",
-"reason": "exit"
+  "session_id": "abc123",
+  "transcript_path": "~/.grok/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "/Users/...",
+  "permission_mode": "default",
+  "hook_event_name": "SessionEnd",
+  "reason": "exit"
 }
 ```
 
@@ -581,13 +584,13 @@ and the user.
 
 Hooks communicate status through exit codes, stdout, and stderr:
 
-* **Exit code 0**: Success. `stdout` is shown to the user in transcript mode
-(CTRL-R), except for `UserPromptSubmit` and `SessionStart`, where stdout is
-added to the context.
-* **Exit code 2**: Blocking error. `stderr` is fed back to Grok to process
-automatically. See per-hook-event behavior below.
-* **Other exit codes**: Non-blocking error. `stderr` is shown to the user and
-execution continues.
+- **Exit code 0**: Success. `stdout` is shown to the user in transcript mode
+  (CTRL-R), except for `UserPromptSubmit` and `SessionStart`, where stdout is
+  added to the context.
+- **Exit code 2**: Blocking error. `stderr` is fed back to Grok to process
+  automatically. See per-hook-event behavior below.
+- **Other exit codes**: Non-blocking error. `stderr` is shown to the user and
+  execution continues.
 
 <Warning>
 Reminder: Grok One-Shot does not see stdout if the exit code is 0, except for
@@ -596,17 +599,17 @@ the `UserPromptSubmit` hook where stdout is injected as context.
 
 #### Exit Code 2 Behavior
 
-| Hook Event | Behavior |
+| Hook Event         | Behavior                                                           |
 | ------------------ | ------------------------------------------------------------------ |
-| `PreToolUse` | Blocks the tool call, shows stderr to Grok |
-| `PostToolUse` | Shows stderr to Grok (tool already ran) |
-| `Notification` | N/A, shows stderr to user only |
+| `PreToolUse`       | Blocks the tool call, shows stderr to Grok                         |
+| `PostToolUse`      | Shows stderr to Grok (tool already ran)                            |
+| `Notification`     | N/A, shows stderr to user only                                     |
 | `UserPromptSubmit` | Blocks prompt processing, erases prompt, shows stderr to user only |
-| `Stop` | Blocks stoppage, shows stderr to Grok |
-| `SubagentStop` | Blocks stoppage, shows stderr to Grok subagent |
-| `PreCompact` | N/A, shows stderr to user only |
-| `SessionStart` | N/A, shows stderr to user only |
-| `SessionEnd` | N/A, shows stderr to user only |
+| `Stop`             | Blocks stoppage, shows stderr to Grok                              |
+| `SubagentStop`     | Blocks stoppage, shows stderr to Grok subagent                     |
+| `PreCompact`       | N/A, shows stderr to user only                                     |
+| `SessionStart`     | N/A, shows stderr to user only                                     |
+| `SessionEnd`       | N/A, shows stderr to user only                                     |
 
 ### Advanced: JSON Output
 
@@ -618,25 +621,25 @@ All hook types can include these optional fields:
 
 ```json theme={null}
 {
-"continue": true, // Whether Grok should continue after hook execution (default: true)
-"stopReason": "string", // Message shown when continue is false
+  "continue": true, // Whether Grok should continue after hook execution (default: true)
+  "stopReason": "string", // Message shown when continue is false
 
-"suppressOutput": true, // Hide stdout from transcript mode (default: false)
-"systemMessage": "string" // Optional warning message shown to the user
+  "suppressOutput": true, // Hide stdout from transcript mode (default: false)
+  "systemMessage": "string" // Optional warning message shown to the user
 }
 ```
 
 If `continue` is false, Grok stops processing after the hooks run.
 
-* For `PreToolUse`, this is different from `"permissionDecision": "deny"`, which
-only blocks a specific tool call and provides automatic feedback to Grok.
-* For `PostToolUse`, this is different from `"decision": "block"`, which
-provides automated feedback to Grok.
-* For `UserPromptSubmit`, this prevents the prompt from being processed.
-* For `Stop` and `SubagentStop`, this takes precedence over any
-`"decision": "block"` output.
-* In all cases, `"continue" = false` takes precedence over any
-`"decision": "block"` output.
+- For `PreToolUse`, this is different from `"permissionDecision": "deny"`, which
+  only blocks a specific tool call and provides automatic feedback to Grok.
+- For `PostToolUse`, this is different from `"decision": "block"`, which
+  provides automated feedback to Grok.
+- For `UserPromptSubmit`, this prevents the prompt from being processed.
+- For `Stop` and `SubagentStop`, this takes precedence over any
+  `"decision": "block"` output.
+- In all cases, `"continue" = false` takes precedence over any
+  `"decision": "block"` output.
 
 `stopReason` accompanies `continue` with a reason shown to the user, not shown
 to Grok.
@@ -645,17 +648,17 @@ to Grok.
 
 `PreToolUse` hooks can control whether a tool call proceeds.
 
-* `"allow"` bypasses the permission system. `permissionDecisionReason` is shown
-to the user but not to Grok.
-* `"deny"` prevents the tool call from executing. `permissionDecisionReason` is
-shown to Grok.
-* `"ask"` asks the user to confirm the tool call in the UI.
-`permissionDecisionReason` is shown to the user but not to Grok.
+- `"allow"` bypasses the permission system. `permissionDecisionReason` is shown
+  to the user but not to Grok.
+- `"deny"` prevents the tool call from executing. `permissionDecisionReason` is
+  shown to Grok.
+- `"ask"` asks the user to confirm the tool call in the UI.
+  `permissionDecisionReason` is shown to the user but not to Grok.
 
 Additionally, hooks can modify tool inputs before execution using `updatedInput`:
 
-* `updatedInput` allows you to modify the tool's input parameters before the tool executes. This is a `Record<string, unknown>` object containing the fields you want to change or add.
-* This is most useful with `"permissionDecision": "allow"` to modify and approve tool calls.
+- `updatedInput` allows you to modify the tool's input parameters before the tool executes. This is a `Record<string, unknown>` object containing the fields you want to change or add.
+- This is most useful with `"permissionDecision": "allow"` to modify and approve tool calls.
 
 ```json theme={null}
 {
@@ -681,9 +684,9 @@ Use `hookSpecificOutput.permissionDecision` and
 
 `PostToolUse` hooks can provide feedback to Grok after tool execution.
 
-* `"block"` automatically prompts Grok with `reason`.
-* `undefined` does nothing. `reason` is ignored.
-* `"hookSpecificOutput.additionalContext"` adds context for Grok to consider.
+- `"block"` automatically prompts Grok with `reason`.
+- `undefined` does nothing. `reason` is ignored.
+- `"hookSpecificOutput.additionalContext"` adds context for Grok to consider.
 
 ```json theme={null}
 {
@@ -700,11 +703,11 @@ Use `hookSpecificOutput.permissionDecision` and
 
 `UserPromptSubmit` hooks can control whether a user prompt is processed.
 
-* `"block"` prevents the prompt from being processed. The submitted prompt is
-erased from context. `"reason"` is shown to the user but not added to context.
-* `undefined` allows the prompt to proceed normally. `"reason"` is ignored.
-* `"hookSpecificOutput.additionalContext"` adds the string to the context if not
-blocked.
+- `"block"` prevents the prompt from being processed. The submitted prompt is
+  erased from context. `"reason"` is shown to the user but not added to context.
+- `undefined` allows the prompt to proceed normally. `"reason"` is ignored.
+- `"hookSpecificOutput.additionalContext"` adds the string to the context if not
+  blocked.
 
 ```json theme={null}
 {
@@ -721,9 +724,9 @@ blocked.
 
 `Stop` and `SubagentStop` hooks can control whether Grok must continue.
 
-* `"block"` prevents Grok from stopping. You must populate `reason` for Grok
-to know how to proceed.
-* `undefined` allows Grok to stop. `reason` is ignored.
+- `"block"` prevents Grok from stopping. You must populate `reason` for Grok
+  to know how to proceed.
+- `undefined` allows Grok to stop. `reason` is ignored.
 
 ```json theme={null}
 {
@@ -736,15 +739,15 @@ to know how to proceed.
 
 `SessionStart` hooks allow you to load in context at the start of a session.
 
-* `"hookSpecificOutput.additionalContext"` adds the string to the context.
-* Multiple hooks' `additionalContext` values are concatenated.
+- `"hookSpecificOutput.additionalContext"` adds the string to the context.
+- Multiple hooks' `additionalContext` values are concatenated.
 
 ```json theme={null}
 {
-"hookSpecificOutput": {
-"hookEventName": "SessionStart",
-"additionalContext": "My additional context here"
-}
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": "My additional context here"
+  }
 }
 ```
 
@@ -810,9 +813,9 @@ sys.exit(2)
 <Note>
 For `UserPromptSubmit` hooks, you can inject context using either method:
 
-* Exit code 0 with stdout: Grok sees the context (special case for `UserPromptSubmit`)
-* JSON output: Provides more control over the behavior
-</Note>
+- Exit code 0 with stdout: Grok sees the context (special case for `UserPromptSubmit`)
+- JSON output: Provides more control over the behavior
+  </Note>
 
 ```python theme={null}
 #!/usr/bin/env python3
@@ -908,9 +911,9 @@ your hooks.
 
 MCP tools follow the pattern `mcp__<server>__<tool>`, for example:
 
-* `mcp__memory__create_entities` - Memory server's create entities tool
-* `mcp__filesystem__read_file` - Filesystem server's read file tool
-* `mcp__github__search_repositories` - GitHub server's search tool
+- `mcp__memory__create_entities` - Memory server's create entities tool
+- `mcp__filesystem__read_file` - Filesystem server's read file tool
+- `mcp__github__search_repositories` - GitHub server's search tool
 
 ### Configuring Hooks for MCP Tools
 
@@ -918,28 +921,28 @@ You can target specific MCP tools or entire MCP servers:
 
 ```json theme={null}
 {
-"hooks": {
-"PreToolUse": [
-{
-"matcher": "mcp__memory__.*",
-"hooks": [
-{
-"type": "command",
-"command": "echo 'Memory operation initiated' >> ~/mcp-operations.log"
-}
-]
-},
-{
-"matcher": "mcp__.*__write.*",
-"hooks": [
-{
-"type": "command",
-"command": "/home/user/scripts/validate-mcp-write.py"
-}
-]
-}
-]
-}
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__memory__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Memory operation initiated' >> ~/mcp-operations.log"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*__write.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/user/scripts/validate-mcp-write.py"
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
@@ -956,12 +959,12 @@ For practical examples including code formatting, notifications, and file protec
 **USE AT YOUR OWN RISK**: Grok One-Shot hooks execute arbitrary shell commands on
 your system automatically. By using hooks, you acknowledge that:
 
-* You are solely responsible for the commands you configure
-* Hooks can modify, delete, or access any files your user account can access
-* Malicious or poorly written hooks can cause data loss or system damage
-* xAI provides no warranty and assumes no liability for any damages
-resulting from hook usage
-* You should thoroughly test hooks in a safe environment before production use
+- You are solely responsible for the commands you configure
+- Hooks can modify, delete, or access any files your user account can access
+- Malicious or poorly written hooks can cause data loss or system damage
+- xAI provides no warranty and assumes no liability for any damages
+  resulting from hook usage
+- You should thoroughly test hooks in a safe environment before production use
 
 Always review and understand any hook commands before adding them to your
 configuration.
@@ -974,7 +977,7 @@ Here are some key practices for writing more secure hooks:
 2. **Always quote shell variables** - Use `"$VAR"` not `$VAR`
 3. **Block path traversal** - Check for `..` in file paths
 4. **Use absolute paths** - Specify full paths for scripts (use
-"\$GROK\_PROJECT\_DIR" for the project path)
+   "\$GROK_PROJECT_DIR" for the project path)
 5. **Skip sensitive files** - Avoid `.env`, `.git/`, keys, etc.
 
 ### Configuration Safety
@@ -991,19 +994,19 @@ This prevents malicious hook modifications from affecting your current session.
 
 ## Hook Execution Details
 
-* **Timeout**: 60-second execution limit by default, configurable per command.
-* A timeout for an individual command does not affect the other commands.
-* **Parallelization**: All matching hooks run in parallel
-* **Deduplication**: Multiple identical hook commands are deduplicated automatically
-* **Environment**: Runs in current directory with Grok One-Shot's environment
-* The `GROK_PROJECT_DIR` environment variable is available and contains the
-absolute path to the project root directory (where Grok One-Shot was started)
-* The `GROK_CODE_REMOTE` environment variable indicates whether the hook is running in a remote (web) environment (`"true"`) or local CLI environment (not set or empty). Use this to run different logic based on execution context.
-* **Input**: JSON via stdin
-* **Output**:
-* PreToolUse/PostToolUse/Stop/SubagentStop: Progress shown in transcript (Ctrl-R)
-* Notification/SessionEnd: Logged to debug only (`--debug`)
-* UserPromptSubmit/SessionStart: stdout added as context for Grok
+- **Timeout**: 60-second execution limit by default, configurable per command.
+- A timeout for an individual command does not affect the other commands.
+- **Parallelization**: All matching hooks run in parallel
+- **Deduplication**: Multiple identical hook commands are deduplicated automatically
+- **Environment**: Runs in current directory with Grok One-Shot's environment
+- The `GROK_PROJECT_DIR` environment variable is available and contains the
+  absolute path to the project root directory (where Grok One-Shot was started)
+- The `GROK_CODE_REMOTE` environment variable indicates whether the hook is running in a remote (web) environment (`"true"`) or local CLI environment (not set or empty). Use this to run different logic based on execution context.
+- **Input**: JSON via stdin
+- **Output**:
+- PreToolUse/PostToolUse/Stop/SubagentStop: Progress shown in transcript (Ctrl-R)
+- Notification/SessionEnd: Logged to debug only (`--debug`)
+- UserPromptSubmit/SessionStart: stdout added as context for Grok
 
 ## Debugging
 
@@ -1019,21 +1022,21 @@ If your hooks aren't working:
 
 Common issues:
 
-* **Quotes not escaped** - Use `\"` inside JSON strings
-* **Wrong matcher** - Check tool names match exactly (case-sensitive)
-* **Command not found** - Use full paths for scripts
+- **Quotes not escaped** - Use `\"` inside JSON strings
+- **Wrong matcher** - Check tool names match exactly (case-sensitive)
+- **Command not found** - Use full paths for scripts
 
 ### Advanced Debugging
 
 For complex hook issues:
 
 1. **Inspect hook execution** - Use `grok --debug` to see detailed hook
-execution
+   execution
 2. **Validate JSON schemas** - Test hook input/output with external tools
 3. **Check environment variables** - Verify Grok One-Shot's environment is correct
 4. **Test edge cases** - Try hooks with unusual file paths or inputs
 5. **Monitor system resources** - Check for resource exhaustion during hook
-execution
+   execution
 6. **Use structured logging** - Implement logging in your hook scripts
 
 ### Debug Output Example
@@ -1052,19 +1055,19 @@ Use `grok --debug` to see hook execution details:
 
 Progress messages appear in transcript mode (Ctrl-R) showing:
 
-* Which hook is running
-* Command being executed
-* Success/failure status
-* Output or error messages
+- Which hook is running
+- Command being executed
+- Success/failure status
+- Output or error messages
 
 ---
 
 ## See Also
 
-* [Hooks Guide](./hooks-guide.md) - Getting started with hooks
-* [Skills](./skills.md) - Agent Skills documentation
-* [Plugin System](../features/plugin-system.md) - Plugin system overview
-* [MCP Integration](../build-with-claude-code/mcp.md) - Model Context Protocol
+- [Hooks Guide](./hooks-guide.md) - Getting started with hooks
+- [Skills](./skills.md) - Agent Skills documentation
+- [Plugin System](../features/plugin-system.md) - Plugin system overview
+- [MCP Integration](../build-with-claude-code/mcp.md) - Model Context Protocol
 
 ---
 

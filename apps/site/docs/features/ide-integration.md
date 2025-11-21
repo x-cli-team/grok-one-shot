@@ -1,6 +1,7 @@
 ---
 title: IDE Integration
 ---
+
 # IDE Integration
 
 **Status:** Planned Feature (TBD)
@@ -41,6 +42,7 @@ Native IDE extensions for VS Code and JetBrains IDEs will bring Grok One-Shot di
 ## Roadmap
 
 ### Q2 2025: Sprint 11-12 (4 weeks)
+
 - VS Code extension MVP
 - Basic editor integration
 - Context synchronization
@@ -50,6 +52,7 @@ Native IDE extensions for VS Code and JetBrains IDEs will bring Grok One-Shot di
 ## Current Workaround
 
 Use Grok One-Shot CLI in integrated terminal:
+
 ```bash
 # In VS Code or JetBrains terminal
 grok

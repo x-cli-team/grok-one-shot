@@ -1,6 +1,7 @@
 ---
 title: Git Integration
 ---
+
 # Git Integration
 
 How Grok One-Shot works with Git repositories and version control.
@@ -14,6 +15,7 @@ Grok One-Shot is git-aware and can perform common version control operations thr
 ### Repository Detection
 
 **Automatic detection:**
+
 ```
 When you start grok in a git repository:
 - AI knows it's a git repo
@@ -23,6 +25,7 @@ When you start grok in a git repository:
 ```
 
 **Check if in repo:**
+
 ```bash
 # AI can run:
 git status
@@ -32,6 +35,7 @@ git rev-parse --is-inside-work-tree
 ### Current Branch
 
 **AI can check current branch:**
+
 ```
 > What branch am I on?
 
@@ -44,6 +48,7 @@ Response: "You're on branch 'feature/auth-refactor'"
 ### Implemented (via Bash tool)
 
 **Status and inspection:**
+
 ```bash
 git status # Working tree status
 git diff # Unstaged changes
@@ -54,6 +59,7 @@ git remote -v # Remote repositories
 ```
 
 **Staging:**
+
 ```bash
 git add <files> # Stage specific files
 git add . # Stage all changes
@@ -61,6 +67,7 @@ git reset <file> # Unstage file
 ```
 
 **Committing:**
+
 ```bash
 git commit -m "message" # Create commit
 git commit --amend # Amend last commit
@@ -68,6 +75,7 @@ git commit -m "$(cat <<'EOF'...)" # Multi-line commit
 ```
 
 **Branch management:**
+
 ```bash
 git branch <name> # Create branch
 git checkout <branch> # Switch branch
@@ -77,6 +85,7 @@ git branch -d <branch> # Delete branch
 ```
 
 **Remote operations:**
+
 ```bash
 git fetch # Fetch updates
 git pull # Fetch and merge
@@ -87,6 +96,7 @@ git push -u origin <branch> # Push new branch
 ### Partially Implemented
 
 **Commit workflows:**
+
 - AI can create commits
 - AI can write commit messages
 - Manual confirmation required (safety)
@@ -94,11 +104,13 @@ git push -u origin <branch> # Push new branch
 - No conventional commit enforcement
 
 **Branch workflows:**
+
 - AI can create/switch branches
 - No branch naming conventions enforcement
 - No automatic branch creation from task
 
 **Conflict resolution:**
+
 - AI can see conflicts
 - AI can suggest resolutions
 - No automatic conflict resolution
@@ -107,18 +119,21 @@ git push -u origin <branch> # Push new branch
 ### Planned Features
 
 **Pull request creation:**
+
 - Create PRs via gh CLI or API
 - Generate PR descriptions from commits
 - Assign reviewers
 - Add labels
 
 **PR review:**
+
 - Analyze PR diffs
 - Suggest improvements
 - Check for issues
 - Add review comments
 
 **Advanced workflows:**
+
 - Interactive rebase assistance
 - Cherry-pick with explanation
 - Squash commit cleanup
@@ -129,11 +144,13 @@ git push -u origin <branch> # Push new branch
 ### Example 1: Making a Commit
 
 **User request:**
+
 ```
 > Commit the changes with an appropriate message
 ```
 
 **AI workflow:**
+
 ```bash
 # 1. Check status
 git status
@@ -161,6 +178,7 @@ git log -1 --oneline
 ```
 
 **AI response:**
+
 ```
 Created commit: "fix: improve error handling in authentication middleware"
 2 files changed, 15 insertions(+), 3 deletions(-)
@@ -169,11 +187,13 @@ Created commit: "fix: improve error handling in authentication middleware"
 ### Example 2: Branch and Commit Workflow
 
 **User request:**
+
 ```
 > Create a branch for adding OAuth support, implement it, and commit
 ```
 
 **AI workflow:**
+
 ```bash
 # 1. Create and switch to branch
 git checkout -b feature/oauth-support
@@ -201,11 +221,13 @@ git log -1 --stat
 ### Example 3: Pre-Commit Review
 
 **User request:**
+
 ```
 > Review my uncommitted changes before I commit
 ```
 
 **AI workflow:**
+
 ```bash
 # 1. Check status
 git status
@@ -221,6 +243,7 @@ git diff --staged
 ```
 
 **AI response:**
+
 ```
 Changes look good:
 Error handling added in auth middleware
@@ -239,6 +262,7 @@ Ready to commit? I can create a commit message for you.
 ### Commit Messages
 
 **AI follows conventions:**
+
 ```
 Format: <type>(<scope>): <subject>
 
@@ -259,6 +283,7 @@ refactor(db): extract connection pool logic
 ```
 
 **AI-generated commit messages:**
+
 ```
 > Create a commit for these authentication changes
 
@@ -276,6 +301,7 @@ Resolves #123"
 ### Git Safety
 
 **Confirmations:**
+
 ```
 AI: "I'll create a commit with message:
 'fix: improve error handling'
@@ -292,6 +318,7 @@ v → View full diff first
 ```
 
 **Destructive operations:**
+
 ```
 AI avoids:
 git push --force (unless explicitly requested)
@@ -305,6 +332,7 @@ Rewriting published history
 ### GitHub CLI (gh)
 
 **If `gh` is installed:**
+
 ```bash
 # AI can use gh CLI
 gh pr create
@@ -316,6 +344,7 @@ gh repo view
 ```
 
 **Example workflow:**
+
 ```
 > Create a pull request for my feature branch
 
@@ -339,6 +368,7 @@ EOF
 ### Git Hooks Integration
 
 **Pre-commit hooks:**
+
 ```bash
 # Grok One-Shot can help enforce hooks
 # Example: Check for console.log before commit
@@ -356,11 +386,13 @@ AI:
 ### Interactive Rebase Help
 
 **User request:**
+
 ```
 > Help me rebase my feature branch onto main
 ```
 
 **AI workflow:**
+
 ```bash
 # 1. Fetch latest
 git fetch origin main
@@ -375,6 +407,7 @@ git log --oneline main..HEAD
 ```
 
 **AI response:**
+
 ```
 You have 5 commits on feature/oauth-support that aren't on main:
 - abc1234 feat: add OAuth config
@@ -394,11 +427,13 @@ Then follow prompts. Need help with the rebase?
 ### Cherry-Pick Assistance
 
 **User request:**
+
 ```
 > Cherry-pick commit abc1234 from feature/other-branch
 ```
 
 **AI workflow:**
+
 ```bash
 # 1. Show commit
 git show abc1234
@@ -416,11 +451,13 @@ git diff # Show conflicts
 ### Stash Management
 
 **User request:**
+
 ```
 > Stash my changes so I can switch branches
 ```
 
 **AI workflow:**
+
 ```bash
 # Save changes
 git stash push -m "WIP: authentication refactor"
@@ -438,6 +475,7 @@ git stash pop
 ### Merge Conflicts
 
 **AI can help resolve:**
+
 ```
 > I have merge conflicts, help me resolve them
 
@@ -472,6 +510,7 @@ Want me to show the exact code to keep?"
 **Scenarios:**
 
 **Uncommitted changes:**
+
 ```bash
 git restore <file> # Discard changes
 git restore --staged # Unstage
@@ -479,6 +518,7 @@ git clean -n # Preview untracked files
 ```
 
 **Committed changes:**
+
 ```bash
 git reset --soft HEAD~1 # Undo commit, keep changes
 git reset --hard HEAD~1 # Undo commit, discard changes (careful!)
@@ -486,6 +526,7 @@ git revert <commit> # Create new commit that undoes changes
 ```
 
 **Pushed changes:**
+
 ```bash
 git revert <commit> # Safe: creates new commit
 git push
@@ -498,15 +539,18 @@ git push
 ### Current Limitations
 
 **No native git integration:**
+
 - All git operations via Bash tool
 - No git library integration
 - No specialized git UI
 
 **Confirmation required:**
+
 - All git write operations need approval (unless confirmations disabled)
 - Safety first approach
 
 **No GUI:**
+
 - Terminal only
 - No visual diff viewer
 - No merge conflict UI
@@ -514,12 +558,14 @@ git push
 ### Best Practices
 
 **DO:**
+
 - Let AI help with commit messages
 - Review diffs before committing
 - Use descriptive branch names
 - Keep commits focused and atomic
 
 **DON'T:**
+
 - Blindly approve git operations
 - Let AI force push without understanding why
 - Disable confirmations for unfamiliar repos

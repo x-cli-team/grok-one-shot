@@ -222,7 +222,6 @@ function syncClaudeCodeDocs() {
           'features/multi-file-operations',
           'features/codebase-intelligence',
           'features/performance-monitoring',
-          'features/testing-integration',
           'features/code-templates',
           'features/custom-tools',
           'features/session-restore',
@@ -286,9 +285,8 @@ function syncClaudeCodeDocs() {
         label: 'Community',
         items: [
           'community/index',
-          'community/contributing', 
-          'community/support',
-          'community/testimonials'
+          'community/contributing',
+          'community/support'
         ]
       },
       

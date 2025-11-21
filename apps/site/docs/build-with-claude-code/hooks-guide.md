@@ -1,6 +1,7 @@
 ---
 title: Get Started with Hooks
 ---
+
 # Get Started with Hooks
 
 > ** PARITY GAP**: Grok One-Shot does not currently implement the hooks system described in this document. This is a Claude Code feature planned for future implementation.
@@ -14,11 +15,12 @@ Hooks are user-defined shell commands that execute at various points in your AI 
 **Current Status:** Not Implemented
 
 **What Hooks Enable (in Claude Code):**
-* **Notifications**: Desktop alerts when AI needs input or permission
-* **Automatic formatting**: Run `prettier` on `.ts` files, `gofmt` on `.go` files after every edit
-* **Logging**: Track and count all executed commands for compliance or debugging
-* **Feedback**: Provide automated feedback when AI produces code that doesn't follow conventions
-* **Custom permissions**: Block modifications to production files or sensitive directories
+
+- **Notifications**: Desktop alerts when AI needs input or permission
+- **Automatic formatting**: Run `prettier` on `.ts` files, `gofmt` on `.go` files after every edit
+- **Logging**: Track and count all executed commands for compliance or debugging
+- **Feedback**: Provide automated feedback when AI produces code that doesn't follow conventions
+- **Custom permissions**: Block modifications to production files or sensitive directories
 
 ## Alternative Approaches in Grok One-Shot
 
@@ -34,12 +36,14 @@ Add formatting and quality requirements to your project's `GROK.md` file:
 ## Code Quality
 
 After modifying any TypeScript files, always run:
+
 - `prettier --write <file>`
 - `eslint --fix <file>`
 
 ## Restricted Files
 
 Never modify these files without explicit approval:
+
 - `.env`
 - `package-lock.json`
 - `yarn.lock`
@@ -50,7 +54,7 @@ Never modify these files without explicit approval:
 
 Use standard Git hooks for code quality automation:
 
-```bash
+````bash
 # .git/hooks/pre-commit
 #!/bin/bash
 
@@ -73,7 +77,7 @@ echo "Running post-session checks..."
 npm run format
 npm run lint
 git add -u
-```
+````
 
 ### 4. CI/CD Integration
 
@@ -109,53 +113,56 @@ Then ask Grok One-Shot to use the formatting tools when needed.
 
 Future hook events that would likely be supported:
 
-* **PreToolUse**: Before tool calls (can block them)
-* **PostToolUse**: After tool calls complete
-* **UserPromptSubmit**: When user submits a prompt
-* **Notification**: When notifications are sent
-* **SessionStart**: When session starts
-* **SessionEnd**: When session ends
+- **PreToolUse**: Before tool calls (can block them)
+- **PostToolUse**: After tool calls complete
+- **UserPromptSubmit**: When user submits a prompt
+- **Notification**: When notifications are sent
+- **SessionStart**: When session starts
+- **SessionEnd**: When session ends
 
 Example configuration (future):
 
 ```json
 // ~/.grok/settings.json (future)
 {
-"hooks": {
-"PostToolUse": [
-{
-"matcher": "Edit|Write",
-"hooks": [
-{
-"type": "command",
-"command": "npx prettier --write \"$FILE_PATH\""
-}
-]
-}
-]
-}
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx prettier --write \"$FILE_PATH\""
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
 ## See Also
 
-* [Hooks Reference](./hooks.md) - Detailed feature documentation
-* [MCP Integration](./mcp.md) - Current extensibility mechanism
-* [Settings Reference](../configuration/settings.md) - Current configuration options
-* [GROK.md Guide](../../getting-started/overview.md#project-context-grokmd) - Project-level instructions
+- [Hooks Reference](./hooks.md) - Detailed feature documentation
+- [MCP Integration](./mcp.md) - Current extensibility mechanism
+- [Settings Reference](../configuration/settings.md) - Current configuration options
+- [GROK.md Guide](../../getting-started/overview.md#project-context-grokmd) - Project-level instructions
 
 ---
 
 **Want this feature?** Consider:
-* Opening a feature request in the Grok One-Shot repository
-* Using Git hooks and CI/CD as interim solutions
-* Exploring MCP servers for custom tool integration
+
+- Opening a feature request in the Grok One-Shot repository
+- Using Git hooks and CI/CD as interim solutions
+- Exploring MCP servers for custom tool integration
 
 **Last Updated:** 2025-11-07
 )
 
 # Run linter
+
 npm run lint-staged
+
 ```
 
 ### 3. Shell Script Wrappers
@@ -182,12 +189,12 @@ Then ask Grok One-Shot to use the formatting tools when needed.
 
 Future hook events that would likely be supported:
 
-* **PreToolUse**: Before tool calls (can block them)
-* **PostToolUse**: After tool calls complete
-* **UserPromptSubmit**: When user submits a prompt
-* **Notification**: When notifications are sent
-* **SessionStart**: When session starts
-* **SessionEnd**: When session ends
+- **PreToolUse**: Before tool calls (can block them)
+- **PostToolUse**: After tool calls complete
+- **UserPromptSubmit**: When user submits a prompt
+- **Notification**: When notifications are sent
+- **SessionStart**: When session starts
+- **SessionEnd**: When session ends
 
 Example configuration (future):
 
@@ -195,16 +202,18 @@ __CODE_BLOCK_11__
 
 ## See Also
 
-* [Hooks Reference](./hooks.md) - Detailed feature documentation
-* [MCP Integration](./mcp.md) - Current extensibility mechanism
-* [Settings Reference](../configuration/settings.md) - Current configuration options
-* [GROK.md Guide](../../getting-started/overview.md#project-context-grokmd) - Project-level instructions
+- [Hooks Reference](./hooks.md) - Detailed feature documentation
+- [MCP Integration](./mcp.md) - Current extensibility mechanism
+- [Settings Reference](../configuration/settings.md) - Current configuration options
+- [GROK.md Guide](../../getting-started/overview.md#project-context-grokmd) - Project-level instructions
 
 ---
 
 **Want this feature?** Consider:
-* Opening a feature request in the Grok One-Shot repository
-* Using Git hooks and CI/CD as interim solutions
-* Exploring MCP servers for custom tool integration
+
+- Opening a feature request in the Grok One-Shot repository
+- Using Git hooks and CI/CD as interim solutions
+- Exploring MCP servers for custom tool integration
 
 **Last Updated:** 2025-11-07
+```

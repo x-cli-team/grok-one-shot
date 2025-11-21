@@ -1,6 +1,7 @@
 ---
 title: Slash commands
 ---
+
 # Slash commands
 
 > Control Grok's behavior during an interactive session with slash commands.
@@ -11,8 +12,8 @@ title: Slash commands
 
 > ** Parity Gap:** Grok One-Shot currently supports only a minimal set of slash commands. The following Claude Code commands are not yet available: `/add-dir`, `/agents`, `/bashes`, `/bug`, `/clear`, `/compact`, `/config`, `/context`, `/cost`, `/doctor`, `/export`, `/help`, `/hooks`, `/init`, `/login`, `/logout`, `/mcp`, `/memory`, `/model`, `/output-style`, `/permissions`, `/pr_comments`, `/privacy-settings`, `/review`, `/sandbox`, `/rewind`, `/status`, `/statusline`, `/terminal-setup`, `/todos`, `/usage`, `/vim`.
 
-| Command | Purpose |
-| :------------------------ | :-------------------------------------------------------------------------------------------------------------------------- |
+| Command | Purpose       |
+| :------ | :------------ |
 | `/exit` | Exit the REPL |
 
 <Note>
@@ -33,10 +34,10 @@ Custom slash commands allow you to define frequently-used prompts as Markdown fi
 
 #### Parameters
 
-| Parameter | Description |
+| Parameter        | Description                                                       |
 | :--------------- | :---------------------------------------------------------------- |
 | `<command-name>` | Name derived from the Markdown filename (without `.md` extension) |
-| `[arguments]` | Optional arguments passed to the command |
+| `[arguments]`    | Optional arguments passed to the command                          |
 
 ### Command types
 
@@ -111,13 +112,13 @@ echo 'Review PR #$1 with priority $2 and assign to $3' > .grok/commands/review-p
 
 Use positional arguments when you need to:
 
-* Access arguments individually in different parts of your command
-* Provide defaults for missing arguments
-* Build more structured commands with specific parameter roles
+- Access arguments individually in different parts of your command
+- Provide defaults for missing arguments
+- Build more structured commands with specific parameter roles
 
 #### Bash command execution
 
-Execute bash commands before the slash command runs using the `!` prefix. The output is included in the command context. You *must* include `allowed-tools` with the `Bash` tool, but you can choose the specific bash commands to allow.
+Execute bash commands before the slash command runs using the `!` prefix. The output is included in the command context. You _must_ include `allowed-tools` with the `Bash` tool, but you can choose the specific bash commands to allow.
 
 For example:
 
@@ -165,13 +166,13 @@ Slash commands can trigger extended thinking by including extended thinking keyw
 
 Command files support frontmatter, useful for specifying metadata about the command:
 
-| Frontmatter | Purpose | Default |
+| Frontmatter                | Purpose                                                                                                                                                                               | Default                             |
 | :------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :---------------------------------- |
-| `allowed-tools` | List of tools the command can use | Inherits from the conversation |
-| `argument-hint` | The arguments expected for the slash command. Example: `argument-hint: add [tagId] \| remove [tagId] \| list`. This hint is shown to the user when auto-completing the slash command. | None |
-| `description` | Brief description of the command | Uses the first line from the prompt |
-| `model` | Specific model string (e.g., `grok-2-1212`, `grok-beta`) | Inherits from the conversation |
-| `disable-model-invocation` | Whether to prevent `SlashCommand` tool from calling this command | false |
+| `allowed-tools`            | List of tools the command can use                                                                                                                                                     | Inherits from the conversation      |
+| `argument-hint`            | The arguments expected for the slash command. Example: `argument-hint: add [tagId] \| remove [tagId] \| list`. This hint is shown to the user when auto-completing the slash command. | None                                |
+| `description`              | Brief description of the command                                                                                                                                                      | Uses the first line from the prompt |
+| `model`                    | Specific model string (e.g., `grok-2-1212`, `grok-beta`)                                                                                                                              | Inherits from the conversation      |
+| `disable-model-invocation` | Whether to prevent `SlashCommand` tool from calling this command                                                                                                                      | false                               |
 
 For example:
 
@@ -208,9 +209,9 @@ Focus on security, performance, and code style.
 
 Plugin commands are:
 
-* **Namespaced**: Commands can use the format `/plugin-name:command-name` to avoid conflicts (plugin prefix is optional unless there are name collisions)
-* **Automatically available**: Once a plugin is installed and enabled, its commands appear in `/help`
-* **Fully integrated**: Support all command features (arguments, frontmatter, bash execution, file references)
+- **Namespaced**: Commands can use the format `/plugin-name:command-name` to avoid conflicts (plugin prefix is optional unless there are name collisions)
+- **Automatically available**: Once a plugin is installed and enabled, its commands appear in `/help`
+- **Fully integrated**: Support all command features (arguments, frontmatter, bash execution, file references)
 
 ### Plugin command structure
 
@@ -233,10 +234,10 @@ Include specific guidance on parameters, expected outcomes, and any special cons
 
 **Advanced command features**:
 
-* **Arguments**: Use placeholders like `{arg1}` in command descriptions
-* **Subdirectories**: Organize commands in subdirectories for namespacing
-* **Bash integration**: Commands can execute shell scripts and programs
-* **File references**: Commands can reference and modify project files
+- **Arguments**: Use placeholders like `{arg1}` in command descriptions
+- **Subdirectories**: Organize commands in subdirectories for namespacing
+- **Bash integration**: Commands can execute shell scripts and programs
+- **File references**: Commands can reference and modify project files
 
 ### Invocation patterns
 
@@ -272,9 +273,9 @@ MCP commands follow the pattern:
 
 MCP commands are automatically available when:
 
-* An MCP server is connected and active
-* The server exposes prompts through the MCP protocol
-* The prompts are successfully retrieved during connection
+- An MCP server is connected and active
+- The server exposes prompts through the MCP protocol
+- The prompts are successfully retrieved during connection
 
 #### Arguments
 
@@ -291,17 +292,17 @@ MCP prompts can accept arguments defined by the server:
 
 #### Naming conventions
 
-* Server and prompt names are normalized
-* Spaces and special characters become underscores
-* Names are lowercased for consistency
+- Server and prompt names are normalized
+- Spaces and special characters become underscores
+- Names are lowercased for consistency
 
 ### Managing MCP connections
 
 Use the `grok mcp` command to:
 
-* Add MCP servers
-* List configured servers
-* Remove servers
+- Add MCP servers
+- List configured servers
+- Remove servers
 
 > ** Parity Gap:** Grok One-Shot's MCP management is command-line based (`grok mcp add/list/remove`), not slash-command based like Claude Code's `/mcp` command.
 
@@ -309,9 +310,9 @@ Use the `grok mcp` command to:
 
 When configuring permissions for MCP tools, note that **wildcards are not supported**:
 
-* **Correct**: `mcp__github` (approves ALL tools from the github server)
-* **Correct**: `mcp__github__get_issue` (approves specific tool)
-* **Incorrect**: `mcp__github__*` (wildcards not supported)
+- **Correct**: `mcp__github` (approves ALL tools from the github server)
+- **Correct**: `mcp__github__get_issue` (approves specific tool)
+- **Incorrect**: `mcp__github__*` (wildcards not supported)
 
 To approve all tools from an MCP server, use just the server name: `mcp__servername`. To approve specific tools only, list each tool individually.
 
@@ -335,8 +336,8 @@ This tool puts each available custom slash command's metadata into context up to
 
 `SlashCommand` tool only supports custom slash commands that:
 
-* Are user-defined. Built-in commands like `/compact` and `/init` are *not* supported.
-* Have the `description` frontmatter field populated. We use the `description` in the context.
+- Are user-defined. Built-in commands like `/compact` and `/init` are _not_ supported.
+- Have the `description` frontmatter field populated. We use the `description` in the context.
 
 ### Disable `SlashCommand` tool
 
@@ -359,8 +360,8 @@ This will also remove the command's metadata from context.
 
 The permission rules support:
 
-* **Exact match**: `SlashCommand:/commit` (allows only `/commit` with no arguments)
-* **Prefix match**: `SlashCommand:/review-pr:*` (allows `/review-pr` with any arguments)
+- **Exact match**: `SlashCommand:/commit` (allows only `/commit` with no arguments)
+- **Prefix match**: `SlashCommand:/review-pr:*` (allows `/review-pr` with any arguments)
 
 ### Character budget limit
 
@@ -368,8 +369,8 @@ The `SlashCommand` tool includes a character budget to limit the size of command
 
 The budget includes each custom slash command's name, args, and description.
 
-* **Default limit**: 15,000 characters
-* **Custom limit**: Set via `SLASH_COMMAND_TOOL_CHAR_BUDGET` environment variable
+- **Default limit**: 15,000 characters
+- **Custom limit**: Set via `SLASH_COMMAND_TOOL_CHAR_BUDGET` environment variable
 
 When the character budget is exceeded, the AI will see only a subset of the available commands. In `/context`, a warning will show with "M of N commands".
 
@@ -383,41 +384,41 @@ When the character budget is exceeded, the AI will see only a subset of the avai
 
 **Quick, frequently-used prompts**:
 
-* Simple prompt snippets you use often
-* Quick reminders or templates
-* Frequently-used instructions that fit in one file
+- Simple prompt snippets you use often
+- Quick reminders or templates
+- Frequently-used instructions that fit in one file
 
 **Examples**:
 
-* `/review` → "Review this code for bugs and suggest improvements"
-* `/explain` → "Explain this code in simple terms"
-* `/optimize` → "Analyze this code for performance issues"
+- `/review` → "Review this code for bugs and suggest improvements"
+- `/explain` → "Explain this code in simple terms"
+- `/optimize` → "Analyze this code for performance issues"
 
 ### Use Skills for
 
 **Comprehensive capabilities with structure**:
 
-* Complex workflows with multiple steps
-* Capabilities requiring scripts or utilities
-* Knowledge organized across multiple files
-* Team workflows you want to standardize
+- Complex workflows with multiple steps
+- Capabilities requiring scripts or utilities
+- Knowledge organized across multiple files
+- Team workflows you want to standardize
 
 **Examples**:
 
-* PDF processing Skill with form-filling scripts and validation
-* Data analysis Skill with reference docs for different data types
-* Documentation Skill with style guides and templates
+- PDF processing Skill with form-filling scripts and validation
+- Data analysis Skill with reference docs for different data types
+- Documentation Skill with style guides and templates
 
 ### Key differences
 
-| Aspect | Slash Commands | Agent Skills |
+| Aspect         | Slash Commands                   | Agent Skills                        |
 | -------------- | -------------------------------- | ----------------------------------- |
-| **Complexity** | Simple prompts | Complex capabilities |
-| **Structure** | Single .md file | Directory with SKILL.md + resources |
-| **Discovery** | Explicit invocation (`/command`) | Automatic (based on context) |
-| **Files** | One file only | Multiple files, scripts, templates |
-| **Scope** | Project or personal | Project or personal |
-| **Sharing** | Via git | Via git |
+| **Complexity** | Simple prompts                   | Complex capabilities                |
+| **Structure**  | Single .md file                  | Directory with SKILL.md + resources |
+| **Discovery**  | Explicit invocation (`/command`) | Automatic (based on context)        |
+| **Files**      | One file only                    | Multiple files, scripts, templates  |
+| **Scope**      | Project or personal              | Project or personal                 |
+| **Sharing**    | Via git                          | Via git                             |
 
 ### Example comparison
 
@@ -425,7 +426,9 @@ When the character budget is exceeded, the AI will see only a subset of the avai
 
 ```markdown theme={null}
 # .grok/commands/review.md
+
 Review this code for:
+
 - Security vulnerabilities
 - Performance issues
 - Code style violations
@@ -453,22 +456,22 @@ The Skill provides richer context, validation scripts, and organized reference m
 
 **Use slash commands**:
 
-* You invoke the same prompt repeatedly
-* The prompt fits in a single file
-* You want explicit control over when it runs
+- You invoke the same prompt repeatedly
+- The prompt fits in a single file
+- You want explicit control over when it runs
 
 **Use Skills**:
 
-* The AI should discover the capability automatically
-* Multiple files or scripts are needed
-* Complex workflows with validation steps
-* Team needs standardized, detailed guidance
+- The AI should discover the capability automatically
+- Multiple files or scripts are needed
+- Complex workflows with validation steps
+- Team needs standardized, detailed guidance
 
 Both slash commands and Skills can coexist. Use the approach that fits your needs.
 
 ## See also
 
-* [Interactive mode](/en/interactive-mode) - Shortcuts, input modes, and interactive features
-* [CLI reference](/en/cli-reference) - Command-line flags and options
-* [Settings](/en/settings) - Configuration options
-* [Memory management](/en/memory) - Managing Grok's memory across sessions
+- [Interactive mode](/en/interactive-mode) - Shortcuts, input modes, and interactive features
+- [CLI reference](/en/cli-reference) - Command-line flags and options
+- [Settings](/en/settings) - Configuration options
+- [Memory management](/en/memory) - Managing Grok's memory across sessions

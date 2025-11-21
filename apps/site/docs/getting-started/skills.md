@@ -1,6 +1,7 @@
 ---
 title: Agent Skills
 ---
+
 # Agent Skills
 
 > ** PARITY GAP**: Grok One-Shot does not currently implement the Agent Skills system described in this document. This is a comprehensive Claude Code feature planned for future implementation.
@@ -12,6 +13,7 @@ title: Agent Skills
 **Priority:** P2 - Knowledge packaging and sharing
 
 **What Agent Skills Enable (in Claude Code):**
+
 - Package domain expertise into discoverable capabilities
 - Model-invoked skills (Claude decides when to use them)
 - Progressive disclosure (load supporting files on-demand)
@@ -20,6 +22,7 @@ title: Agent Skills
 - Personal and project-level skills
 
 **Alternative Approaches:** Until Skills are implemented:
+
 1. Use `.agent/docs/` for project documentation
 2. Document workflows in `GROK.md`
 3. Create shell scripts for common operations
@@ -34,8 +37,8 @@ This guide shows you how to create, use, and manage Agent Skills in Grok One-Sho
 
 ## Prerequisites
 
-* Grok One-Shot version 1.1.0 or later
-* Basic familiarity with [Grok One-Shot](/en/quickstart)
+- Grok One-Shot version 1.1.0 or later
+- Basic familiarity with [Grok One-Shot](/en/quickstart)
 
 ## What are Agent Skills?
 
@@ -45,10 +48,10 @@ Agent Skills would package expertise into discoverable capabilities. Each Skill 
 
 **Benefits**:
 
-* Extend Grok's capabilities for your specific workflows
-* Share expertise across your team via git
-* Reduce repetitive prompting
-* Compose multiple Skills for complex tasks
+- Extend Grok's capabilities for your specific workflows
+- Share expertise across your team via git
+- Reduce repetitive prompting
+- Compose multiple Skills for complex tasks
 
 Learn more in the [Agent Skills overview](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview) (Claude Code documentation).
 
@@ -70,9 +73,9 @@ mkdir -p ~/.grok/skills/my-skill-name
 
 **Use personal Skills for**:
 
-* Your individual workflows and preferences
-* Experimental Skills you're developing
-* Personal productivity tools
+- Your individual workflows and preferences
+- Experimental Skills you're developing
+- Personal productivity tools
 
 ### Project Skills
 
@@ -84,9 +87,9 @@ mkdir -p .grok/skills/my-skill-name
 
 **Use project Skills for**:
 
-* Team workflows and conventions
-* Project-specific expertise
-* Shared utilities and scripts
+- Team workflows and conventions
+- Project-specific expertise
+- Shared utilities and scripts
 
 Project Skills are checked into git and automatically available to team members.
 
@@ -117,8 +120,8 @@ Show concrete examples of using this Skill.
 
 **Field requirements**:
 
-* `name`: Must use lowercase letters, numbers, and hyphens only (max 64 characters)
-* `description`: Brief description of what the Skill does and when to use it (max 1024 characters)
+- `name`: Must use lowercase letters, numbers, and hyphens only (max 64 characters)
+- `description`: Brief description of what the Skill does and when to use it (max 1024 characters)
 
 The `description` field is critical for Grok to discover when to use your Skill. It should include both what the Skill does and when Grok should use it.
 
@@ -145,6 +148,7 @@ Reference these files from SKILL.md:
 For advanced usage, see [reference.md](reference.md).
 
 Run the helper script:
+
 ```bash
 python scripts/helper.py input.txt
 ```
@@ -175,9 +179,9 @@ This Skill provides read-only file access.
 
 When this Skill is active, Grok can only use the specified tools (Read, Grep, Glob) without needing to ask for permission. This is useful for:
 
-* Read-only Skills that shouldn't modify files
-* Skills with limited scope (e.g., only data analysis, no file writing)
-* Security-sensitive workflows where you want to restrict capabilities
+- Read-only Skills that shouldn't modify files
+- Skills with limited scope (e.g., only data analysis, no file writing)
+- Security-sensitive workflows where you want to restrict capabilities
 
 If `allowed-tools` is not specified, Grok will ask for permission to use tools as normal, following the standard permission model.
 
@@ -189,9 +193,9 @@ If `allowed-tools` is not specified, Grok will ask for permission to use tools a
 
 Skills would be automatically discovered by Grok from three sources:
 
-* Personal Skills: `~/.grok/skills/`
-* Project Skills: `.grok/skills/`
-* Plugin Skills: bundled with installed plugins
+- Personal Skills: `~/.grok/skills/`
+- Project Skills: `.grok/skills/`
+- Plugin Skills: bundled with installed plugins
 
 **To view all available Skills**, ask Grok directly:
 
@@ -283,9 +287,9 @@ cat .grok/skills/my-skill/SKILL.md | head -n 10
 
 Ensure:
 
-* Opening `---` on line 1
-* Closing `---` before Markdown content
-* Valid YAML syntax (no tabs, correct indentation)
+- Opening `---` on line 1
+- Closing `---` before Markdown content
+- Valid YAML syntax (no tabs, correct indentation)
 
 ### View errors
 
@@ -372,14 +376,14 @@ One Skill should address one capability:
 
 **Focused**:
 
-* "PDF form filling"
-* "Excel data analysis"
-* "Git commit messages"
+- "PDF form filling"
+- "Excel data analysis"
+- "Git commit messages"
 
 **Too broad**:
 
-* "Document processing" (split into separate Skills)
-* "Data tools" (split by data type or operation)
+- "Document processing" (split into separate Skills)
+- "Data tools" (split by data type or operation)
 
 ### Write clear descriptions
 
@@ -401,9 +405,9 @@ description: For files
 
 Have teammates use Skills and provide feedback:
 
-* Does the Skill activate when expected?
-* Are the instructions clear?
-* Are there missing examples or edge cases?
+- Does the Skill activate when expected?
+- Are the instructions clear?
+- Are there missing examples or edge cases?
 
 ### Document Skill versions
 
@@ -413,6 +417,7 @@ You can document Skill versions in your SKILL.md content to track changes over t
 # My Skill
 
 ## Version History
+
 - v2.0.0 (2025-10-01): Breaking changes to API
 - v1.1.0 (2025-09-15): Added new features
 - v1.0.0 (2025-09-01): Initial release
@@ -650,10 +655,12 @@ Structure your documentation in `.agent/docs/`:
 ```
 
 Reference in `GROK.md`:
+
 ```markdown
 # Team Documentation
 
 See `.agent/docs/` for detailed documentation:
+
 - Workflows: PDF processing, Excel analysis, Git workflows
 - Standards: Coding style, commit message format
 - Tools: Formatters, linters, build tools
@@ -665,7 +672,7 @@ Read specific docs when needed using the Read tool.
 
 Include common workflows directly in GROK.md:
 
-```markdown
+````markdown
 # GROK.md
 
 ## PDF Processing Workflow
@@ -673,13 +680,16 @@ Include common workflows directly in GROK.md:
 When working with PDF files:
 
 1. Use `pdfplumber` for text extraction:
+
 ```python
 import pdfplumber
 with pdfplumber.open("doc.pdf") as pdf:
 text = pdf.pages[0].extract_text()
 ```
+````
 
 2. For form filling, use `pypdf`:
+
 ```python
 from pypdf import PdfWriter, PdfReader
 # ... form filling code
@@ -690,6 +700,7 @@ from pypdf import PdfWriter, PdfReader
 ## Commit Message Format
 
 Format commit messages as:
+
 ```
 type(scope): brief description
 
@@ -697,7 +708,8 @@ Detailed explanation of changes
 ```
 
 Types: feat, fix, docs, style, refactor, test, chore
-```
+
+````
 
 ### 3. Create Helper Scripts
 
@@ -710,13 +722,15 @@ scripts/
 ├── excel-analyze.py # Analyze Excel data
 ├── git-commit-msg.sh # Generate commit message
 └── README.md # Usage documentation
-```
+````
 
 Document in GROK.md:
+
 ```markdown
 # Helper Scripts
 
 Use scripts in `scripts/helpers/`:
+
 - `pdf-extract.py`: Extract text from PDFs
 - `excel-analyze.py`: Analyze Excel spreadsheets
 - `git-commit-msg.sh`: Generate commit messages
@@ -748,21 +762,27 @@ Include detailed instructions in GROK.md:
 ## Specialized Capabilities
 
 ### PDF Processing
+
 When asked to work with PDFs:
+
 1. Check if pdfplumber is installed
 2. Extract text page by page
 3. Preserve formatting where possible
 4. Handle errors gracefully
 
 ### Excel Analysis
+
 When analyzing Excel files:
+
 1. Use pandas for data manipulation
 2. Create visualizations with matplotlib
 3. Generate summary statistics
 4. Export results to CSV or new Excel file
 
 ### Git Commit Messages
+
 When generating commit messages:
+
 1. Use conventional commits format
 2. Keep first line under 50 characters
 3. Explain what and why, not how
@@ -833,10 +853,10 @@ Create your first Skill
 
 ## See Also
 
-* [Hooks](./hooks.md) - Workflow automation with hooks
-* [Plugin System](../features/plugin-system.md) - Plugin system overview
-* [MCP Integration](../build-with-claude-code/mcp.md) - Current extensibility
-* [Documentation System](../configuration/documentation.md) - Using `.agent/docs/`
+- [Hooks](./hooks.md) - Workflow automation with hooks
+- [Plugin System](../features/plugin-system.md) - Plugin system overview
+- [MCP Integration](../build-with-claude-code/mcp.md) - Current extensibility
+- [Documentation System](../configuration/documentation.md) - Using `.agent/docs/`
 
 ---
 

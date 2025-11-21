@@ -1,6 +1,7 @@
 ---
 title: Cloud Sync
 ---
+
 # Cloud Sync
 
 **Status:** Planned Feature (TBD)
@@ -78,6 +79,7 @@ grok cloud configure --endpoint https://your-server.com
 ## Privacy Note
 
 Cloud sync will be **opt-in only** with:
+
 - Full privacy controls
 - End-to-end encryption
 - Self-hosted option

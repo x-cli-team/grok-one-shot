@@ -1,6 +1,7 @@
 ---
 title: Agent Skills
 ---
+
 # Agent Skills
 
 > ** PARITY GAP**: Grok One-Shot does not currently implement the Agent Skills system described in this document. This is a Claude Code feature planned for future implementation.
@@ -15,18 +16,19 @@ Agent Skills are modular capabilities that extend an AI agent's functionality th
 
 **What Skills Enable (in Claude Code):**
 
-* **Extend AI capabilities**: Package expertise into discoverable capabilities
-* **Model-invoked**: AI autonomously decides when to use them based on your request
-* **Share expertise**: Distribute Skills across teams via git or plugins
-* **Reduce repetitive prompting**: Encode common workflows as reusable Skills
-* **Compose functionality**: Combine multiple Skills for complex tasks
+- **Extend AI capabilities**: Package expertise into discoverable capabilities
+- **Model-invoked**: AI autonomously decides when to use them based on your request
+- **Share expertise**: Distribute Skills across teams via git or plugins
+- **Reduce repetitive prompting**: Encode common workflows as reusable Skills
+- **Compose functionality**: Combine multiple Skills for complex tasks
 
 **Example Use Cases:**
-* PDF processing (extract text, fill forms, merge documents)
-* Code review checklists and standards
-* Project-specific workflows (deployment, testing, documentation)
-* Data analysis pipelines
-* Custom linting and validation
+
+- PDF processing (extract text, fill forms, merge documents)
+- Code review checklists and standards
+- Project-specific workflows (deployment, testing, documentation)
+- Data analysis pipelines
+- Custom linting and validation
 
 ## Alternative Approaches in Grok One-Shot
 
@@ -42,6 +44,7 @@ Use the project's `GROK.md` file to encode domain knowledge and workflows:
 ## PDF Processing
 
 When working with PDF files:
+
 1. Use `pypdf` for text extraction
 2. Use `pdfplumber` for table extraction
 3. Use `reportlab` for PDF generation
@@ -56,6 +59,7 @@ text = pdf.pages[0].extract_text()
 ## Code Review Standards
 
 Always check:
+
 - Error handling in all async functions
 - Input validation for public APIs
 - Test coverage for business logic
@@ -163,25 +167,26 @@ allowed-tools: Read, Write, Bash
 
 ## Comparison: Skills vs Alternatives
 
-| Feature | Skills (Claude Code) | GROK.md | .agent/docs/ |
-|---------|---------------------|----------|--------------|
-| **Auto-discovery** | Yes (model-invoked) | No (always loaded) | Yes (on-demand) |
-| **Shareable** | Via plugins | Via git | Via git |
-| **Tool restrictions** | Yes (`allowed-tools`) | No | No |
-| **Multiple files** | Yes | Single file | Yes |
-| **Progressive loading** | Yes | No | Yes |
+| Feature                 | Skills (Claude Code)  | GROK.md            | .agent/docs/    |
+| ----------------------- | --------------------- | ------------------ | --------------- |
+| **Auto-discovery**      | Yes (model-invoked)   | No (always loaded) | Yes (on-demand) |
+| **Shareable**           | Via plugins           | Via git            | Via git         |
+| **Tool restrictions**   | Yes (`allowed-tools`) | No                 | No              |
+| **Multiple files**      | Yes                   | Single file        | Yes             |
+| **Progressive loading** | Yes                   | No                 | Yes             |
 
 ## See Also
 
-* [GROK.md Documentation](../../getting-started/overview.md#project-context-grokmd) - Project context system
-* [Documentation Index](../../../docs-index.md) - On-demand doc loading
-* [MCP Integration](../build-with-claude-code/mcp.md) - Custom tool integration
+- [GROK.md Documentation](../../getting-started/overview.md#project-context-grokmd) - Project context system
+- [Documentation Index](../../../docs-index.md) - On-demand doc loading
+- [MCP Integration](../build-with-claude-code/mcp.md) - Custom tool integration
 
 ---
 
 **Want this feature?** Consider:
-* Opening a feature request in the Grok One-Shot repository
-* Using GROK.md and .agent/docs/ as interim solutions
-* Creating comprehensive documentation for your workflows
+
+- Opening a feature request in the Grok One-Shot repository
+- Using GROK.md and .agent/docs/ as interim solutions
+- Creating comprehensive documentation for your workflows
 
 **Last Updated:** 2025-11-07

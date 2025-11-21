@@ -1,6 +1,7 @@
 ---
 title: Troubleshooting
 ---
+
 # Troubleshooting
 
 > Discover solutions to common issues with Grok One-Shot installation and usage.
@@ -39,8 +40,8 @@ You might encounter the following issues in WSL:
 
 **OS/platform detection issues**: If you receive an error during installation, WSL may be using Windows `npm`. Try:
 
-* Run `npm config set os linux` before installation
-* Install with `npm install -g @xagent/one-shot --force --no-os-check` (Do NOT use `sudo`)
+- Run `npm config set os linux` before installation
+- Install with `npm install -g @xagent/one-shot --force --no-os-check` (Do NOT use `sudo`)
 
 **Node not found errors**: If you see `exec: node: not found` when running `grok`, your WSL environment may be using a Windows installation of Node.js. You can confirm this with `which npm` and `which node`, which should point to Linux paths starting with `/usr/` rather than `/mnt/c/`. To fix this, try installing Node via your Linux distribution's package manager or via [`nvm`](https://github.com/nvm-sh/nvm).
 
@@ -48,8 +49,8 @@ You might encounter the following issues in WSL:
 
 You can identify this issue by:
 
-* Running `which npm` and `which node` - if they point to Windows paths (starting with `/mnt/c/`), Windows versions are being used
-* Experiencing broken functionality after switching Node versions with nvm in WSL
+- Running `which npm` and `which node` - if they point to Windows paths (starting with `/mnt/c/`), Windows versions are being used
+- Experiencing broken functionality after switching Node versions with nvm in WSL
 
 To resolve this issue, fix your Linux PATH to ensure the Linux node/npm versions take priority:
 
@@ -116,6 +117,7 @@ npx @xagent/one-shot
 ### No API key found
 
 **Error message:**
+
 ```
 No API key found. Set GROK_API_KEY environment variable.
 ```
@@ -125,6 +127,7 @@ No API key found. Set GROK_API_KEY environment variable.
 **Solutions:**
 
 **1. Set environment variable permanently (recommended):**
+
 ```bash
 # Add to your shell profile (~/.bashrc, ~/.zshrc, or ~/.profile)
 echo 'export GROK_API_KEY="xai-your-actual-key-here"' >> ~/.bashrc
@@ -137,17 +140,20 @@ echo $GROK_API_KEY
 ```
 
 **2. Set for current session only:**
+
 ```bash
 export GROK_API_KEY="xai-your-key-here"
 grok
 ```
 
 **3. Pass via command-line flag:**
+
 ```bash
 grok -k "xai-your-key-here"
 ```
 
 **Get your API key:**
+
 - Visit: https://console.x.ai
 - Sign in or create account
 - Navigate to "API Keys" section
@@ -159,6 +165,7 @@ grok -k "xai-your-key-here"
 **Cause:** Wrong or expired key
 
 **Solutions:**
+
 ```bash
 # Check settings file
 cat ~/.grok/settings.json
@@ -175,6 +182,7 @@ vim ~/.grok/settings.json
 **Cause:** Too many API requests
 
 **Solutions:**
+
 - Wait a few minutes
 - Upgrade API plan at https://console.x.ai
 - Reduce token usage per request
@@ -209,10 +217,12 @@ If Grok One-Shot seems unresponsive:
 **Causes & Solutions:**
 
 **1. Network latency**
+
 - Check internet speed
 - Try different network
 
 **2. Using Node.js instead of Bun**
+
 ```bash
 # Install Bun (4x faster)
 curl -fsSL https://bun.sh/install | bash
@@ -222,11 +232,13 @@ bun install -g @xagent/one-shot
 ```
 
 **3. Large context loaded**
+
 - Start fresh session
 - Be more specific in requests
 - Check token usage in session files
 
 **4. Wrong model**
+
 ```bash
 # Use faster model via environment variable
 export GROK_MODEL="grok-4-fast-non-reasoning"
@@ -238,11 +250,13 @@ grok
 ### AI responses are incomplete
 
 **Causes:**
+
 - Network interruption
 - Token limit reached
 - API timeout
 
 **Solutions:**
+
 ```
 > Continue from where you left off
 
@@ -257,6 +271,7 @@ grok
 **Cause:** Hit MAX_TOOL_ROUNDS limit (default: 400)
 
 **Solutions:**
+
 ```bash
 # Increase limit
 export MAX_TOOL_ROUNDS=500
@@ -272,6 +287,7 @@ export MAX_TOOL_ROUNDS=500
 **Cause:** Running in non-TTY environment
 
 **Solutions:**
+
 ```bash
 # Use headless mode
 grok -p "your message"
@@ -283,11 +299,13 @@ grok -p "your message"
 ### Changes not applied
 
 **Causes:**
+
 1. Rejected confirmation
 2. File permissions
 3. Git conflicts
 
 **Solutions:**
+
 ```bash
 # Check file permissions
 ls -la <file>
@@ -303,12 +321,14 @@ grok -d /correct/path
 ### Wrong files modified
 
 **Prevention:**
+
 - Review changes carefully
 - Use specific file paths in requests
 - Keep confirmations enabled
 - Use git to track changes
 
 **Recovery:**
+
 ```bash
 # Git restore
 git diff
@@ -321,11 +341,13 @@ git checkout -- <file>
 ### File not found errors
 
 **Causes:**
+
 - Wrong working directory
 - File doesn't exist
 - Typo in filename
 
 **Solutions:**
+
 ```bash
 # Check current directory
 pwd
@@ -347,11 +369,13 @@ ls -la
 ### MCP server won't start
 
 **Symptoms:**
+
 ```
 Failed to start MCP server: filesystem
 ```
 
 **Solutions:**
+
 ```bash
 # Test command independently
 npx -y @modelcontextprotocol/server-filesystem /path
@@ -373,11 +397,13 @@ vim ~/.grok/settings.json
 ### MCP tools not available
 
 **Causes:**
+
 - Server started but failed tool discovery
 - Tool schema invalid
 - Server crashed after startup
 
 **Solutions:**
+
 ```bash
 # Check configured servers
 cat ~/.grok/settings.json | grep mcpServers -A 20
@@ -393,11 +419,13 @@ grok
 ### Slow MCP performance
 
 **Causes:**
+
 - Server processing takes time
 - Network latency (for remote servers)
 - Large data transfers
 
 **Solutions:**
+
 - Use more specific requests
 - Implement caching in custom servers
 - Optimize server queries
@@ -460,8 +488,10 @@ If you're using Grok One-Shot in IDE terminals (VS Code, JetBrains, etc.) and ex
 
 1. Go to Settings → Tools → Terminal
 2. Either:
-* Uncheck "Move focus to the editor with Escape", or
-* Click "Configure terminal keybindings" and delete the "Switch focus to Editor" shortcut
+
+- Uncheck "Move focus to the editor with Escape", or
+- Click "Configure terminal keybindings" and delete the "Switch focus to Editor" shortcut
+
 3. Apply the changes
 
 **Terminal display issues**
@@ -525,20 +555,22 @@ If generated markdown has excessive blank lines or inconsistent spacing:
 
 To minimize formatting issues:
 
-* **Be explicit in requests**: Ask for "properly formatted markdown with language-tagged code blocks"
-* **Use project conventions**: Document your preferred markdown style in `GROK.md`
-* **Review before committing**: Check generated markdown files before adding to git
+- **Be explicit in requests**: Ask for "properly formatted markdown with language-tagged code blocks"
+- **Use project conventions**: Document your preferred markdown style in `GROK.md`
+- **Review before committing**: Check generated markdown files before adding to git
 
 ## Platform-specific issues
 
 ### macOS
 
 **Issue:** Terminal color problems
+
 ```bash
 export TERM_BACKGROUND=dark # or 'light'
 ```
 
 **Issue:** Permission denied
+
 ```bash
 # Don't use sudo with npm
 # Configure user-level npm instead (see installation section)
@@ -547,11 +579,13 @@ export TERM_BACKGROUND=dark # or 'light'
 ### Windows
 
 **Issue:** Git Bash compatibility
+
 - Use Windows Terminal or PowerShell instead
 - Install latest Git for Windows
 - Consider WSL for better compatibility
 
 **Issue:** Symlink errors (CLAUDE.md)
+
 ```bash
 # Run as Administrator for symlink creation
 # Or manually copy GROK.md to CLAUDE.md
@@ -561,6 +595,7 @@ cp GROK.md CLAUDE.md
 ### Linux
 
 **Issue:** Old Node.js version
+
 ```bash
 # Update Node.js via package manager
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
@@ -585,6 +620,7 @@ nvm use 20
 ### "Cannot find module"
 
 **Solution:** Reinstall dependencies:
+
 ```bash
 npm cache clean --force
 npm install -g @xagent/one-shot
@@ -593,6 +629,7 @@ npm install -g @xagent/one-shot
 ### "Maximum call stack size exceeded"
 
 **Solution:** Reduce complexity of request or increase Node.js memory:
+
 ```bash
 export NODE_OPTIONS="--max-old-space-size=4096"
 ```
@@ -616,17 +653,20 @@ cat xcli-startup.log
 ### Useful debug output
 
 **Check settings:**
+
 ```bash
 cat ~/.grok/settings.json
 ```
 
 **Check sessions:**
+
 ```bash
 ls -la ~/.grok/sessions/
 cat ~/.grok/sessions/latest-session.json
 ```
 
 **Check environment:**
+
 ```bash
 printenv | grep GROK
 printenv | grep MAX_TOOL_ROUNDS
@@ -644,6 +684,7 @@ If you're experiencing issues not covered here:
 3. Check session files in `~/.grok/sessions/`
 4. Enable debug mode and review output
 5. File an issue on GitHub with:
+
 - Grok One-Shot version (`grok --version`)
 - Operating system and version
 - Node.js/Bun version (`node --version` or `bun --version`)
@@ -654,24 +695,26 @@ If you're experiencing issues not covered here:
 ### Reporting issues
 
 **Template:**
+
 ```markdown
 **Version:** grok 1.1.101
 **OS:** macOS 13.5 / Ubuntu 22.04 / Windows 11
 **Runtime:** Node.js 20.10.0 / Bun 1.0.0
 **Error:** [error message]
 **Steps to reproduce:**
+
 1. ...
 2. ...
-**Debug logs:** [attach xcli-startup.log]
-**Settings:** [relevant parts of ~/.grok/settings.json]
+   **Debug logs:** [attach xcli-startup.log]
+   **Settings:** [relevant parts of ~/.grok/settings.json]
 ```
 
 ## See also
 
-* [Quickstart Guide](../getting-started/quickstart.md) - Getting started
-* [CLI Reference](../reference/cli-reference.md) - Command-line options
-* [Configuration](../configuration/settings.md) - Settings guide
-* [MCP Integration](./mcp.md) - MCP server setup
+- [Quickstart Guide](../getting-started/quickstart.md) - Getting started
+- [CLI Reference](../reference/cli-reference.md) - Command-line options
+- [Configuration](../configuration/settings.md) - Settings guide
+- [MCP Integration](./mcp.md) - MCP server setup
 
 ---
 

@@ -1,6 +1,7 @@
 ---
 title: Grok One-Shot settings
 ---
+
 # Grok One-Shot settings
 
 > Configure Grok One-Shot with global settings and environment variables.
@@ -11,7 +12,7 @@ Grok One-Shot offers a variety of settings to configure its behavior to meet you
 
 The `settings.json` file is the mechanism for configuring Grok One-Shot:
 
-* **User settings** are defined in `~/.grok/settings.json` and apply to all projects.
+- **User settings** are defined in `~/.grok/settings.json` and apply to all projects.
 
 > ** Parity Gap:** Grok One-Shot does not support project-level settings files (`.grok/settings.json` in project directories) or enterprise managed policy settings. All configuration is user-level only.
 
@@ -21,27 +22,31 @@ The `settings.json` file is the mechanism for configuring Grok One-Shot:
 
 ```json
 {
-"apiKey": "your-grok-api-key",
-"baseUrl": "https://api.x.ai/v1",
-"model": "grok-2-1212",
-"name": "Your Name",
-"confirmations": true,
-"mcpServers": {
-"filesystem": {
-"command": "npx",
-"args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/projects"],
-"env": {
-"PATH": "/usr/local/bin:/usr/bin:/bin"
-}
-},
-"github": {
-"command": "node",
-"args": ["github-mcp-server/dist/index.js"],
-"env": {
-"GITHUB_TOKEN": "${GITHUB_TOKEN}"
-}
-}
-}
+  "apiKey": "your-grok-api-key",
+  "baseUrl": "https://api.x.ai/v1",
+  "model": "grok-2-1212",
+  "name": "Your Name",
+  "confirmations": true,
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/home/user/projects"
+      ],
+      "env": {
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      }
+    },
+    "github": {
+      "command": "node",
+      "args": ["github-mcp-server/dist/index.js"],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      }
+    }
+  }
 }
 ```
 
@@ -49,16 +54,17 @@ The `settings.json` file is the mechanism for configuring Grok One-Shot:
 
 `settings.json` supports the following options:
 
-| Key | Description | Example |
-| :-------------- | :--------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ |
-| `apiKey` | Your Grok API key for authentication | `"xai-abc123def456..."` |
-| `baseUrl` | API endpoint URL (default: `https://api.x.ai/v1`) | `"https://api.x.ai/v1"` |
-| `model` | Default model to use for Grok One-Shot | `"grok-2-1212"`, `"grok-beta"`, `"grok-4-fast-non-reasoning"` |
-| `name` | Your name for personalization in AI responses | `"Alice"` |
-| `confirmations` | Whether to prompt for confirmation before file edits and bash commands (default: `true`) | `true`, `false` |
-| `mcpServers` | MCP server configurations. See [MCP Integration documentation](../build-with-claude-code/mcp.md) | `{"server-name": {"command": "npx", "args": [...], "env": {...}}}` |
+| Key             | Description                                                                                      | Example                                                            |
+| :-------------- | :----------------------------------------------------------------------------------------------- | :----------------------------------------------------------------- |
+| `apiKey`        | Your Grok API key for authentication                                                             | `"xai-abc123def456..."`                                            |
+| `baseUrl`       | API endpoint URL (default: `https://api.x.ai/v1`)                                                | `"https://api.x.ai/v1"`                                            |
+| `model`         | Default model to use for Grok One-Shot                                                           | `"grok-2-1212"`, `"grok-beta"`, `"grok-4-fast-non-reasoning"`      |
+| `name`          | Your name for personalization in AI responses                                                    | `"Alice"`                                                          |
+| `confirmations` | Whether to prompt for confirmation before file edits and bash commands (default: `true`)         | `true`, `false`                                                    |
+| `mcpServers`    | MCP server configurations. See [MCP Integration documentation](../build-with-claude-code/mcp.md) | `{"server-name": {"command": "npx", "args": [...], "env": {...}}}` |
 
 > ** Parity Gap:** Grok One-Shot does not support many advanced settings available in Claude Code, including:
+>
 > - `permissions` (allow/deny/ask rules for tools)
 > - `hooks` (custom commands before/after tool executions)
 > - `sandbox` (sandboxing configuration)
@@ -78,20 +84,24 @@ MCP servers extend Grok One-Shot with additional tools and capabilities. Configu
 
 ```json
 {
-"mcpServers": {
-"filesystem": {
-"command": "npx",
-"args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/projects"]
-},
-"github": {
-"command": "node",
-"args": ["github-mcp-server/dist/index.js"],
-"env": {
-"GITHUB_TOKEN": "${GITHUB_TOKEN}",
-"DEBUG": "true"
-}
-}
-}
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/home/user/projects"
+      ]
+    },
+    "github": {
+      "command": "node",
+      "args": ["github-mcp-server/dist/index.js"],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}",
+        "DEBUG": "true"
+      }
+    }
+  }
 }
 ```
 
@@ -104,6 +114,7 @@ grok mcp remove <name>
 ```
 
 **Environment variable substitution:**
+
 - Use `${VAR_NAME}` syntax to reference environment variables
 - Variables are resolved when MCP servers start
 - Useful for keeping secrets out of settings.json
@@ -115,15 +126,18 @@ See [MCP Integration documentation](../build-with-claude-code/mcp.md) for detail
 Settings are applied in order of precedence (highest to lowest):
 
 1. **Command line arguments**
-* Temporary overrides for a specific session
-* Example: `grok -k "temp-key" -m "grok-beta"`
+
+- Temporary overrides for a specific session
+- Example: `grok -k "temp-key" -m "grok-beta"`
 
 2. **Environment variables**
-* Override settings file values
-* Example: `GROK_MODEL=grok-beta grok`
+
+- Override settings file values
+- Example: `GROK_MODEL=grok-beta grok`
 
 3. **User settings** (`~/.grok/settings.json`)
-* Persistent global settings
+
+- Persistent global settings
 
 > ** Parity Gap:** Claude Code supports enterprise managed policies and project-level settings that take precedence over user settings. Grok One-Shot only has user-level settings.
 
@@ -183,39 +197,40 @@ Grok One-Shot supports the following environment variables to control its behavi
 
 ### Core Configuration
 
-| Variable | Purpose | Example |
-| :---------------- | :------------------------------------------------------------------------------- | :--------------------------------- |
-| `GROK_API_KEY` | API key for xAI authentication (overrides settings.json) | `"xai-abc123..."` |
-| `GROK_MODEL` | Default model to use (overrides settings.json) | `"grok-beta"` |
-| `GROK_BASE_URL` | API endpoint URL (overrides settings.json) | `"https://custom.example.com/v1"` |
-| `MAX_TOOL_ROUNDS` | Maximum number of tool execution iterations (default: 400) | `500` |
+| Variable          | Purpose                                                    | Example                           |
+| :---------------- | :--------------------------------------------------------- | :-------------------------------- |
+| `GROK_API_KEY`    | API key for xAI authentication (overrides settings.json)   | `"xai-abc123..."`                 |
+| `GROK_MODEL`      | Default model to use (overrides settings.json)             | `"grok-beta"`                     |
+| `GROK_BASE_URL`   | API endpoint URL (overrides settings.json)                 | `"https://custom.example.com/v1"` |
+| `MAX_TOOL_ROUNDS` | Maximum number of tool execution iterations (default: 400) | `500`                             |
 
 ### UX Configuration
 
-| Variable | Purpose | Example |
-| :-------------------- | :------------------------------------------------------------ | :-------- |
-| `GROK_TEXT_COLOR` | Force text color for terminal compatibility | `"black"` |
-| `TERM_BACKGROUND` | Terminal theme hint (light/dark) | `"dark"` |
+| Variable           | Purpose                                                       | Example   |
+| :----------------- | :------------------------------------------------------------ | :-------- |
+| `GROK_TEXT_COLOR`  | Force text color for terminal compatibility                   | `"black"` |
+| `TERM_BACKGROUND`  | Terminal theme hint (light/dark)                              | `"dark"`  |
 | `GROK_UX_ENHANCED` | Enable/disable enhanced UI features (spinners, progress bars) | `"false"` |
-| `GROK_UX_MINIMAL` | Minimal UI mode for low resource usage | `"true"` |
-| `GROK_UX_DEBUG` | Enable UX debug logging | `"true"` |
+| `GROK_UX_MINIMAL`  | Minimal UI mode for low resource usage                        | `"true"`  |
+| `GROK_UX_DEBUG`    | Enable UX debug logging                                       | `"true"`  |
 
 ### Debug Configuration
 
-| Variable | Purpose | Example |
-| :------------------- | :--------------------------- | :------- |
-| `GROK_DEBUG` | Enable general debug output | `"true"` |
-| `GROK_DEBUG_COLORS` | Debug color detection system | `"1"` |
+| Variable            | Purpose                      | Example  |
+| :------------------ | :--------------------------- | :------- |
+| `GROK_DEBUG`        | Enable general debug output  | `"true"` |
+| `GROK_DEBUG_COLORS` | Debug color detection system | `"1"`    |
 
 ### Network Configuration
 
-| Variable | Purpose | Example |
-| :------------ | :-------------------------------------------------------------------------- | :------------------------------ |
-| `HTTP_PROXY` | Specify HTTP proxy server for network connections | `"http://proxy.example.com:80"` |
-| `HTTPS_PROXY` | Specify HTTPS proxy server for network connections | `"http://proxy.example.com:443"`|
-| `NO_PROXY` | List of domains and IPs to which requests bypass proxy (comma-separated) | `"localhost,127.0.0.1,.local"` |
+| Variable      | Purpose                                                                  | Example                          |
+| :------------ | :----------------------------------------------------------------------- | :------------------------------- |
+| `HTTP_PROXY`  | Specify HTTP proxy server for network connections                        | `"http://proxy.example.com:80"`  |
+| `HTTPS_PROXY` | Specify HTTPS proxy server for network connections                       | `"http://proxy.example.com:443"` |
+| `NO_PROXY`    | List of domains and IPs to which requests bypass proxy (comma-separated) | `"localhost,127.0.0.1,.local"`   |
 
 > ** Parity Gap:** Claude Code supports many additional environment variables for advanced features not present in Grok One-Shot, including:
+>
 > - Model-specific configuration (Haiku, Opus, Sonnet variants)
 > - AWS Bedrock configuration
 > - Google Vertex AI configuration
@@ -305,6 +320,7 @@ source .env && grok
 **Location:** `~/.grok/sessions/`
 
 **Contents:**
+
 - One JSON file per session
 - Full conversation history
 - Token usage tracking
@@ -333,21 +349,22 @@ mv ~/.grok/sessions/*.json ~/session-archives/
 
 Grok One-Shot has access to a set of powerful tools that help it understand and modify your codebase:
 
-| Tool | Description | Permission Required |
-| :--------------- | :------------------------------------------------------------------ | :------------------ |
-| **Bash** | Executes shell commands in your environment | Confirmation* |
-| **Edit** | Makes targeted edits to specific files | Confirmation* |
-| **Glob** | Finds files based on pattern matching | No |
-| **Grep** | Searches for patterns in file contents | No |
-| **NotebookEdit** | Modifies Jupyter notebook cells | Confirmation* |
-| **Read** | Reads the contents of files | No |
-| **WebFetch** | Fetches content from a specified URL | Confirmation* |
-| **WebSearch** | Performs web searches with domain filtering | Confirmation* |
-| **Write** | Creates or overwrites files | Confirmation* |
+| Tool             | Description                                 | Permission Required |
+| :--------------- | :------------------------------------------ | :------------------ |
+| **Bash**         | Executes shell commands in your environment | Confirmation\*      |
+| **Edit**         | Makes targeted edits to specific files      | Confirmation\*      |
+| **Glob**         | Finds files based on pattern matching       | No                  |
+| **Grep**         | Searches for patterns in file contents      | No                  |
+| **NotebookEdit** | Modifies Jupyter notebook cells             | Confirmation\*      |
+| **Read**         | Reads the contents of files                 | No                  |
+| **WebFetch**     | Fetches content from a specified URL        | Confirmation\*      |
+| **WebSearch**    | Performs web searches with domain filtering | Confirmation\*      |
+| **Write**        | Creates or overwrites files                 | Confirmation\*      |
 
 \* Confirmation can be disabled via `confirmations: false` in settings.json or `grok toggle-confirmations`
 
 > ** Parity Gap:** Claude Code supports:
+>
 > - Granular permission rules (allow/deny/ask) for each tool
 > - Tool-specific permission rules (e.g., allow specific Bash commands, deny specific file paths)
 > - Working directories configuration
@@ -431,6 +448,7 @@ grok
 ### Security
 
 **Do:**
+
 - Use environment variables for API keys
 - Restrict file permissions: `chmod 600 ~/.grok/settings.json`
 - Never commit settings.json to git
@@ -438,6 +456,7 @@ grok
 - Review confirmations before approving operations
 
 **Don't:**
+
 - Share settings.json publicly
 - Hardcode API keys in commands
 - Give MCP servers unnecessary permissions
@@ -446,6 +465,7 @@ grok
 ### Organization
 
 **Recommendations:**
+
 - Keep settings.json minimal
 - Use environment variables for temporary changes
 - Document custom configurations
@@ -455,6 +475,7 @@ grok
 ### Performance
 
 **Optimize:**
+
 - Remove unused MCP servers
 - Use appropriate model for task (fast vs quality)
 - Clean old sessions periodically
@@ -463,10 +484,10 @@ grok
 
 ## See also
 
-* [CLI Reference](../reference/cli-reference.md) - Command-line options
-* [MCP Integration](../build-with-claude-code/mcp.md) - Model Context Protocol
-* [Environment Variables](../reference/environment-variables.md) - Complete environment variable reference
-* [Troubleshooting](../operations/troubleshooting.md) - Common issues and solutions
+- [CLI Reference](../reference/cli-reference.md) - Command-line options
+- [MCP Integration](../build-with-claude-code/mcp.md) - Model Context Protocol
+- [Environment Variables](../reference/environment-variables.md) - Complete environment variable reference
+- [Troubleshooting](../operations/troubleshooting.md) - Common issues and solutions
 
 ---
 

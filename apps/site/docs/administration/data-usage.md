@@ -1,6 +1,7 @@
 ---
 title: Data usage
 ---
+
 # Data usage
 
 > Learn about xAI's data usage policies for Grok One-Shot
@@ -12,6 +13,7 @@ title: Data usage
 **xAI Grok API users**: xAI's data usage policies apply to all data sent through the Grok API. When using Grok One-Shot with your xAI API key, your prompts and model outputs are handled according to [xAI's Privacy Policy](https://x.ai/legal/privacy-policy).
 
 According to xAI's current policies:
+
 - **API Usage**: Data sent to the Grok API may be used to improve xAI's models and services
 - **Data Retention**: xAI retains API data according to their standard retention policies
 - **Control**: API users should review xAI's terms of service and privacy policy for full details
@@ -27,6 +29,7 @@ According to xAI's current policies:
 > **Parity Gap**: Grok One-Shot does not currently implement a `/bug` command. Bug reporting is handled through standard GitHub issues.
 
 If you encounter bugs:
+
 1. File an issue in the GitHub repository
 2. Include relevant session logs from `~/.grok/sessions/` (after sanitizing sensitive data)
 3. Do not include credentials or sensitive code in bug reports
@@ -36,6 +39,7 @@ If you encounter bugs:
 > **Parity Gap**: Grok One-Shot does not currently implement session quality surveys or rating prompts.
 
 **Current status**:
+
 - No "How is Grok doing this session?" prompt
 - No automatic feedback collection
 - No session ratings
@@ -46,12 +50,14 @@ If you encounter bugs:
 Grok One-Shot data retention varies by storage location.
 
 **Local storage (on your machine)**:
+
 - Sessions stored indefinitely in `~/.grok/sessions/`
 - Settings stored in `~/.grok/settings.json`
 - You have full control to view, archive, or delete
 - No automatic cleanup or retention limits
 
 **API-level retention (xAI)**:
+
 - Data sent to xAI's API is subject to xAI's retention policies
 - Review [xAI's Privacy Policy](https://x.ai/legal/privacy-policy) for details
 - No zero data retention option currently available
@@ -61,12 +67,12 @@ Grok One-Shot data retention varies by storage location.
 
 **Comparison to Claude Code**:
 
-| Feature | Claude Code | Grok One-Shot |
-|---------|-------------|---------------|
-| Consumer data controls | Opt-in/out | API-level only |
-| 30-day retention option | | Per xAI policy |
-| Zero data retention | (commercial) | |
-| Local session control | Configurable | Manual cleanup |
+| Feature                 | Claude Code  | Grok One-Shot  |
+| ----------------------- | ------------ | -------------- |
+| Consumer data controls  | Opt-in/out   | API-level only |
+| 30-day retention option |              | Per xAI policy |
+| Zero data retention     | (commercial) |                |
+| Local session control   | Configurable | Manual cleanup |
 
 For full details, please review [xAI's Terms of Service](https://x.ai/legal/terms-of-service) and [Privacy Policy](https://x.ai/legal/privacy-policy).
 
@@ -112,6 +118,7 @@ Grok One-Shot is built on xAI's APIs. For details regarding the API's security c
 > **Parity Gap**: Grok One-Shot does not currently support cloud-based execution. All sessions run locally on your machine.
 
 **Claude Code on the web** (Anthropic's cloud offering) includes:
+
 - Sessions run in Anthropic-managed VMs
 - Repository cloning to isolated VMs
 - GitHub credential proxy
@@ -119,6 +126,7 @@ Grok One-Shot is built on xAI's APIs. For details regarding the API's security c
 - Automatic VM cleanup after sessions
 
 **Grok One-Shot** currently:
+
 - Runs entirely locally
 - All code stays on your machine
 - Direct API calls to xAI only
@@ -133,6 +141,7 @@ This may change in future versions. Track cloud execution requests in GitHub iss
 > **Parity Gap**: Grok One-Shot does not currently implement telemetry, error reporting, or analytics services.
 
 **Claude Code telemetry**:
+
 - Statsig for operational metrics (latency, reliability, usage patterns)
 - Sentry for error logging
 - `/bug` command for feedback
@@ -140,6 +149,7 @@ This may change in future versions. Track cloud execution requests in GitHub iss
 - Opt-out via environment variables
 
 **Grok One-Shot telemetry**:
+
 - No Statsig telemetry
 - No Sentry error logging
 - No operational metrics collection
@@ -148,6 +158,7 @@ This may change in future versions. Track cloud execution requests in GitHub iss
 - All operations are local-only (except Grok API calls)
 
 **Privacy benefit**: Grok One-Shot does not send any operational data, metrics, or error logs to third-party services. The only network traffic is:
+
 1. API calls to the configured Grok API endpoint (default: `https://api.x.ai`)
 2. Optional MCP server connections (if configured)
 3. NPM package installation/updates
@@ -162,21 +173,21 @@ Grok One-Shot only supports the xAI Grok API. There are no Bedrock or Vertex int
 
 **Claude Code API provider matrix**:
 
-| Service | Claude API | Vertex API | Bedrock API |
-|---------|------------|------------|-------------|
+| Service           | Claude API | Vertex API  | Bedrock API |
+| ----------------- | ---------- | ----------- | ----------- |
 | Statsig (Metrics) | Default on | Default off | Default off |
-| Sentry (Errors) | Default on | Default off | Default off |
-| `/bug` reports | Default on | Default off | Default off |
+| Sentry (Errors)   | Default on | Default off | Default off |
+| `/bug` reports    | Default on | Default off | Default off |
 
 **Grok One-Shot**:
 
-| Service | Grok API (xAI) |
-|---------|----------------|
-| Telemetry (Metrics) | Not implemented |
-| Error Reporting | Not implemented |
-| Bug Reports | Manual via GitHub issues |
-| Data Retention | Per xAI API policies + local session storage |
-| Cloud Execution | Not supported |
+| Service             | Grok API (xAI)                               |
+| ------------------- | -------------------------------------------- |
+| Telemetry (Metrics) | Not implemented                              |
+| Error Reporting     | Not implemented                              |
+| Bug Reports         | Manual via GitHub issues                     |
+| Data Retention      | Per xAI API policies + local session storage |
+| Cloud Execution     | Not supported                                |
 
 Environment variables like `DISABLE_TELEMETRY`, `DISABLE_ERROR_REPORTING`, and `DISABLE_BUG_COMMAND` are not needed since these features don't exist.
 
@@ -185,6 +196,7 @@ Environment variables like `DISABLE_TELEMETRY`, `DISABLE_ERROR_REPORTING`, and `
 ### What Grok One-Shot sends to xAI
 
 When using Grok One-Shot, the following data is sent to xAI's API:
+
 - Your prompts and messages
 - Code context (file contents you reference or edit)
 - Tool usage and results (file reads, bash commands, etc.)
@@ -218,21 +230,21 @@ When using Grok One-Shot, the following data is sent to xAI's API:
 
 ### Feature parity summary
 
-| Feature | Claude Code | Grok One-Shot | Status |
-|---------|-------------|---------------|--------|
-| **Data Training Control** | Consumer opt-in/out | API-level only | Parity gap |
-| **Commercial Terms** | Team/Enterprise | API uniform | Parity gap |
-| **Development Partner Program** | | | Parity gap |
-| **`/bug` Command** | | | Parity gap |
-| **Session Surveys** | | | Parity gap |
-| **Tiered Retention** | 5yr/30d/ZDR | API policy | Parity gap |
-| **Cloud Execution** | (web) | | Parity gap |
-| **Statsig Telemetry** | (opt-out) | Not implemented | Different approach |
-| **Sentry Errors** | (opt-out) | Not implemented | Different approach |
-| **Multi-Provider** | Claude/Bedrock/Vertex | xAI only | Parity gap |
-| **Local Sessions** | | | Parity |
-| **VPN Compatible** | | | Parity |
-| **Local Execution** | | | Parity |
+| Feature                         | Claude Code           | Grok One-Shot   | Status             |
+| ------------------------------- | --------------------- | --------------- | ------------------ |
+| **Data Training Control**       | Consumer opt-in/out   | API-level only  | Parity gap         |
+| **Commercial Terms**            | Team/Enterprise       | API uniform     | Parity gap         |
+| **Development Partner Program** |                       |                 | Parity gap         |
+| **`/bug` Command**              |                       |                 | Parity gap         |
+| **Session Surveys**             |                       |                 | Parity gap         |
+| **Tiered Retention**            | 5yr/30d/ZDR           | API policy      | Parity gap         |
+| **Cloud Execution**             | (web)                 |                 | Parity gap         |
+| **Statsig Telemetry**           | (opt-out)             | Not implemented | Different approach |
+| **Sentry Errors**               | (opt-out)             | Not implemented | Different approach |
+| **Multi-Provider**              | Claude/Bedrock/Vertex | xAI only        | Parity gap         |
+| **Local Sessions**              |                       |                 | Parity             |
+| **VPN Compatible**              |                       |                 | Parity             |
+| **Local Execution**             |                       |                 | Parity             |
 
 ### Why these gaps exist
 

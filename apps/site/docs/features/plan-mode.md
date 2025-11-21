@@ -1,6 +1,7 @@
 ---
 title: Plan Mode
 ---
+
 # Plan Mode
 
 **Status:** Planned Feature (TBD)
@@ -39,6 +40,7 @@ Plan Mode will provide a dedicated read-only exploration and planning phase befo
 ### Activation
 
 **Planned triggers:**
+
 ```bash
 # Explicit activation
 grok --plan-mode
@@ -104,25 +106,28 @@ AI: Executing plan...
 **Planned implementation:**
 
 1. **Plan Mode State**
+
 - Separate UI mode indicator
 - Read-only tool restrictions
 - Plan data structure
 
 2. **Plan Representation**
+
 ```typescript
 interface Plan {
-id: string;
-description: string;
-phases: Phase[];
-filesAffected: string[];
-filesCreated: string[];
-estimatedTokens: number;
-riskLevel: 'low' | 'medium' | 'high';
-dependencies: string[];
+  id: string;
+  description: string;
+  phases: Phase[];
+  filesAffected: string[];
+  filesCreated: string[];
+  estimatedTokens: number;
+  riskLevel: "low" | "medium" | "high";
+  dependencies: string[];
 }
 ```
 
 3. **Transition Logic**
+
 - Enter: Switch to plan mode tools
 - Review: Present plan to user
 - Approve: Unlock write tools
@@ -132,6 +137,7 @@ dependencies: string[];
 ## Roadmap
 
 ### Q1 2025: Sprint 1-2 (4 weeks)
+
 - UI state management (activation, read-only interface)
 - Keyboard shortcuts (Shift+Tab × 2)
 - Safe exploration with read-only tools
@@ -143,6 +149,7 @@ dependencies: string[];
 **P0 - Critical** for competitive parity with Claude Code
 
 Plan Mode is essential for:
+
 - Safe exploration of unfamiliar codebases
 - User confidence in AI changes
 - Complex multi-file operations
@@ -153,6 +160,7 @@ Plan Mode is essential for:
 **Not yet implemented**
 
 Current workaround:
+
 ```
 User: "Before making changes, explain your plan"
 
@@ -186,6 +194,7 @@ Plan Mode will transform the way users interact with Grok One-Shot for complex t
 ## See Roadmap
 
 For implementation timeline and details, see:
+
 - `.agent/parity/implementation-roadmap.md`
 - `/docs/roadmap`
 

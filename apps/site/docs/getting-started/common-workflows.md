@@ -1,6 +1,7 @@
 ---
 title: Common workflows
 ---
+
 # Common workflows
 
 > Learn about common workflows with Grok One-Shot.
@@ -44,16 +45,17 @@ grok
 ```
 > how is authentication handled?
 ```
+
 </Step>
 </Steps>
 
 <Tip>
 Tips:
 
-* Start with broad questions, then narrow down to specific areas
-* Ask about coding conventions and patterns used in the project
-* Request a glossary of project-specific terms
-</Tip>
+- Start with broad questions, then narrow down to specific areas
+- Ask about coding conventions and patterns used in the project
+- Request a glossary of project-specific terms
+  </Tip>
 
 ### Find relevant code
 
@@ -82,11 +84,11 @@ Suppose you need to locate code related to a specific feature or functionality.
 <Tip>
 Tips:
 
-* Be specific about what you're looking for
-* Use domain language from the project
-</Tip>
+- Be specific about what you're looking for
+- Use domain language from the project
+  </Tip>
 
-***
+---
 
 ## Fix bugs efficiently
 
@@ -115,12 +117,12 @@ Suppose you've encountered an error message and need to find and fix its source.
 <Tip>
 Tips:
 
-* Tell Grok the command to reproduce the issue and get a stack trace
-* Mention any steps to reproduce the error
-* Let Grok know if the error is intermittent or consistent
-</Tip>
+- Tell Grok the command to reproduce the issue and get a stack trace
+- Mention any steps to reproduce the error
+- Let Grok know if the error is intermittent or consistent
+  </Tip>
 
-***
+---
 
 ## Refactor code
 
@@ -155,31 +157,33 @@ Suppose you need to update old code to use modern patterns and practices.
 <Tip>
 Tips:
 
-* Ask Grok to explain the benefits of the modern approach
-* Request that changes maintain backward compatibility when needed
-* Do refactoring in small, testable increments
-</Tip>
+- Ask Grok to explain the benefits of the modern approach
+- Request that changes maintain backward compatibility when needed
+- Do refactoring in small, testable increments
+  </Tip>
 
-***
+---
 
 ## Use specialized subagents
 
 > ** PARITY GAP**: Grok One-Shot does not currently implement user-configurable subagents like Claude Code's `/agents` command. The subagent framework exists internally for specific tasks (docgen, prd-assistant, etc.) but is not user-accessible.
 
 **Claude Code Feature:**
+
 - `/agents` command to view and create custom AI subagents
 - Automatic delegation to specialized subagents
 - Project-specific subagents in `.claude/agents/`
 
 **Grok One-Shot Current State:**
 Currently, Grok One-Shot uses internal subagents for specific system tasks (see [subagents documentation](../build-with-grok/subagents.md)) but doesn't expose subagent creation or management to users. For specialized workflows, consider:
+
 - Using MCP servers for custom tools: `grok mcp add <server-name> <command>`
 - Creating documentation in `.agent/docs/` to guide Grok's behavior
 - Using GROK.md to define project-specific context and workflows
 
 **Planned Implementation:** Q2 2026 (Sprint 18-20)
 
-***
+---
 
 ## Use Plan Mode for safe code analysis
 
@@ -190,16 +194,19 @@ Plan Mode restricts Claude to read-only operations, perfect for exploring codeba
 
 **Grok One-Shot Alternative:**
 While there's no explicit "Plan Mode", you can achieve similar results by:
+
 1. Explicitly asking Grok to only analyze without making changes:
+
 ```
 > analyze the authentication system and suggest improvements (don't make any changes yet)
 ```
+
 2. Reviewing Grok's suggestions before approving file edits
 3. Using confirmation prompts to control when edits are applied
 
 **Planned Implementation:** Q1 2026 (Sprint 14-16)
 
-***
+---
 
 ## Work with tests
 
@@ -234,12 +241,12 @@ Suppose you need to add tests for uncovered code.
 <Tip>
 Tips:
 
-* Ask for tests that cover edge cases and error conditions
-* Request both unit and integration tests when appropriate
-* Have Grok explain the testing strategy
-</Tip>
+- Ask for tests that cover edge cases and error conditions
+- Request both unit and integration tests when appropriate
+- Have Grok explain the testing strategy
+  </Tip>
 
-***
+---
 
 ## Create pull requests
 
@@ -274,10 +281,10 @@ Suppose you need to create a well-documented pull request for your changes.
 <Tip>
 Tips:
 
-* Ask Grok directly to make a PR for you
-* Review Grok's generated PR before submitting
-* Ask Grok to highlight potential risks or considerations
-</Tip>
+- Ask Grok directly to make a PR for you
+- Review Grok's generated PR before submitting
+- Ask Grok to highlight potential risks or considerations
+  </Tip>
 
 ## Handle documentation
 
@@ -312,18 +319,19 @@ Suppose you need to add or update documentation for your code.
 <Tip>
 Tips:
 
-* Specify the documentation style you want (JSDoc, docstrings, etc.)
-* Ask for examples in the documentation
-* Request documentation for public APIs, interfaces, and complex logic
-</Tip>
+- Specify the documentation style you want (JSDoc, docstrings, etc.)
+- Ask for examples in the documentation
+- Request documentation for public APIs, interfaces, and complex logic
+  </Tip>
 
-***
+---
 
 ## Work with images
 
 > ** PARITY GAP**: Grok One-Shot does not currently support image analysis. This is a Claude Code feature.
 
 **Claude Code Feature:**
+
 - Drag and drop images into the CLI
 - Paste images with ctrl+v
 - Analyze screenshots, diagrams, UI mockups
@@ -331,13 +339,14 @@ Tips:
 
 **Grok One-Shot Alternative:**
 Currently, Grok One-Shot is text-only. For visual design tasks:
+
 - Describe the visual elements in detail via text
 - Use ASCII diagrams for simple visualizations
 - Link to external images with detailed descriptions
 
 **Planned Implementation:** Q3 2026 (Sprint 22-24)
 
-***
+---
 
 ## Reference files and directories
 
@@ -345,12 +354,14 @@ Currently, Grok One-Shot is text-only. For visual design tasks:
 
 **Claude Code Feature:**
 Use `@` to quickly include files or directories:
+
 - `@src/utils/auth.js` - Include file contents
 - `@src/components` - Show directory listing
 - `@github:repos/owner/repo/issues` - Fetch MCP resources
 
 **Grok One-Shot Alternative:**
 Explicitly ask Grok to read files:
+
 ```
 > read the file src/utils/auth.js and explain the logic
 > show me the structure of the src/components directory
@@ -360,13 +371,14 @@ Grok will use the Read, Glob, and Grep tools to access the files you need.
 
 **Planned Implementation:** Q2 2026 (Sprint 17-19)
 
-***
+---
 
 ## Use extended thinking
 
 > ** PARITY GAP**: Grok One-Shot does not currently support extended thinking mode. This is a Claude-specific feature not available in Grok API.
 
 **Claude Code Feature:**
+
 - Enable extended thinking with `Tab` key
 - Use "think" or "think hard" prompts
 - See visible thinking process
@@ -374,6 +386,7 @@ Grok will use the Read, Glob, and Grep tools to access the files you need.
 
 **Grok One-Shot Alternative:**
 While Grok doesn't have a dedicated "extended thinking" mode, you can encourage deeper analysis by:
+
 - Asking Grok to "analyze carefully" or "think through all implications"
 - Requesting step-by-step breakdowns
 - Asking for pros/cons analysis
@@ -381,19 +394,21 @@ While Grok doesn't have a dedicated "extended thinking" mode, you can encourage 
 
 **Not Planned:** This feature depends on Grok API capabilities
 
-***
+---
 
 ## Resume previous conversations
 
 > ** PARITY GAP**: Grok One-Shot does not currently support resuming previous conversations.
 
 **Claude Code Feature:**
+
 - `claude --continue` - Resume most recent conversation
 - `claude --resume` - Interactive conversation picker
 - Full conversation history restoration
 
 **Grok One-Shot Current State:**
 Grok One-Shot auto-saves conversations to `~/.grok/sessions/` but does not currently support resuming them. Session files contain:
+
 - Complete message history
 - Token usage
 - Timestamp and metadata
@@ -402,7 +417,7 @@ Grok One-Shot auto-saves conversations to `~/.grok/sessions/` but does not curre
 
 **Workaround:** Review session files in `~/.grok/sessions/` to see past conversations
 
-***
+---
 
 ## Run parallel Grok sessions with Git worktrees
 
@@ -423,10 +438,13 @@ documentation](https://git-scm.com/docs/git-worktree).
 git worktree add ../project-feature-a -b feature-a
 
 # Or create a worktree with an existing branch
+
 git worktree add ../project-bugfix bugfix-123
-```
+
+````
 
 This creates a new directory with a separate working copy of your repository.
+
 </Step>
 
 <Step title="Run Grok in each worktree">
@@ -436,7 +454,8 @@ cd ../project-feature-a
 
 # Run Grok in this isolated environment
 grok
-```
+````
+
 </Step>
 
 <Step title="Run Grok in another worktree">
@@ -452,26 +471,28 @@ grok
 git worktree list
 
 # Remove a worktree when done
+
 git worktree remove ../project-feature-a
-```
+
+````
+
 </Step>
 </Steps>
 
 <Tip>
 Tips:
 
-* Each worktree has its own independent file state, making it perfect for parallel Grok sessions
-* Changes made in one worktree won't affect others, preventing Grok instances from interfering with each other
-* All worktrees share the same Git history and remote connections
-* For long-running tasks, you can have Grok working in one worktree while you continue development in another
-* Use descriptive directory names to easily identify which task each worktree is for
-* Remember to initialize your development environment in each new worktree according to your project's setup. Depending on your stack, this might include:
-* JavaScript projects: Running dependency installation (`npm install`, `yarn`)
-* Python projects: Setting up virtual environments or installing with package managers
-* Other languages: Following your project's standard setup process
+- Each worktree has its own independent file state, making it perfect for parallel Grok sessions
+- Changes made in one worktree won't affect others, preventing Grok instances from interfering with each other
+- All worktrees share the same Git history and remote connections
+- For long-running tasks, you can have Grok working in one worktree while you continue development in another
+- Use descriptive directory names to easily identify which task each worktree is for
+- Remember to initialize your development environment in each new worktree according to your project's setup. Depending on your stack, this might include:
+_ JavaScript projects: Running dependency installation (`npm install`, `yarn`)
+_ Python projects: Setting up virtual environments or installing with package managers \* Other languages: Following your project's standard setup process
 </Tip>
 
-***
+---
 
 ## Use Grok as a unix-style utility
 
@@ -490,15 +511,15 @@ Suppose you want to use Grok One-Shot as a linter or code reviewer.
 "lint:grok": "grok -p 'you are a linter. please look at the changes vs. main and report any issues related to typos. report the filename and line number on one line, and a description of the issue on the second line. do not return any other text.'"
 }
 }
-```
+````
 
 <Tip>
 Tips:
 
-* Use Grok for automated code review in your CI/CD pipeline
-* Customize the prompt to check for specific issues relevant to your project
-* Consider creating multiple scripts for different types of verification
-</Tip>
+- Use Grok for automated code review in your CI/CD pipeline
+- Customize the prompt to check for specific issues relevant to your project
+- Consider creating multiple scripts for different types of verification
+  </Tip>
 
 ### Pipe in, pipe out
 
@@ -513,16 +534,17 @@ cat build-error.txt | grok -p 'concisely explain the root cause of this build er
 <Tip>
 Tips:
 
-* Use pipes to integrate Grok into existing shell scripts
-* Combine with other Unix tools for powerful workflows
-* Consider using structured prompts for consistent output
-</Tip>
+- Use pipes to integrate Grok into existing shell scripts
+- Combine with other Unix tools for powerful workflows
+- Consider using structured prompts for consistent output
+  </Tip>
 
 ### Control output format
 
 > ** PARITY GAP**: Grok One-Shot does not currently support `--output-format` flag.
 
 **Claude Code Feature:**
+
 - `--output-format text` - Plain text response (default)
 - `--output-format json` - JSON array with metadata
 - `--output-format stream-json` - Real-time JSON streaming
@@ -536,13 +558,14 @@ grok -p 'analyze this code and return ONLY a JSON object with "issues" and "sugg
 
 **Planned Implementation:** Q1 2026 (Sprint 15-16)
 
-***
+---
 
 ## Create custom slash commands
 
 > ** PARITY GAP**: Grok One-Shot does not currently support custom slash commands. This is a planned feature.
 
 **Claude Code Feature:**
+
 - Create commands in `.claude/commands/`
 - Use `$ARGUMENTS` placeholder
 - Personal commands in `~/.claude/commands/`
@@ -550,18 +573,21 @@ grok -p 'analyze this code and return ONLY a JSON object with "issues" and "sugg
 
 **Grok One-Shot Alternative:**
 While slash commands aren't available yet, you can:
+
 1. Document common prompts in `.agent/docs/workflows/`
 2. Create shell aliases for common Grok commands:
+
 ```bash
 # In ~/.bashrc or ~/.zshrc
 alias grok-optimize='grok -p "Analyze the performance of this code and suggest three specific optimizations:"'
 alias grok-security='grok -p "Review this code for security vulnerabilities, focusing on:"'
 ```
+
 3. Use shell scripts to wrap common Grok workflows
 
 **Planned Implementation:** Q2 2026 (Sprint 19-21)
 
-***
+---
 
 ## Ask Grok about its capabilities
 
@@ -596,12 +622,12 @@ Grok provides documentation-based answers to these questions. For executable exa
 <Tip>
 Tips:
 
-* Grok always has access to the latest Grok One-Shot documentation via GROK.md and docs-index.md
-* Ask specific questions to get detailed answers
-* Grok can explain features like MCP integration, configuration, and workflows
-</Tip>
+- Grok always has access to the latest Grok One-Shot documentation via GROK.md and docs-index.md
+- Ask specific questions to get detailed answers
+- Grok can explain features like MCP integration, configuration, and workflows
+  </Tip>
 
-***
+---
 
 ## Next steps
 

@@ -1,6 +1,7 @@
 ---
 title: Get Started with Grok One-Shot Hooks
 ---
+
 # Get Started with Grok One-Shot Hooks
 
 > ** PARITY GAP**: Grok One-Shot does not currently implement the hooks system described in this document. This is a comprehensive Claude Code feature planned for future implementation.
@@ -12,6 +13,7 @@ title: Get Started with Grok One-Shot Hooks
 **Priority:** P2 - Workflow automation
 
 **What This Feature Would Enable:**
+
 - Deterministic control over Grok's behavior
 - Automatic code formatting after edits
 - Custom notification workflows
@@ -20,6 +22,7 @@ title: Get Started with Grok One-Shot Hooks
 - Integration with external tools
 
 **Alternative Approaches:** Until hooks are implemented:
+
 1. Use Git hooks for pre-commit automation
 2. Create shell scripts in your repository
 3. Document workflows in `.agent/docs/`
@@ -41,16 +44,16 @@ For reference documentation on hooks, see [Hooks reference](/en/hooks).
 
 Example use cases for hooks would include:
 
-* **Notifications**: Customize how you get notified when Grok One-Shot is awaiting
-your input or permission to run something.
-* **Automatic formatting**: Run `prettier` on .ts files, `gofmt` on .go files,
-etc. after every file edit.
-* **Logging**: Track and count all executed commands for compliance or
-debugging.
-* **Feedback**: Provide automated feedback when Grok One-Shot produces code that
-does not follow your codebase conventions.
-* **Custom permissions**: Block modifications to production files or sensitive
-directories.
+- **Notifications**: Customize how you get notified when Grok One-Shot is awaiting
+  your input or permission to run something.
+- **Automatic formatting**: Run `prettier` on .ts files, `gofmt` on .go files,
+  etc. after every file edit.
+- **Logging**: Track and count all executed commands for compliance or
+  debugging.
+- **Feedback**: Provide automated feedback when Grok One-Shot produces code that
+  does not follow your codebase conventions.
+- **Custom permissions**: Block modifications to production files or sensitive
+  directories.
 
 By encoding these rules as hooks rather than prompting instructions, you turn
 suggestions into app-level code that executes every time it is expected to run.
@@ -67,15 +70,15 @@ For full security best practices, see [Security Considerations](/en/hooks#securi
 Grok One-Shot would provide several hook events that run at different points in the
 workflow:
 
-* **PreToolUse**: Runs before tool calls (can block them)
-* **PostToolUse**: Runs after tool calls complete
-* **UserPromptSubmit**: Runs when the user submits a prompt, before Grok processes it
-* **Notification**: Runs when Grok One-Shot sends notifications
-* **Stop**: Runs when Grok One-Shot finishes responding
-* **SubagentStop**: Runs when subagent tasks complete
-* **PreCompact**: Runs before Grok One-Shot is about to run a compact operation
-* **SessionStart**: Runs when Grok One-Shot starts a new session or resumes an existing session
-* **SessionEnd**: Runs when Grok One-Shot session ends
+- **PreToolUse**: Runs before tool calls (can block them)
+- **PostToolUse**: Runs after tool calls complete
+- **UserPromptSubmit**: Runs when the user submits a prompt, before Grok processes it
+- **Notification**: Runs when Grok One-Shot sends notifications
+- **Stop**: Runs when Grok One-Shot finishes responding
+- **SubagentStop**: Runs when subagent tasks complete
+- **PreCompact**: Runs before Grok One-Shot is about to run a compact operation
+- **SessionStart**: Runs when Grok One-Shot starts a new session or resumes an existing session
+- **SessionEnd**: Runs when Grok One-Shot session ends
 
 Each event receives different data and can control Grok's behavior in
 different ways.
@@ -127,19 +130,19 @@ Run `/hooks` again or check `~/.grok/settings.json` to see your configuration:
 
 ```json theme={null}
 {
-"hooks": {
-"PreToolUse": [
-{
-"matcher": "Bash",
-"hooks": [
-{
-"type": "command",
-"command": "jq -r '\"\\(.tool_input.command) - \\(.tool_input.description // \"No description\")\"' >> ~/.grok/bash-command-log.txt"
-}
-]
-}
-]
-}
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '\"\\(.tool_input.command) - \\(.tool_input.description // \"No description\")\"' >> ~/.grok/bash-command-log.txt"
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
@@ -167,7 +170,7 @@ For a complete example implementation, see the [bash command validator example](
 
 Automatically format TypeScript files after editing:
 
-```json theme={null}
+````json theme={null}
 {
 "hooks": {
 "PostToolUse": [
@@ -198,7 +201,7 @@ Automatically fix missing language tags and formatting issues in markdown files:
 ]
 }
 }
-```
+````
 
 Create `.grok/hooks/markdown_formatter.py` with this content:
 
@@ -290,22 +293,22 @@ sys.exit(1)
 
 Make the script executable:
 
-```bash theme=\{null\}
+```bash theme={null}
 chmod +x .grok/hooks/markdown_formatter.py
 ```
 
 This hook automatically:
 
-* Detects programming languages in unlabeled code blocks
-* Adds appropriate language tags for syntax highlighting
-* Fixes excessive blank lines while preserving code content
-* Only processes markdown files (`.md`, `.mdx`)
+- Detects programming languages in unlabeled code blocks
+- Adds appropriate language tags for syntax highlighting
+- Fixes excessive blank lines while preserving code content
+- Only processes markdown files (`.md`, `.mdx`)
 
 ### Custom Notification Hook
 
 Get desktop notifications when Grok needs input:
 
-```json theme=\{null\}
+```json theme={null}
 \{
 "hooks": {
 "Notification": [
@@ -327,7 +330,7 @@ Get desktop notifications when Grok needs input:
 
 Block edits to sensitive files:
 
-```json theme=\{null\}
+```json theme={null}
 \{
 "hooks": {
 "PreToolUse": [
@@ -368,6 +371,7 @@ git diff --cached --name-only --diff-filter=ACM | xargs git add
 ```
 
 Make it executable:
+
 ```bash
 chmod +x .git/hooks/pre-commit
 ```
@@ -391,10 +395,12 @@ echo "Done!"
 ```
 
 Reference in your GROK.md:
+
 ```markdown
 # Development Workflows
 
 ## Code Formatting
+
 Run `scripts/format-code.sh` to format all code files.
 Ask me to run this after making changes.
 ```
@@ -423,6 +429,7 @@ Document expected workflows in `.agent/docs/`:
 ```
 
 Then in GROK.md:
+
 ```markdown
 # Code Quality
 
@@ -440,6 +447,7 @@ grok mcp add workflow-checker "node ./mcp-servers/workflow/index.js"
 ```
 
 The MCP server can provide tools that Grok uses when needed:
+
 - `check_file_format` - Validate file formatting
 - `run_security_scan` - Run security checks
 - `validate_tests` - Ensure tests pass
@@ -455,17 +463,20 @@ Before committing, run the test suite.
 ```
 
 Or in GROK.md:
+
 ```markdown
 # Development Rules
 
 ## Automatic Actions
 
 After editing any file:
+
 1. Format with appropriate formatter (prettier for .ts, markdownlint for .md)
 2. Run linter if applicable
 3. Verify tests still pass
 
 Before any commit:
+
 1. Run full test suite
 2. Check for console.log statements
 3. Verify no TODOs remain
@@ -512,17 +523,17 @@ grok hooks install @community/typescript-formatter
 
 ## Learn More
 
-* For reference documentation on hooks, see [Hooks reference](/en/hooks).
-* For comprehensive security best practices and safety guidelines, see [Security Considerations](/en/hooks#security-considerations) in the hooks reference documentation.
-* For troubleshooting steps and debugging techniques, see [Debugging](/en/hooks#debugging) in the hooks reference
-documentation.
+- For reference documentation on hooks, see [Hooks reference](/en/hooks).
+- For comprehensive security best practices and safety guidelines, see [Security Considerations](/en/hooks#security-considerations) in the hooks reference documentation.
+- For troubleshooting steps and debugging techniques, see [Debugging](/en/hooks#debugging) in the hooks reference
+  documentation.
 
 ## See Also
 
-* [Hooks Reference](./hooks.md) - Complete hooks documentation
-* [Plugin System](../features/plugin-system.md) - Plugin system overview
-* [MCP Integration](../build-with-claude-code/mcp.md) - Current extensibility
-* [Settings](../configuration/settings.md) - Configuration files
+- [Hooks Reference](./hooks.md) - Complete hooks documentation
+- [Plugin System](../features/plugin-system.md) - Plugin system overview
+- [MCP Integration](../build-with-claude-code/mcp.md) - Current extensibility
+- [Settings](../configuration/settings.md) - Configuration files
 
 ---
 
@@ -535,6 +546,7 @@ documentation.
 ]
 }
 }
+
 ```
 
 ### Markdown Formatting Hook
@@ -642,6 +654,7 @@ __CODE_BLOCK_30__markdown
 # Development Workflows
 
 ## Code Formatting
+
 Run __CODE_BLOCK_31__ to format all code files.
 Ask me to run this after making changes.
 __CODE_BLOCK_32__markdown
@@ -679,11 +692,13 @@ __CODE_BLOCK_42__markdown
 ## Automatic Actions
 
 After editing any file:
+
 1. Format with appropriate formatter (prettier for .ts, markdownlint for .md)
 2. Run linter if applicable
 3. Verify tests still pass
 
 Before any commit:
+
 1. Run full test suite
 2. Check for console.log statements
 3. Verify no TODOs remain
@@ -714,17 +729,17 @@ grok hooks install @community/typescript-formatter
 
 ## Learn More
 
-* For reference documentation on hooks, see [Hooks reference](/en/hooks).
-* For comprehensive security best practices and safety guidelines, see [Security Considerations](/en/hooks#security-considerations) in the hooks reference documentation.
-* For troubleshooting steps and debugging techniques, see [Debugging](/en/hooks#debugging) in the hooks reference
-documentation.
+- For reference documentation on hooks, see [Hooks reference](/en/hooks).
+- For comprehensive security best practices and safety guidelines, see [Security Considerations](/en/hooks#security-considerations) in the hooks reference documentation.
+- For troubleshooting steps and debugging techniques, see [Debugging](/en/hooks#debugging) in the hooks reference
+  documentation.
 
 ## See Also
 
-* [Hooks Reference](./hooks.md) - Complete hooks documentation
-* [Plugin System](../features/plugin-system.md) - Plugin system overview
-* [MCP Integration](../build-with-claude-code/mcp.md) - Current extensibility
-* [Settings](../configuration/settings.md) - Configuration files
+- [Hooks Reference](./hooks.md) - Complete hooks documentation
+- [Plugin System](../features/plugin-system.md) - Plugin system overview
+- [MCP Integration](../build-with-claude-code/mcp.md) - Current extensibility
+- [Settings](../configuration/settings.md) - Configuration files
 
 ---
 

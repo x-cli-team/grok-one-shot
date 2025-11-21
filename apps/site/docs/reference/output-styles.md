@@ -1,6 +1,7 @@
 ---
 title: Output styles
 ---
+
 # Output styles
 
 > Adapt Grok One-Shot for uses beyond software engineering
@@ -15,13 +16,14 @@ Output styles (in Claude Code) allow you to customize the AI assistant's behavio
 
 In Claude Code, there are three built-in output styles:
 
-* **Default**: Software engineering assistant (standard behavior)
-* **Explanatory**: Educational mode with "Insights" explaining implementation choices and codebase patterns
-* **Learning**: Collaborative mode where the AI teaches by asking you to implement small pieces of code with `TODO(human)` markers
+- **Default**: Software engineering assistant (standard behavior)
+- **Explanatory**: Educational mode with "Insights" explaining implementation choices and codebase patterns
+- **Learning**: Collaborative mode where the AI teaches by asking you to implement small pieces of code with `TODO(human)` markers
 
 ## How output styles work (in Claude Code)
 
 Output styles modify the system prompt by:
+
 - Removing default software engineering instructions
 - Adding custom instructions for the selected style
 - Preserving core tool functionality (file operations, bash, etc.)
@@ -31,6 +33,7 @@ Output styles modify the system prompt by:
 **Not yet implemented**. Grok One-Shot currently uses a single system prompt optimized for software engineering tasks.
 
 **Current capabilities**:
+
 - Software engineering assistant (default mode)
 - No output style switching
 - No custom style creation
@@ -48,6 +51,7 @@ Add instructions to your project's `GROK.md` file:
 # Custom Behavior
 
 When working on this project, please:
+
 - Explain your reasoning before making changes
 - Add detailed comments to new code
 - Ask me to implement small helper functions
@@ -72,6 +76,7 @@ The AI will maintain this context throughout the session.
 > **Note**: This feature may be added in a future version. Check the current CLI options with `grok --help`.
 
 A potential future enhancement could allow:
+
 ```bash
 # Hypothetical future feature
 grok --system-prompt "You are a teaching assistant..."
@@ -81,13 +86,13 @@ grok --system-prompt "You are a teaching assistant..."
 
 ### GROK.md vs. system prompt customization
 
-| Feature | GROK.md | Output Styles (future) |
-|---------|---------|----------------------|
-| Scope | Project-specific | Global or project |
-| Location | Project root | `~/.grok/output-styles/` |
-| Format | Loaded as user message | Modifies system prompt |
-| Persistence | Committed to repo | User or project settings |
-| Use case | Project conventions | Communication style |
+| Feature     | GROK.md                | Output Styles (future)   |
+| ----------- | ---------------------- | ------------------------ |
+| Scope       | Project-specific       | Global or project        |
+| Location    | Project root           | `~/.grok/output-styles/` |
+| Format      | Loaded as user message | Modifies system prompt   |
+| Persistence | Committed to repo      | User or project settings |
+| Use case    | Project conventions    | Communication style      |
 
 ### Output styles vs. agents (future)
 
@@ -108,6 +113,7 @@ Different levels of customization:
 **Status**: Planned for future sprint
 
 **Proposed features**:
+
 1. Built-in styles: Default, Explanatory, Learning (matching Claude Code)
 2. Custom style creation via markdown files
 3. Style storage in `~/.grok/output-styles/` (user) and `.grok/output-styles/` (project)
@@ -115,6 +121,7 @@ Different levels of customization:
 5. Settings integration for persistence
 
 **Proposed file format**:
+
 ```markdown
 ---
 name: Teaching Assistant
@@ -153,21 +160,25 @@ Interested in output styles for Grok One-Shot?
 When output styles are implemented, you could use them for:
 
 **Learning Mode**:
+
 - Onboarding new developers
 - Teaching specific patterns or frameworks
 - Code review with educational feedback
 
 **Documentation Mode**:
+
 - Generate comprehensive inline documentation
 - Explain complex algorithms
 - Create learning resources from code
 
 **Research Mode**:
+
 - Detailed analysis and explanations
 - Exploration of multiple approaches
 - Trade-off discussions
 
 **Minimal Mode**:
+
 - Concise responses only
 - No explanations unless asked
 - Fast iterations

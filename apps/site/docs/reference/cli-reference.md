@@ -1,19 +1,20 @@
 ---
 title: CLI reference
 ---
+
 # CLI reference
 
 > Complete reference for Grok One-Shot command-line interface, including commands and flags.
 
 ## CLI commands
 
-| Command | Description | Example |
-| :--------------------------------- | :--------------------------------------------- | :------------------------------------------------ |
-| `grok` | Start interactive REPL | `grok` |
-| `grok "query"` | Start REPL with initial prompt | `grok "explain this project"` |
-| `grok -p "query"` | Query via SDK, then exit | `grok -p "explain this function"` |
-| `cat file \| grok -p "query"` | Process piped content | `cat logs.txt \| grok -p "explain"` |
-| `grok mcp` | Configure Model Context Protocol (MCP) servers | See the Grok One-Shot MCP documentation. |
+| Command                       | Description                                    | Example                                  |
+| :---------------------------- | :--------------------------------------------- | :--------------------------------------- |
+| `grok`                        | Start interactive REPL                         | `grok`                                   |
+| `grok "query"`                | Start REPL with initial prompt                 | `grok "explain this project"`            |
+| `grok -p "query"`             | Query via SDK, then exit                       | `grok -p "explain this function"`        |
+| `cat file \| grok -p "query"` | Process piped content                          | `cat logs.txt \| grok -p "explain"`      |
+| `grok mcp`                    | Configure Model Context Protocol (MCP) servers | See the Grok One-Shot MCP documentation. |
 
 > ** Parity Gap:** Grok One-Shot does not yet support `-c`/`--continue` or `-r`/`--resume` flags for session continuation. Sessions are auto-saved to `~/.grok/sessions/` but resuming must be done manually.
 
@@ -23,17 +24,17 @@ title: CLI reference
 
 Customize Grok One-Shot's behavior with these command-line flags:
 
-| Flag | Description | Example |
-| :------------------------------- | :------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------- |
-| `--add-dir` | Add additional working directories for Grok to access (validates each path exists as a directory) | `grok --add-dir ../apps ../lib` |
-| `--allowedTools` | A list of tools that should be allowed without prompting the user for permission, in addition to settings.json files | `"Bash(git log:*)" "Bash(git diff:*)" "Read"` |
-| `--disallowedTools` | A list of tools that should be disallowed without prompting the user for permission, in addition to settings.json files | `"Bash(git log:*)" "Bash(git diff:*)" "Edit"` |
-| `--print`, `-p` | Print response without interactive mode (see SDK documentation for programmatic usage details) | `grok -p "query"` |
-| `--system-prompt` | Replace the entire system prompt with custom text (works in both interactive and print modes) | `grok --system-prompt "You are a Python expert"` |
-| `--verbose` | Enable verbose logging, shows full turn-by-turn output (helpful for debugging in both print and interactive modes) | `grok --verbose` |
-| `--max-turns` | Limit the number of agentic turns in non-interactive mode | `grok -p --max-turns 3 "query"` |
-| `--model` | Sets the model for the current session (e.g., `grok-2-1212`, `grok-beta`) | `grok --model grok-2-1212` |
-| `--dangerously-skip-permissions` | Skip permission prompts (use with caution) | `grok --dangerously-skip-permissions` |
+| Flag                             | Description                                                                                                             | Example                                          |
+| :------------------------------- | :---------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------- |
+| `--add-dir`                      | Add additional working directories for Grok to access (validates each path exists as a directory)                       | `grok --add-dir ../apps ../lib`                  |
+| `--allowedTools`                 | A list of tools that should be allowed without prompting the user for permission, in addition to settings.json files    | `"Bash(git log:*)" "Bash(git diff:*)" "Read"`    |
+| `--disallowedTools`              | A list of tools that should be disallowed without prompting the user for permission, in addition to settings.json files | `"Bash(git log:*)" "Bash(git diff:*)" "Edit"`    |
+| `--print`, `-p`                  | Print response without interactive mode (see SDK documentation for programmatic usage details)                          | `grok -p "query"`                                |
+| `--system-prompt`                | Replace the entire system prompt with custom text (works in both interactive and print modes)                           | `grok --system-prompt "You are a Python expert"` |
+| `--verbose`                      | Enable verbose logging, shows full turn-by-turn output (helpful for debugging in both print and interactive modes)      | `grok --verbose`                                 |
+| `--max-turns`                    | Limit the number of agentic turns in non-interactive mode                                                               | `grok -p --max-turns 3 "query"`                  |
+| `--model`                        | Sets the model for the current session (e.g., `grok-2-1212`, `grok-beta`)                                               | `grok --model grok-2-1212`                       |
+| `--dangerously-skip-permissions` | Skip permission prompts (use with caution)                                                                              | `grok --dangerously-skip-permissions`            |
 
 > ** Parity Gap:** Grok One-Shot does not support `--agents` flag for dynamic subagent definition. Subagent functionality may be added in future releases.
 
@@ -51,13 +52,14 @@ The `-p` (print) flag is useful for scripting and automation, allowing you to us
 
 Grok One-Shot provides the `--system-prompt` flag for customizing the system prompt:
 
-| Flag | Behavior | Modes | Use Case |
-| :----------------------- | :--------------------------------- | :------------------ | :------------------------------------------------------------------- |
+| Flag              | Behavior                           | Modes               | Use Case                                               |
+| :---------------- | :--------------------------------- | :------------------ | :----------------------------------------------------- |
 | `--system-prompt` | **Replaces** entire default prompt | Interactive + Print | Complete control over Grok's behavior and instructions |
 
 **When to use:**
 
-* **`--system-prompt`**: Use when you need complete control over Grok's system prompt. This removes all default Grok One-Shot instructions, giving you a blank slate.
+- **`--system-prompt`**: Use when you need complete control over Grok's system prompt. This removes all default Grok One-Shot instructions, giving you a blank slate.
+
 ```bash theme={null}
 grok --system-prompt "You are a Python expert who only writes type-annotated code"
 ```
@@ -70,8 +72,8 @@ For detailed information about print mode (`-p`) including verbose logging and p
 
 ## See also
 
-* [Interactive mode](/en/interactive-mode) - Shortcuts, input modes, and interactive features
-* [Slash commands](/en/slash-commands) - Interactive session commands
-* [Quickstart guide](/en/quickstart) - Getting started with Grok One-Shot
-* [Common workflows](/en/common-workflows) - Advanced workflows and patterns
-* [Settings](/en/settings) - Configuration options
+- [Interactive mode](/en/interactive-mode) - Shortcuts, input modes, and interactive features
+- [Slash commands](/en/slash-commands) - Interactive session commands
+- [Quickstart guide](/en/quickstart) - Getting started with Grok One-Shot
+- [Common workflows](/en/common-workflows) - Advanced workflows and patterns
+- [Settings](/en/settings) - Configuration options

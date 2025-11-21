@@ -1,6 +1,7 @@
 ---
 title: Plugin System
 ---
+
 # Plugin System
 
 > ** PARITY GAP**: Grok One-Shot does not currently implement the plugin system described in this document. This is a comprehensive Claude Code feature planned for future implementation.
@@ -17,14 +18,14 @@ For complete technical specifications and schemas, see [Plugins reference](/en/p
 
 **What Plugins Enable (in Claude Code):**
 
-* **Custom slash commands**: Create reusable prompt templates
-* **Specialized agents**: Bundle pre-configured AI agents for specific tasks
-* **Hooks**: Automate workflows with lifecycle event handlers
-* **Skills**: Package domain expertise into discoverable capabilities
-* **MCP servers**: Include external tool integrations
-* **Team distribution**: Share plugins via Git repositories or marketplaces
-* **Versioning**: Semantic versioning for plugin releases
-* **Dependency management**: Plugins can depend on other plugins
+- **Custom slash commands**: Create reusable prompt templates
+- **Specialized agents**: Bundle pre-configured AI agents for specific tasks
+- **Hooks**: Automate workflows with lifecycle event handlers
+- **Skills**: Package domain expertise into discoverable capabilities
+- **MCP servers**: Include external tool integrations
+- **Team distribution**: Share plugins via Git repositories or marketplaces
+- **Versioning**: Semantic versioning for plugin releases
+- **Dependency management**: Plugins can depend on other plugins
 
 ---
 
@@ -36,8 +37,8 @@ Let's create a simple greeting plugin to get you familiar with the plugin system
 
 ### Prerequisites
 
-* Grok One-Shot installed on your machine
-* Basic familiarity with command-line tools
+- Grok One-Shot installed on your machine
+- Basic familiarity with command-line tools
 
 ### Create your first plugin
 
@@ -84,7 +85,9 @@ description: Greet the user with a personalized message
 
 Greet the user warmly and ask how you can help them today. Make the greeting personal and encouraging.
 EOF
-```
+
+````
+
 </Step>
 
 <Step title="Create the marketplace manifest">
@@ -106,7 +109,8 @@ cat > .grok-plugin/marketplace.json << 'EOF'
 ]
 }
 EOF
-```
+````
+
 </Step>
 
 <Step title="Install and test your plugin">
@@ -130,14 +134,15 @@ Select "Install now". You'll then need to restart Grok One-Shot in order to use 
 ```
 
 You'll see Grok use your greeting command! Check `/help` to see your new command listed.
+
 </Step>
 </Steps>
 
 You've successfully created and tested a plugin with these key components:
 
-* **Plugin manifest** (`.grok-plugin/plugin.json`) - Describes your plugin's metadata
-* **Commands directory** (`commands/`) - Contains your custom slash commands
-* **Test marketplace** - Allows you to test your plugin locally
+- **Plugin manifest** (`.grok-plugin/plugin.json`) - Describes your plugin's metadata
+- **Commands directory** (`commands/`) - Contains your custom slash commands
+- **Test marketplace** - Allows you to test your plugin locally
 
 ### Plugin structure overview
 
@@ -160,17 +165,17 @@ my-first-plugin/
 
 **Additional components you can add:**
 
-* **Commands**: Create markdown files in `commands/` directory
-* **Agents**: Create agent definitions in `agents/` directory
-* **Skills**: Create `SKILL.md` files in `skills/` directory
-* **Hooks**: Create `hooks/hooks.json` for event handling
-* **MCP servers**: Create `.mcp.json` for external tool integration
+- **Commands**: Create markdown files in `commands/` directory
+- **Agents**: Create agent definitions in `agents/` directory
+- **Skills**: Create `SKILL.md` files in `skills/` directory
+- **Hooks**: Create `hooks/hooks.json` for event handling
+- **MCP servers**: Create `.mcp.json` for external tool integration
 
 <Note>
 **Next steps**: Ready to add more features? Jump to [Develop more complex plugins](#develop-more-complex-plugins) to add agents, hooks, and MCP servers. For complete technical specifications of all plugin components, see [Plugins reference](/en/plugins-reference).
 </Note>
 
-***
+---
 
 ## Install and manage plugins
 
@@ -178,8 +183,8 @@ Learn how to discover, install, and manage plugins to extend your Grok One-Shot 
 
 ### Prerequisites
 
-* Grok One-Shot installed and running
-* Basic familiarity with command-line interfaces
+- Grok One-Shot installed and running
+- Basic familiarity with command-line interfaces
 
 ### Add marketplaces
 
@@ -243,7 +248,7 @@ Configure plugins at the repository level to ensure consistent tooling across yo
 
 For complete instructions including configuration examples, marketplace setup, and rollout best practices, see [Configure team marketplaces](/en/plugin-marketplaces#how-to-configure-team-marketplaces).
 
-***
+---
 
 ## Develop more complex plugins
 
@@ -288,6 +293,7 @@ dev-marketplace/
 ├── agents/
 └── hooks/
 ```
+
 </Step>
 
 <Step title="Create the marketplace manifest">
@@ -327,9 +333,10 @@ grok
 
 Test your plugin components:
 
-* Try your commands with `/command-name`
-* Check that agents appear in `/agents`
-* Verify hooks work as expected
+- Try your commands with `/command-name`
+- Check that agents appear in `/agents`
+- Verify hooks work as expected
+
 </Step>
 
 <Step title="Iterate on your plugin">
@@ -344,6 +351,7 @@ After making changes to your plugin code:
 ```
 
 Repeat this cycle as you develop and refine your plugin.
+
 </Step>
 </Steps>
 
@@ -372,7 +380,7 @@ When your plugin is ready to share:
 For complete technical specifications, debugging techniques, and distribution strategies, see [Plugins reference](/en/plugins-reference).
 </Note>
 
-***
+---
 
 ## Alternative Approaches (Current Implementation)
 
@@ -484,12 +492,12 @@ Package shared tools as npm packages:
 ```json
 // package.json
 {
-"name": "@org/grok-tools",
-"version": "1.0.0",
-"bin": {
-"grok-format": "./bin/format.js",
-"grok-test": "./bin/test.js"
-}
+  "name": "@org/grok-tools",
+  "version": "1.0.0",
+  "bin": {
+    "grok-format": "./bin/format.js",
+    "grok-test": "./bin/test.js"
+  }
 }
 ```
 
@@ -508,16 +516,16 @@ Future plugin system in Grok One-Shot would likely include:
 ```json
 // .grok-plugin/plugin.json
 {
-"name": "my-plugin",
-"version": "1.0.0",
-"description": "Description of plugin functionality",
-"author": {
-"name": "Your Name",
-"email": "you@example.com"
-},
-"dependencies": {
-"other-plugin": "^2.0.0"
-}
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "description": "Description of plugin functionality",
+  "author": {
+    "name": "Your Name",
+    "email": "you@example.com"
+  },
+  "dependencies": {
+    "other-plugin": "^2.0.0"
+  }
 }
 ```
 
@@ -526,17 +534,17 @@ Future plugin system in Grok One-Shot would likely include:
 ```json
 // .grok-plugin/marketplace.json
 {
-"name": "org-marketplace",
-"owner": {
-"name": "Organization Name"
-},
-"plugins": [
-{
-"name": "my-plugin",
-"source": "./my-plugin",
-"description": "Plugin description"
-}
-]
+  "name": "org-marketplace",
+  "owner": {
+    "name": "Organization Name"
+  },
+  "plugins": [
+    {
+      "name": "my-plugin",
+      "source": "./my-plugin",
+      "description": "Plugin description"
+    }
+  ]
 }
 ```
 
@@ -561,24 +569,24 @@ grok plugin uninstall formatter@org
 
 ## Comparison: Plugins vs Current Alternatives
 
-| Feature | Plugins (Claude Code) | Current Alternatives |
-|---------|----------------------|---------------------|
-| **Distribution** | Marketplace-based | Git clone, npm packages |
-| **Versioning** | Built-in | Manual Git tags, npm versions |
-| **Discovery** | `/plugin` command | README documentation |
-| **Installation** | One command | Multi-step manual process |
-| **Updates** | `plugin update` | Git pull, npm update |
-| **Dependencies** | Automatic | Manual |
+| Feature          | Plugins (Claude Code) | Current Alternatives          |
+| ---------------- | --------------------- | ----------------------------- |
+| **Distribution** | Marketplace-based     | Git clone, npm packages       |
+| **Versioning**   | Built-in              | Manual Git tags, npm versions |
+| **Discovery**    | `/plugin` command     | README documentation          |
+| **Installation** | One command           | Multi-step manual process     |
+| **Updates**      | `plugin update`       | Git pull, npm update          |
+| **Dependencies** | Automatic             | Manual                        |
 
 ## Component Comparison
 
-| Component | Claude Code Plugin | Grok One-Shot Alternative |
-|-----------|-------------------|-------------------------|
-| **Custom commands** | `/plugin` installed | Not available (future) |
-| **Agents** | Plugin agents | Limited subagent support |
-| **Hooks** | Plugin hooks | Not available (future) |
-| **Skills** | Plugin skills | Not available (use GROK.md + docs) |
-| **MCP servers** | Plugin MCP | Available via `grok mcp` |
+| Component           | Claude Code Plugin  | Grok One-Shot Alternative          |
+| ------------------- | ------------------- | ---------------------------------- |
+| **Custom commands** | `/plugin` installed | Not available (future)             |
+| **Agents**          | Plugin agents       | Limited subagent support           |
+| **Hooks**           | Plugin hooks        | Not available (future)             |
+| **Skills**          | Plugin skills       | Not available (use GROK.md + docs) |
+| **MCP servers**     | Plugin MCP          | Available via `grok mcp`           |
 
 ## Next steps
 
@@ -586,56 +594,57 @@ Now that you understand Grok One-Shot's plugin system (planned), here are sugges
 
 ### For plugin users (when implemented)
 
-* **Discover plugins**: Browse community marketplaces for useful tools
-* **Team adoption**: Set up repository-level plugins for your projects
-* **Marketplace management**: Learn to manage multiple plugin sources
-* **Advanced usage**: Explore plugin combinations and workflows
+- **Discover plugins**: Browse community marketplaces for useful tools
+- **Team adoption**: Set up repository-level plugins for your projects
+- **Marketplace management**: Learn to manage multiple plugin sources
+- **Advanced usage**: Explore plugin combinations and workflows
 
 ### For plugin developers (when implemented)
 
-* **Create your first marketplace**: [Plugin marketplaces guide](/en/plugin-marketplaces)
-* **Advanced components**: Dive deeper into specific plugin components:
-* [Slash commands](/en/slash-commands) - Command development details
-* [Subagents](/en/sub-agents) - Agent configuration and capabilities
-* [Agent Skills](/en/skills) - Extend Grok's capabilities
-* [Hooks](/en/hooks) - Event handling and automation
-* [MCP](/en/mcp) - External tool integration
-* **Distribution strategies**: Package and share your plugins effectively
-* **Community contribution**: Consider contributing to community plugin collections
+- **Create your first marketplace**: [Plugin marketplaces guide](/en/plugin-marketplaces)
+- **Advanced components**: Dive deeper into specific plugin components:
+- [Slash commands](/en/slash-commands) - Command development details
+- [Subagents](/en/sub-agents) - Agent configuration and capabilities
+- [Agent Skills](/en/skills) - Extend Grok's capabilities
+- [Hooks](/en/hooks) - Event handling and automation
+- [MCP](/en/mcp) - External tool integration
+- **Distribution strategies**: Package and share your plugins effectively
+- **Community contribution**: Consider contributing to community plugin collections
 
 ### For team leads and administrators
 
-* **Repository configuration**: Set up automatic plugin installation for team projects
-* **Plugin governance**: Establish guidelines for plugin approval and security review
-* **Marketplace maintenance**: Create and maintain organization-specific plugin catalogs
-* **Training and documentation**: Help team members adopt plugin workflows effectively
+- **Repository configuration**: Set up automatic plugin installation for team projects
+- **Plugin governance**: Establish guidelines for plugin approval and security review
+- **Marketplace maintenance**: Create and maintain organization-specific plugin catalogs
+- **Training and documentation**: Help team members adopt plugin workflows effectively
 
 ### Current alternatives (before plugins)
 
-* **Use MCP servers**: Leverage Grok's existing MCP support
-* **Git-based configs**: Share configurations through repositories
-* **Documentation**: Use `.agent/docs/` for team knowledge
-* **Scripts**: Create helper scripts for common workflows
-* **npm packages**: Package tools as reusable modules
+- **Use MCP servers**: Leverage Grok's existing MCP support
+- **Git-based configs**: Share configurations through repositories
+- **Documentation**: Use `.agent/docs/` for team knowledge
+- **Scripts**: Create helper scripts for common workflows
+- **npm packages**: Package tools as reusable modules
 
 ## See also
 
-* [Plugin marketplaces](/en/plugin-marketplaces) - Creating and managing plugin catalogs (planned)
-* [Slash commands](/en/slash-commands) - Understanding custom commands (planned)
-* [Subagents](/en/sub-agents) - Creating and using specialized agents
-* [Agent Skills](../getting-started/skills.md) - Extend Grok's capabilities (planned)
-* [Hooks](../getting-started/hooks.md) - Automating workflows with event handlers (planned)
-* [MCP](/en/mcp) - Connecting to external tools and services (available)
-* [Settings](../configuration/settings.md) - Configuration options for plugins
+- [Plugin marketplaces](/en/plugin-marketplaces) - Creating and managing plugin catalogs (planned)
+- [Slash commands](/en/slash-commands) - Understanding custom commands (planned)
+- [Subagents](/en/sub-agents) - Creating and using specialized agents
+- [Agent Skills](../getting-started/skills.md) - Extend Grok's capabilities (planned)
+- [Hooks](../getting-started/hooks.md) - Automating workflows with event handlers (planned)
+- [MCP](/en/mcp) - Connecting to external tools and services (available)
+- [Settings](../configuration/settings.md) - Configuration options for plugins
 
 ---
 
 **Want this feature?** Consider:
-* Opening a feature request in the Grok One-Shot repository
-* Using Git-based configuration sharing as an interim solution
-* Leveraging MCP servers for custom tool integration
-* Creating shared npm packages for team tooling
-* Contributing to Grok One-Shot development
+
+- Opening a feature request in the Grok One-Shot repository
+- Using Git-based configuration sharing as an interim solution
+- Leveraging MCP servers for custom tool integration
+- Creating shared npm packages for team tooling
+- Contributing to Grok One-Shot development
 
 **Status:** This feature is planned but not yet implemented in Grok One-Shot.
 **Last Updated:** 2025-11-07

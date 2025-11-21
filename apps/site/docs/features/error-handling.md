@@ -1,6 +1,7 @@
 ---
 title: Error Handling and Recovery
 ---
+
 # Error Handling and Recovery
 
 How Grok One-Shot handles errors and recovers from failures.
@@ -14,6 +15,7 @@ Grok One-Shot is designed with robust error handling and automatic recovery. The
 ### 1. API Errors
 
 **X.AI API failures:**
+
 ```
 Common errors:
 - 401 Unauthorized (invalid API key)
@@ -24,6 +26,7 @@ Common errors:
 ```
 
 **Handling:**
+
 ```
 Automatic retry for transient errors (3 attempts)
 Exponential backoff (2s, 4s, 8s)
@@ -32,6 +35,7 @@ Graceful degradation
 ```
 
 **Example:**
+
 ```
 User: "Analyze the codebase"
 
@@ -47,6 +51,7 @@ AI Response:
 ### 2. File Operation Errors
 
 **Read errors:**
+
 ```
 Common errors:
 - File not found
@@ -56,6 +61,7 @@ Common errors:
 ```
 
 **AI recovery:**
+
 ```
 User: "Read auth.ts"
 
@@ -70,6 +76,7 @@ AI Recovery:
 ```
 
 **Write/Edit errors:**
+
 ```
 Common errors:
 - Permission denied
@@ -79,6 +86,7 @@ Common errors:
 ```
 
 **AI recovery:**
+
 ```
 Error: old_string not unique in Edit
 
@@ -92,6 +100,7 @@ AI Recovery:
 ### 3. Command Execution Errors
 
 **Bash tool failures:**
+
 ```
 Common errors:
 - Command not found
@@ -101,6 +110,7 @@ Common errors:
 ```
 
 **AI recovery:**
+
 ```
 User: "Run the tests"
 
@@ -117,6 +127,7 @@ AI Recovery:
 ### 4. Tool Limit Errors
 
 **MAX_TOOL_ROUNDS exceeded:**
+
 ```
 Error: Reached maximum tool calls (400)
 
@@ -136,23 +147,27 @@ Remaining tasks:
 ### Implemented
 
 **Automatic retry:**
+
 - API calls retry on transient errors
 - Exponential backoff
 - Max 3-4 retry attempts
 - Clear error reporting
 
 **Graceful degradation:**
+
 - Continue on non-critical failures
 - Report partial results
 - Suggest manual alternatives
 
 **Error recovery:**
+
 - AI adapts to errors automatically
 - Tries alternative approaches
 - Corrects file paths, commands
 - Adjusts strategy based on failures
 
 **Error reporting:**
+
 - Clear, actionable error messages
 - Context about what went wrong
 - Suggestions for fixes
@@ -161,16 +176,19 @@ Remaining tasks:
 ### Partially Implemented
 
 **Transaction rollback:**
+
 - No atomic multi-file operations
 - No automatic undo on failure
 - Manual recovery needed
 
 **Error prevention:**
+
 - No pre-flight validation
 - No dry-run mode
 - No change preview
 
 **Advanced recovery:**
+
 - No checkpoint/resume
 - No partial state save
 - Limited context recovery
@@ -178,18 +196,21 @@ Remaining tasks:
 ### Planned Features
 
 **Atomic operations:**
+
 - Multi-file transactions
 - Automatic rollback on failure
 - Checkpoint and resume
 - Change preview before apply
 
 **Enhanced validation:**
+
 - Pre-flight checks
 - Dry-run mode
 - Impact analysis
 - Confirmation with preview
 
 **Smart recovery:**
+
 - Learn from previous errors
 - Suggest preventive measures
 - Auto-fix common issues
@@ -200,6 +221,7 @@ Remaining tasks:
 ### Example 1: File Not Found
 
 **Scenario:**
+
 ```
 User: "Fix the bug in user-service.ts"
 
@@ -220,6 +242,7 @@ Response: "Fixed the bug in src/services/user-service.ts"
 ### Example 2: Command Not Found
 
 **Scenario:**
+
 ```
 User: "Run the linter"
 
@@ -237,6 +260,7 @@ Response: "Ran linter via npm run lint. Found 5 issues..."
 ### Example 3: Edit String Not Found
 
 **Scenario:**
+
 ```
 User: "Change the timeout to 5000"
 
@@ -256,6 +280,7 @@ Response: "Found 3 timeout values. Changed the API timeout to 5000."
 ### Example 4: API Rate Limit
 
 **Scenario:**
+
 ```
 User: "Analyze all files in src/"
 
@@ -274,6 +299,7 @@ Response: "Analyzed 47 files (with brief rate limit pause)..."
 ### Example 5: Permission Denied
 
 **Scenario:**
+
 ```
 User: "Create a log file"
 
@@ -296,6 +322,7 @@ Response: "Created log file at ./logs/app.log"
 ### Best Practices
 
 **DO:**
+
 - Use confirmations for risky operations
 - Review changes before approving
 - Test in safe environment first
@@ -303,6 +330,7 @@ Response: "Created log file at ./logs/app.log"
 - Monitor error logs
 
 **DON'T:**
+
 - Disable confirmations for untrusted code
 - Ignore repeated errors
 - Run with elevated privileges unnecessarily
@@ -311,6 +339,7 @@ Response: "Created log file at ./logs/app.log"
 ### Pre-Execution Checks
 
 **Manual checks:**
+
 ```
 Before major changes:
 1. > What files will this modify?
@@ -327,6 +356,7 @@ After changes:
 ### Safe Practices
 
 **Use version control:**
+
 ```bash
 # Before AI makes changes
 git commit -m "Before AI refactoring"
@@ -340,6 +370,7 @@ git restore . # Undo if needed
 ```
 
 **Test in isolation:**
+
 ```bash
 # Create test branch
 git checkout -b test/ai-changes
@@ -365,12 +396,14 @@ git branch -D test/ai-changes
 ### Enable Debug Mode
 
 **See detailed error information:**
+
 ```bash
 export GROK_DEBUG=true
 grok
 ```
 
 **Debug output includes:**
+
 - API request/response details
 - Tool call parameters
 - Error stack traces
@@ -380,17 +413,20 @@ grok
 ### Check Logs
 
 **Startup log:**
+
 ```bash
 cat xcli-startup.log
 ```
 
 **Contains:**
+
 - Environment configuration
 - Loaded settings
 - MCP server status
 - Startup errors
 
 **Session files:**
+
 ```bash
 # View errors in session
 cat ~/.grok/sessions/latest-session.json | jq '.messages[] | select(.error)'
@@ -399,6 +435,7 @@ cat ~/.grok/sessions/latest-session.json | jq '.messages[] | select(.error)'
 ### Common Error Patterns
 
 **API key issues:**
+
 ```
 Error: 401 Unauthorized
 
@@ -412,6 +449,7 @@ cat ~/.grok/settings.json
 ```
 
 **File operation issues:**
+
 ```
 Error: Permission denied
 
@@ -425,6 +463,7 @@ ls -la <file>
 ```
 
 **Network issues:**
+
 ```
 Error: ECONNREFUSED
 
@@ -479,6 +518,7 @@ Remaining: Bug #8 needs manual review due to [reason]"
 ### User-Friendly Messages
 
 **Good error messages:**
+
 ```
 "API key not found. Set GROK_API_KEY environment variable or use -k flag."
 "Rate limit exceeded. Waiting 5 seconds before retry..."
@@ -486,6 +526,7 @@ Remaining: Bug #8 needs manual review due to [reason]"
 ```
 
 **Poor error messages:**
+
 ```
 "Error 401"
 "Request failed"
@@ -495,6 +536,7 @@ Remaining: Bug #8 needs manual review due to [reason]"
 ### Error Context
 
 **Grok One-Shot provides context:**
+
 ```
 Error: Edit failed
 
@@ -518,6 +560,7 @@ Should I try editing that instead?"
 **Cause:** GROK_API_KEY not set
 
 **Solution:**
+
 ```bash
 export GROK_API_KEY="your-key"
 # or
@@ -529,6 +572,7 @@ grok -k "your-key"
 **Cause:** Too many API requests
 
 **Solution:**
+
 - Wait a few minutes
 - Reduce request frequency
 - Upgrade API plan
@@ -538,6 +582,7 @@ grok -k "your-key"
 **Cause:** Hit MAX_TOOL_ROUNDS limit
 
 **Solution:**
+
 ```bash
 export MAX_TOOL_ROUNDS=500
 ```
@@ -547,6 +592,7 @@ export MAX_TOOL_ROUNDS=500
 **Cause:** Incorrect file path
 
 **Solution:**
+
 - AI will search for correct path
 - Or provide full path to AI
 
@@ -555,6 +601,7 @@ export MAX_TOOL_ROUNDS=500
 **Cause:** No write permission
 
 **Solution:**
+
 ```bash
 # Fix permissions
 chmod +w <file>

@@ -1,6 +1,7 @@
 ---
 title: Advanced Slash Commands
 ---
+
 # Advanced Slash Commands
 
 **Status:** Planned Feature (TBD)
@@ -12,6 +13,7 @@ Extended slash command system for advanced session control, history management, 
 ## Planned Commands
 
 ### Session Management
+
 - `/history` - View conversation history
 - `/clear` - Clear current context (keep session)
 - `/save <name>` - Save session with custom name
@@ -20,24 +22,28 @@ Extended slash command system for advanced session control, history management, 
 - `/branch` - Fork session at current point
 
 ### Model Control
+
 - `/model <name>` - Switch AI model
 - `/settings` - View/edit session settings
 - `/context` - Show context usage and management
 - `/optimize` - Optimize context usage
 
 ### Workflow
+
 - `/template <name>` - Load workflow template
 - `/macro <name>` - Run saved macro
 - `/plan` - Enter plan mode
 - `/execute` - Execute approved plan
 
 ### Analysis
+
 - `/stats` - Session statistics
 - `/tokens` - Detailed token breakdown
 - `/cost` - Estimated cost analysis
 - `/performance` - Performance metrics
 
 ### Export
+
 - `/export <format>` - Export session (markdown, JSON, HTML)
 - `/share` - Generate shareable link
 - `/report` - Generate summary report
