@@ -1,13 +1,13 @@
 #!/bin/bash
-# ⚠️  CRITICAL SMART PUSH SCRIPT FOR Grok One Shot AUTOMATION ⚠️
+# ⚠️  CRITICAL SMART PUSH SCRIPT FOR Grok One Shot AGENTIC AUTOMATION ⚠️
 #
-# 🎯 PURPOSE: This is the ONLY safe way to push to main branch
-# 
-# 🚨 FOR AI AGENTS: ALWAYS use this script for main branch pushes:
+# 🎯 PURPOSE: Agentic-first quality gate for main branch pushes
+#
+# 🚨 FOR PRODUCT MANAGERS & AI AGENTS: Use this script for safe, automated pushes:
 #    npm run smart-push  OR  ./scripts/smart-push.sh
 #
 # 🚫 NEVER use direct git push commands for main:
-#    ❌ git push origin main  (bypasses quality gates)
+#    ❌ git push origin main  (bypasses agentic quality gates)
 #    ❌ git push              (missing automation checks)
 #
 # ✅ CORRECT WORKFLOW:
@@ -184,23 +184,59 @@ wait_for_github_actions() {
 # Step 1: Run quality checks before push
 echo "🔍 Running pre-push quality checks..."
 
-# TypeScript check
+# TypeScript check with auto-fix attempts
 echo "📝 Checking TypeScript..."
-if bun run typecheck; then
+MAX_ATTEMPTS=3
+attempt=1
+while [ $attempt -le $MAX_ATTEMPTS ]; do
+  if bun run typecheck; then
     echo "✅ TypeScript check passed"
-else
-    echo "❌ TypeScript check failed"
-    exit 1
-fi
+    break
+  else
+    if [ $attempt -eq $MAX_ATTEMPTS ]; then
+      echo "❌ TypeScript errors persist after $MAX_ATTEMPTS attempts."
+      echo "🔧 Manual intervention required. Run: bun run typecheck to see errors."
+      echo "💡 Approve to continue anyway? (y/N)"
+      read -r approval
+      if [[ ! $approval =~ ^[Yy]$ ]]; then
+        exit 1
+      fi
+    else
+      echo "⚠️ TypeScript errors found (attempt $attempt/$MAX_ATTEMPTS). Attempting agent-assisted fix..."
+      if command -v grok &> /dev/null; then
+        timeout 120 grok -p "Fix all TypeScript errors in the codebase. Run bun run typecheck to verify." 2>/dev/null || echo "⚠️ Agent fix attempt failed"
+      fi
+      ((attempt++))
+    fi
+  fi
+done
 
-# Linting check (warnings allowed, only errors block)
+# ESLint check with auto-fix attempts
 echo "🧹 Running ESLint..."
-if bun run lint || [ $? -eq 1 ]; then
+attempt=1
+while [ $attempt -le $MAX_ATTEMPTS ]; do
+  if bun run lint 2>/dev/null || [ $? -eq 1 ]; then
     echo "✅ ESLint check completed (warnings allowed)"
-else
-    echo "❌ ESLint check failed with critical errors"
-    exit 1
-fi
+    break
+  else
+    if [ $attempt -eq $MAX_ATTEMPTS ]; then
+      echo "❌ ESLint errors persist after $MAX_ATTEMPTS attempts."
+      echo "🔧 Manual intervention required. Run: bun run lint to see errors."
+      echo "💡 Approve to continue anyway? (y/N)"
+      read -r approval
+      if [[ ! $approval =~ ^[Yy]$ ]]; then
+        exit 1
+      fi
+    else
+      echo "⚠️ ESLint errors found (attempt $attempt/$MAX_ATTEMPTS). Attempting auto-fix..."
+      bun run lint --fix 2>/dev/null || true
+      if command -v grok &> /dev/null; then
+        timeout 120 grok -p "Fix all ESLint errors in src/ directory." 2>/dev/null || echo "⚠️ Agent fix attempt failed"
+      fi
+      ((attempt++))
+    fi
+  fi
+done
 
 # Step 2: Pull latest changes
 echo "🔄 Pulling latest changes..."

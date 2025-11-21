@@ -4,7 +4,15 @@ title: Overview
 
 # Grok One-Shot
 
-Grok One-Shot is a conversational AI tool that brings Claude Code-level intelligence directly into your terminal. Built with X.AI's Grok models, it provides advanced file operations, code analysis, and workflow automation through natural language interaction.
+**Agentic-First AI for Product Managers**
+
+Grok One-Shot is a **conversational AI tool designed agentic-first**, bringing Claude Code-level intelligence directly into your terminal. Built with X.AI's Grok models, it empowers **product managers and non-technical users** to drive software development through natural language interaction, with AI agents handling complex workflows autonomously.
+
+**Why Agentic-First?**
+
+- 🤖 **Autonomous Execution**: AI agents manage end-to-end development tasks without manual coding
+- 📈 **Product-Focused**: Specify features and outcomes; let AI handle implementation details
+- 🚀 **Iterative Optimization**: Agents self-test, learn from feedback, and continuously improve
 
 <div className="hero-card">
   <div className="hero-card-background">

@@ -17,7 +17,7 @@ export function useCLAUDEmd(
   useEffect(() => {
     const filesToLoad = [
       { path: 'GROK.md', label: 'GROK.md', fallback: 'CLAUDE.md' },
-      { path: 'docs-index.md', label: 'Documentation Index' }
+      { path: '.agent/docs-summary.md', label: 'Compressed Documentation Summary' }
     ];
 
     const loadedDocs: string[] = [];

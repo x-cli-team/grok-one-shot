@@ -1,0 +1,2 @@
+This is new text that needs to be replaced.
+Another line here.

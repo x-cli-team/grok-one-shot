@@ -17,52 +17,43 @@ Grok One-Shot is an interactive CLI tool that brings AI-powered assistance direc
 - **MCP Integration**: Model Context Protocol for enhanced capabilities
 - **Session Management**: Auto-saves conversations with token tracking
 
-## 🚨 CRITICAL: Doc Sync Protection Warning
+## 📚 Documentation Structure & Context Loading
 
-### Recent Incident (Nov 2024)
+### SSOT Documentation Location
 
-**PROBLEM**: During `npm run smart-push`, the automatic documentation sync process **overwrote custom landing page features**, removing:
+All project documentation is now consolidated in `apps/site/docs/` as the single source of truth. This includes:
 
-- Completion badges from Powerful Features cards (60-80% metrics, right-aligned blue pills)
-- PARITY-[62%] navigation link (scrolls to features section)
-- Section ID (`id="powerful-features"`) for smooth scrolling
-- Custom CSS styling (flex layout, gradients)
+- User guides and features
+- Developer references and architecture
+- Parity analyses and technical docs
+- General project information (roadmap, legal)
 
-### Root Cause Analysis
+### Context Loading for AI Agent
 
-1. **Husky Pre-commit Auto-Trigger**: Every commit runs `update-agent-docs-auto` + `sync:docs`
-2. **Change Detection**: Updates to `.agent/parity/` docs flagged as "significant changes"
-3. **Template Overwrite**: `apps/site/src/scripts/sync-agent-docs.js` replaced `index.tsx` with base template from `.agent/docs/`
-4. **No File Protections**: Custom marketing/UI files weren't excluded from sync scope
+- **Startup Load**: GROK.md + docs-summary.md (~5-10k tokens compressed)
+- **On-Demand Access**: Full docs available via Read tool from `apps/site/docs/`
+- **Compressed Summary**: `.agent/docs-summary.md` provides condensed awareness of all docs for efficient context
+- **Sprint Tracking**: `.agent/tasks/current-sprint.md` auto-updated via Husky for current work awareness
 
-### Permanent Prevention (Now Fixed)
+### Required Workflow for Sprint Management
 
-**✅ File Exclusions Added** (`apps/site/src/scripts/sync-agent-docs.js` line 45):
+When starting or progressing through a sprint:
 
-```javascript
-const EXCLUDED_FILES = [
-  "src/pages/index.tsx", // Custom landing page (badges, PARITY nav, hero)
-  "src/pages/index.module.css", // Custom styles (right-aligned badges, gradients)
-  // ... other exclusions
-];
-```
+1. Create/update sprint doc in `.agent/tasks/` (e.g., `2025-11-XX-sprint-name.md`)
+2. Update `.agent/tasks/current-sprint.md` with active sprint details
+3. Commit changes – Husky auto-updates docs-summary.md with sprint status
+4. Agent starts with full awareness of current work for seamless resumption
 
-**✅ New Documentation** (`.agent/sop/doc-sync-exclusions.md` created):
+### Legacy Sync Note (Resolved)
 
-```
-# Doc Sync Exclusions - PROTECT THESE FILES FROM OVERWRITE
-
-## Landing Page (Custom UI/Marketing)
-- src/pages/index.tsx: Completion badges, PARITY-[nn%] nav, hero animations
-- src/pages/index.module.css: Right-aligned badges, gradient styling
-
-## Why Protected
-These files contain custom marketing features not managed by .agent/ documentation.
+Previous sync from `.agent/docs/` to site has been replaced by direct editing in `apps/site/docs/`. Husky hooks updated to reflect this change.
 Automatic sync destroys unique branding and interactive elements.
 
 ## Verification
+
 $ grep -A 5 "EXCLUDED_FILES" apps/site/src/scripts/sync-agent-docs.js
-```
+
+````
 
 ### Future-Proof Workflow (MANDATORY)
 
@@ -79,7 +70,7 @@ $ grep -A 5 "EXCLUDED_FILES" apps/site/src/scripts/sync-agent-docs.js
    # Test: Should NOT overwrite custom features
    cd apps/site && npm run sync:docs
    grep -c "completionBadge" src/pages/index.tsx  # Should return 7
-   ```
+````
 
 ### Pre-Commit Safety Check (Add to `.husky/pre-commit`)
 

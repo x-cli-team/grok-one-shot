@@ -60,9 +60,15 @@ if (missingFolders.length > 0) {
 # Run lint-staged for code formatting
 npx lint-staged --config package.json .agent/**/*.{md,mdx} && npx lint-staged --config package.json -- '*.{ts,js,md,mdx}' --ignore-path .gitignore || true
 
-# Smart sync .agent docs to public docs (with conflict detection)
-echo "📝 Running smart documentation sync..."
-./scripts/smart-sync.sh 2>/dev/null || echo "📝 Smart sync completed"
+# Update sprint index and compressed docs summary (skip in CI)
+if [ -z "$CI" ] && [ -z "$GITHUB_ACTIONS" ]; then
+  echo "📝 Updating sprint index..."
+  ./scripts/update-sprint-index.sh 2>/dev/null || echo "📝 Sprint index update completed"
+  echo "📝 Updating compressed docs summary..."
+  ./scripts/update-docs-summary.sh 2>/dev/null || echo "📝 Docs summary update completed"
+else
+  echo "⏭️ Skipping sprint/docs updates in CI environment"
+fi
 
 # Auto-update roadmap with AI agent (skip in CI)
 if [ -z "$CI" ] && [ -z "$GITHUB_ACTIONS" ]; then
@@ -150,13 +156,7 @@ else
   echo "⏭️ Skipping MDX validation in CI environment"
 fi
 
-# Auto-update .agent/docs with AI agent (skip in CI)
-if [ -z "$CI" ] && [ -z "$GITHUB_ACTIONS" ]; then
-  echo "📝 Auto-updating .agent/docs based on session changes..."
-  ./scripts/auto-update-agent-docs.sh 2>/dev/null || echo "📝 AI doc update completed (with warnings)"
-else
-  echo "⏭️ Skipping AI doc updates in CI environment"
-fi
+# Docs now updated directly in apps/site/docs/ - no auto-update needed
 
 # Auto-update README.md with AI agent (skip in CI)
 if [ -z "$CI" ] && [ -z "$GITHUB_ACTIONS" ]; then

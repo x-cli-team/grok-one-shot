@@ -9,6 +9,7 @@ import {
 import { loadMCPConfig } from "../mcp/config.js";
 import {
   TextEditorTool,
+  SmartEditTool,
   MorphEditorTool,
   BashTool,
   TodoTool,

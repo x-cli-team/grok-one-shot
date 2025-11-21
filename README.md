@@ -1,11 +1,29 @@
 ## 1.2.13 – Revolutionary Optimization & Agent Self-Testing
 
+### 🎯 **Agentic-First Design for Product Managers**
+
+**Grok One-Shot** is built **agentic-first**: AI agents handle complex workflows autonomously, minimizing technical barriers. Designed primarily for **product managers** and non-technical users to drive development without deep coding knowledge.
+
+**Key Principles**:
+
+- 🤖 **Agentic Automation**: AI manages tasks, code, and processes end-to-end
+- 📈 **PM-Centric**: Focus on product goals, features, and outcomes over implementation details
+- 🚀 **Iterative Intelligence**: Agents self-test, learn, and optimize continuously
+
 ### 🚨 CRITICAL: Git Push Policy
 
 **NEVER use `git push` directly on main branch!**
 
 - ❌ `git push` - Bypasses quality gates and automation
 - ✅ `npm run smart-push` or `./scripts/smart-push.sh` - Safe push with full validation
+
+---
+
+### 📚 Documentation
+
+- **Live Docs**: [grok-one-shot.org/docs](https://grok-one-shot.org/docs) - Complete user and developer documentation
+- **SSOT Location**: `apps/site/docs/` - All documentation consolidated here
+- **Agent Context**: `.agent/docs-summary.md` - Compressed summary loaded at startup for full doc awareness
 
 ---
 

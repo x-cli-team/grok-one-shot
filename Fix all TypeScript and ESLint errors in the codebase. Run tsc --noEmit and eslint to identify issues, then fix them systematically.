@@ -1,0 +1,22 @@
+[2025-11-21T10:56:28.516Z] 🚀 grok-one-shotStarting Up...
+[2025-11-21T10:56:28.517Z] 📂 Working directory: /Users/based/Documents/Github/grok-one-shot
+[2025-11-21T10:56:28.517Z] 🖥️  Node version: v20.19.5
+[2025-11-21T10:56:28.517Z] 📦 Loading core modules...
+Tree-sitter modules not available, falling back to TypeScript-only parsing
+[2025-11-21T10:56:28.519Z] ✅ All modules imported successfully
+[2025-11-21T10:56:28.520Z] 🎯 Initializing CLI...
+[2025-11-21T10:56:28.520Z] 📋 Setting up Commander CLI...
+[2025-11-21T10:56:28.521Z] ✅ CLI setup complete
+[2025-11-21T10:56:28.521Z] 🎯 Starting main execution...
+[2025-11-21T10:56:28.521Z] 🔑 API Key: ✅ Found
+[2025-11-21T10:56:28.521Z] 📁 Changed to directory: /Users/based/Documents/Github/grok-one-shot
+[2025-11-21T10:56:28.521Z] 🤖 Creating GrokAgent instance...
+Tree-sitter parsers not available, using TypeScript-only parsing
+Tree-sitter parsers not available, using TypeScript-only parsing
+Tree-sitter parsers not available, using TypeScript-only parsing
+Tree-sitter parsers not available, using TypeScript-only parsing
+Tree-sitter parsers not available, using TypeScript-only parsing
+Tree-sitter parsers not available, using TypeScript-only parsing
+Tree-sitter parsers not available, using TypeScript-only parsing
+Tree-sitter parsers not available, using TypeScript-only parsing
+❌ Error: X CLI requires an interactive terminal.
