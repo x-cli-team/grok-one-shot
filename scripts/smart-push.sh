@@ -60,17 +60,17 @@ if git reflog --oneline -10 | grep -q -- "--no-verify\|--force\|-f "; then
     echo "🚨 WARNING: Recent bypass attempts detected in git history!"
 fi
 
-# Detect recent direct git push usage on main branch
-if git log --oneline -5 | grep -q "git push" && git branch --show-current | grep -q "^main$"; then
+# Detect recent direct git push usage on main branch (check reflog for actual commands)
+if git reflog --oneline -10 | grep -q "push:" && git branch --show-current | grep -q "^main$"; then
     echo "🚫 DETECTED: Recent direct git push usage on main branch!"
     echo "💡 Always use smart-push script instead: npm run smart-push"
     echo "🔧 This prevents bypassing quality gates and automation"
     exit 1
 fi
-    echo "⚠️  Previous commands used --no-verify or --force flags"
-    echo "💡 This may indicate automation protections were bypassed"
-    echo ""
-fi
+
+echo "⚠️  Previous commands used --no-verify or --force flags"
+echo "💡 This may indicate automation protections were bypassed"
+echo ""
 
 # Validate that we're not being run with dangerous flags
 for arg in "$@"; do

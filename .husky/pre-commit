@@ -118,35 +118,65 @@ if ! ./scripts/validate-tool-code-husky.sh true 2>/dev/null; then
   echo "❌ Tool code validation failed! Accidental changes detected in core tools."
   echo "💡 Common issues:"
   echo "   - Tool class definitions missing"
-  echo "   - Core methods removed or renamed"
-  echo "   - Export statements broken"
-  echo "   - Tool files deleted or moved"
+  echo "   - Unmatched opening/closing tags"
+  echo "   - Incorrect tool parameter validation"
+  echo "   - Tool description inconsistencies"
   echo ""
-  echo "🔧 To debug: Run 'npm run test:tools:validate' for detailed analysis"
-  echo "🚫 Commit blocked - review changes to tool files carefully"
+  echo "🔧 To debug: Run 'npm run validate:tools' for detailed tool validation"
+  echo "🚫 Commit blocked - fix tool code issues and try again"
   exit 1
 else
   echo "✅ Tool code integrity verified (no accidental changes detected)"
 fi
 
-# Validate MDX files for compilation errors (skip in CI due to link resolution issues)
+# Validate MDX documentation (skip in CI to avoid build overhead)
 if [ -z "$CI" ] && [ -z "$GITHUB_ACTIONS" ]; then
   echo "🔍 Validating MDX documentation..."
-  if ! npm run build:site > /dev/null 2>&1; then
-    echo "❌ MDX compilation failed! Please fix MDX syntax errors before committing."
+  if npm run build:site > /dev/null 2>&1; then
+    echo "✅ MDX documentation validated successfully"
+  else
+    echo "❌ MDX documentation validation failed!"
     echo "💡 Common issues:"
-    echo "   - Custom component closing tags (</Tip>, </Step>, </Note>) inside list items"
-    echo "   - Missing blank lines before closing tags"
-    echo "   - Unmatched opening/closing tags"
+    echo "   - Broken MDX syntax"
+    echo "   - Invalid React component usage"
+    echo "   - Missing imports or exports"
+    echo "   - Incorrect frontmatter"
     echo ""
     echo "🔧 To debug: Run 'npm run build:site' to see detailed errors"
     echo "🚫 Commit blocked - fix MDX errors and try again"
     exit 1
-  else
-    echo "✅ MDX documentation validated successfully"
   fi
 else
   echo "⏭️ Skipping MDX validation in CI environment"
+fi
+
+# Auto-update .agent/docs with AI agent (skip in CI)
+if [ -z "$CI" ] && [ -z "$GITHUB_ACTIONS" ]; then
+  echo "📝 Auto-updating .agent/docs based on session changes..."
+  ./scripts/auto-update-agent-docs.sh 2>/dev/null || echo "📝 AI doc update completed (with warnings)"
+else
+  echo "⏭️ Skipping AI doc updates in CI environment"
+fi
+
+# Auto-update README.md with AI agent (skip in CI)
+if [ -z "$CI" ] && [ -z "$GITHUB_ACTIONS" ]; then
+  echo "📖 Auto-updating README.md based on session changes..."
+  if command -v grok &> /dev/null && [ -f "README.md" ]; then
+    # Get current version for context
+    CURRENT_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "unknown")
+    # Get changed files (limit to key files that might affect README)
+    CHANGED_FILES=$(git status --porcelain | head -10 | awk '{print $2}' | grep -E '\.(md|ts|js)$' | head -5 || echo "")
+    if [ -n "$CHANGED_FILES" ]; then
+      echo "🔄 Analyzing changes for README impact..."
+      timeout 45 grok -p "Review these changed files and update README.md if needed: $CHANGED_FILES. Current version: $CURRENT_VERSION. Focus on accuracy and keep changes minimal." 2>/dev/null || echo "⚠️ README auto-update timed out"
+    else
+      echo "📝 No relevant changes for README update"
+    fi
+  else
+    echo "⚠️ Grok not available or README.md missing - skipping README update"
+  fi
+else
+  echo "⏭️ Skipping README AI updates in CI environment"
 fi
 
 # TODO: Add session learnings capture here
