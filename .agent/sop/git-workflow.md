@@ -9,7 +9,14 @@
 **Pre-push hook installed** - Blocks dangerous commands:
 ```bash
 git push origin main  # ❌ BLOCKED by pre-push hook
-git push -u origin main  # ❌ BLOCKED by pre-push hook  
+git push -u origin main  # ❌ BLOCKED by pre-push hook
+```
+
+**Smart-push script detection** - Detects recent direct git push usage:
+```bash
+# If git push was used recently on main, smart-push will fail with:
+🚫 DETECTED: Recent direct git push usage on main branch!
+💡 Always use smart-push script instead: npm run smart-push
 ```
 
 **Setup additional protection** (run once):

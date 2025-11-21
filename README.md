@@ -1,5 +1,14 @@
 ## 1.2.12 – Revolutionary Optimization & Agent Self-Testing
 
+### 🚨 CRITICAL: Git Push Policy
+
+**NEVER use `git push` directly on main branch!**
+
+- ❌ `git push` - Bypasses quality gates and automation
+- ✅ `npm run smart-push` or `./scripts/smart-push.sh` - Safe push with full validation
+
+---
+
 🧪 **INSANE BREAKTHROUGH**: **Agent Self-Testing methodology** - First AI that can test itself and iterate to perfection!  
 🚀 **MASSIVE BREAKTHROUGH**: Revolutionary Native Text Operations discovered - **10.9x token savings** potential!  
 ✅ **Claude Code Paste Detection**: Perfect 100% feature parity achieved with paste compression system  
