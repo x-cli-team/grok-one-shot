@@ -189,18 +189,16 @@ echo "📝 Checking TypeScript..."
 MAX_ATTEMPTS=3
 attempt=1
 while [ $attempt -le $MAX_ATTEMPTS ]; do
-  if bun run typecheck; then
+  npm run typecheck
+  exit_code=$?
+  if [ $exit_code -eq 0 ]; then
     echo "✅ TypeScript check passed"
     break
   else
     if [ $attempt -eq $MAX_ATTEMPTS ]; then
       echo "❌ TypeScript errors persist after $MAX_ATTEMPTS attempts."
-      echo "🔧 Manual intervention required. Run: bun run typecheck to see errors."
-      echo "💡 Approve to continue anyway? (y/N)"
-      read -r approval
-      if [[ ! $approval =~ ^[Yy]$ ]]; then
-        exit 1
-      fi
+      echo "🔧 Manual intervention required. Run: npm run typecheck to see errors."
+      exit 1
     else
       echo "⚠️ TypeScript errors found (attempt $attempt/$MAX_ATTEMPTS). Attempting agent-assisted fix..."
       if command -v grok &> /dev/null; then
