@@ -13447,13 +13447,21 @@ var init_token_counter = __esm({
         let totalTokens = 0;
         for (const message of messages) {
           totalTokens += 3;
-          if (message.content && typeof message.content === "string") {
-            totalTokens += this.countTokens(message.content);
+          if (message.content) {
+            if (typeof message.content === "string") {
+              totalTokens += this.countTokens(message.content);
+            } else if (Array.isArray(message.content)) {
+              for (const part of message.content) {
+                if (part.type === "text" && part.text) {
+                  totalTokens += this.countTokens(part.text);
+                }
+              }
+            }
           }
           if (message.role) {
             totalTokens += this.countTokens(message.role);
           }
-          if (message.tool_calls) {
+          if ("tool_calls" in message && message.tool_calls) {
             totalTokens += this.countTokens(JSON.stringify(message.tool_calls));
           }
         }
@@ -21494,10 +21502,9 @@ Current working directory: ${process.cwd()}`
         const maxToolRounds = this.maxToolRounds;
         let toolRounds = 0;
         try {
-          const settings = getSettingsManager().getUserSettings();
+          const threshold = getSettingsManager().getUserSetting("tokenThreshold") || 0.9;
           const currentTokens = this.tokenCounter.countMessageTokens(this.messages);
           const maxTokens = this.tokenCounter.getMaxTokens();
-          const threshold = settings.tokenThreshold || 0.9;
           this.totalTokensUsed = Math.max(this.totalTokensUsed, currentTokens);
           if (currentTokens > threshold * maxTokens) {
             await this.performAutomaticCompaction();
@@ -21730,10 +21737,9 @@ ${result.summary}
         let totalOutputTokens = 0;
         let lastTokenUpdate = 0;
         try {
-          const settings = getSettingsManager().getUserSettings();
+          const threshold = getSettingsManager().getUserSetting("tokenThreshold") || 0.9;
           const currentTokens = this.tokenCounter.countMessageTokens(this.messages);
           const maxTokens = this.tokenCounter.getMaxTokens();
-          const threshold = settings.tokenThreshold || 0.9;
           this.totalTokensUsed = Math.max(this.totalTokensUsed, currentTokens);
           if (currentTokens > threshold * maxTokens) {
             await this.performAutomaticCompaction();

@@ -422,10 +422,9 @@ Current working directory: ${process.cwd()}`,
 
     try {
       // Token monitoring for automatic compaction
-      const settings = getSettingsManager().getUserSettings();
+      const threshold = getSettingsManager().getUserSetting('tokenThreshold') || 0.9;
       const currentTokens = this.tokenCounter.countMessageTokens(this.messages);
       const maxTokens = this.tokenCounter.getMaxTokens();
-      const threshold = settings.tokenThreshold || 0.9;
 
       this.totalTokensUsed = Math.max(this.totalTokensUsed, currentTokens);
 
@@ -592,7 +591,7 @@ Current working directory: ${process.cwd()}`,
       uiState.showTokenCompaction(currentTokens, this.tokenCounter.getMaxTokens());
 
       // Preserve system messages and recent messages (last 5)
-      const systemMessages = this.messages.filter(m => m.role === 'system');
+      const systemMessages = this.messages.filter(m => m.role === 'system') as any[];
       const recentMessages = this.messages.slice(-5);
       const messagesToCompress = this.messages.filter((_, i) =>
         !systemMessages.includes(this.messages[i]) &&
@@ -744,10 +743,9 @@ Current working directory: ${process.cwd()}`,
 
     try {
       // Token monitoring for automatic compaction
-      const settings = getSettingsManager().getUserSettings();
-      const currentTokens = this.tokenCounter.countMessageTokens(this.messages);
+      const threshold = getSettingsManager().getUserSetting('tokenThreshold') || 0.9;
+      const currentTokens = this.tokenCounter.countMessageTokens(this.messages as any);
       const maxTokens = this.tokenCounter.getMaxTokens();
-      const threshold = settings.tokenThreshold || 0.9;
 
       this.totalTokensUsed = Math.max(this.totalTokensUsed, currentTokens);
 

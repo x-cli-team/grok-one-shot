@@ -1,4 +1,5 @@
 import { get_encoding, encoding_for_model, Tiktoken } from 'tiktoken';
+import type { ChatCompletionMessageParam } from 'openai/resources/chat';
 
 export class TokenCounter {
   private encoder: Tiktoken;
@@ -26,15 +27,24 @@ export class TokenCounter {
   /**
    * Count tokens in messages array (for chat completions)
    */
-  countMessageTokens(messages: Array<{ role: string; content: string | null; [key: string]: any }>): number {
+  countMessageTokens(messages: ChatCompletionMessageParam[]): number {
     let totalTokens = 0;
     
     for (const message of messages) {
       // Every message follows <|start|>{role/name}\n{content}<|end|\>\n
       totalTokens += 3; // Base tokens per message
       
-      if (message.content && typeof message.content === 'string') {
-        totalTokens += this.countTokens(message.content);
+      if (message.content) {
+        if (typeof message.content === 'string') {
+          totalTokens += this.countTokens(message.content);
+        } else if (Array.isArray(message.content)) {
+          // Handle content parts
+          for (const part of message.content) {
+            if (part.type === 'text' && part.text) {
+              totalTokens += this.countTokens(part.text);
+            }
+          }
+        }
       }
       
       if (message.role) {
@@ -42,7 +52,7 @@ export class TokenCounter {
       }
       
       // Add extra tokens for tool calls if present
-      if (message.tool_calls) {
+      if ('tool_calls' in message && message.tool_calls) {
         totalTokens += this.countTokens(JSON.stringify(message.tool_calls));
       }
     }
