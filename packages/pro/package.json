@@ -1,0 +1,11 @@
+{
+  "name": "@grok-one-shot/pro",
+  "version": "1.0.0",
+  "description": "Pro features for Grok One-Shot CLI",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "private": true,
+  "dependencies": {
+    "grok-one-shot": "^1.9.0"
+  }
+}
