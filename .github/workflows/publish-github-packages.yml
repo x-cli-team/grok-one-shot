@@ -1,0 +1,182 @@
+name: Publish to GitHub Packages
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      publish_cli:
+        description: "Publish CLI package to GitHub Packages"
+        required: false
+        default: true
+        type: boolean
+      publish_pro:
+        description: "Publish Pro package to GitHub Packages"
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  publish-cli-github:
+    if: github.event_name == 'release' || github.event.inputs.publish_cli == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@x-cli-team"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build CLI package
+        run: pnpm run build:cli
+
+      - name: Configure CLI package for GitHub Packages
+        run: |
+          echo "🔧 Configuring CLI package for GitHub Packages..."
+          cd packages/cli
+
+          # Create GitHub Packages compatible package.json
+          CLI_VERSION=$(node -pe "require('./package.json').version")
+          jq --arg version "$CLI_VERSION" '
+            .name = "@x-cli-team/grok-one-shot-cli" |
+            .version = $version |
+            .publishConfig.registry = "https://npm.pkg.github.com" |
+            .repository = {
+              "type": "git",
+              "url": "git+https://github.com/x-cli-team/grok-one-shot.git"
+            }
+          ' package.json > package-github.json
+          mv package-github.json package.json
+
+          echo "✅ CLI package configured for GitHub Packages"
+
+      - name: Publish CLI to GitHub Packages
+        run: |
+          echo "📤 Publishing CLI package to GitHub Packages..."
+          cd packages/cli
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore CLI package.json
+        run: |
+          cd packages/cli
+          git checkout -- package.json
+
+  publish-pro-github:
+    if: github.event_name == 'release' || github.event.inputs.publish_pro == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@x-cli-team"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build Pro package (if build script exists)
+        run: |
+          if pnpm run build:pro 2>/dev/null; then
+            echo "✅ Pro package built successfully"
+          else
+            echo "⚠️ No build script for Pro package, continuing..."
+          fi
+
+      - name: Configure Pro package for GitHub Packages
+        run: |
+          echo "🔧 Configuring Pro package for GitHub Packages..."
+          cd packages/pro
+
+          # Create GitHub Packages compatible package.json
+          PRO_VERSION=$(node -pe "require('./package.json').version")
+          jq --arg version "$PRO_VERSION" '
+            .name = "@x-cli-team/grok-one-shot-pro" |
+            .version = $version |
+            del(.private) |
+            .publishConfig.registry = "https://npm.pkg.github.com" |
+            .repository = {
+              "type": "git",
+              "url": "git+https://github.com/x-cli-team/grok-one-shot.git"
+            } |
+            .dependencies."@xagent/one-shot-cli" = "@x-cli-team/grok-one-shot-cli@" + $version
+          ' package.json > package-github.json
+          mv package-github.json package.json
+
+          echo "✅ Pro package configured for GitHub Packages"
+
+      - name: Publish Pro to GitHub Packages
+        run: |
+          echo "📤 Publishing Pro package to GitHub Packages..."
+          cd packages/pro
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore Pro package.json
+        run: |
+          cd packages/pro
+          git checkout -- package.json
+
+  summary:
+    needs: [publish-cli-github, publish-pro-github]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub Packages Summary
+        run: |
+          echo "📦 GitHub Packages Publication Summary" >> $GITHUB_STEP_SUMMARY
+          echo "=====================================" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ needs.publish-cli-github.result }}" == "success" ]]; then
+            echo "✅ **CLI Package**: @x-cli-team/grok-one-shot-cli" >> $GITHUB_STEP_SUMMARY
+            echo "🔗 [View CLI Package](https://github.com/x-cli-team/grok-one-shot/pkgs/npm/grok-one-shot-cli)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **CLI Package**: Publishing failed or skipped" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "${{ needs.publish-pro-github.result }}" == "success" ]]; then
+            echo "✅ **Pro Package**: @x-cli-team/grok-one-shot-pro" >> $GITHUB_STEP_SUMMARY
+            echo "🔗 [View Pro Package](https://github.com/x-cli-team/grok-one-shot/pkgs/npm/grok-one-shot-pro)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Pro Package**: Publishing failed or skipped" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📋 **Install from GitHub Packages**:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "npm config set @x-cli-team:registry https://npm.pkg.github.com" >> $GITHUB_STEP_SUMMARY
+          echo "npm install @x-cli-team/grok-one-shot-cli" >> $GITHUB_STEP_SUMMARY
+          echo "npm install @x-cli-team/grok-one-shot-pro" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

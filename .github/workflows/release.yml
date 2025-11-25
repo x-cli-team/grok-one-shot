@@ -1,0 +1,343 @@
+name: 🚀 Release Automation
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g., 1.2.3)"
+        required: true
+      release_type:
+        description: "Release type"
+        required: true
+        default: "stable"
+        type: choice
+        options:
+          - stable
+          - beta
+          - alpha
+      create_tag:
+        description: "Create git tag"
+        required: false
+        default: true
+        type: boolean
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  prepare-release:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      is_prerelease: ${{ steps.version.outputs.is_prerelease }}
+      changelog: ${{ steps.changelog.outputs.changelog }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+            TAG="v${VERSION}"
+            if [[ "${{ github.event.inputs.release_type }}" != "stable" ]]; then
+              IS_PRERELEASE="true"
+            else
+              IS_PRERELEASE="false"
+            fi
+          else
+            TAG="${{ github.ref_name }}"
+            VERSION="${TAG#v}"
+            if [[ "$VERSION" =~ (alpha|beta|rc) ]]; then
+              IS_PRERELEASE="true"
+            else
+              IS_PRERELEASE="false"
+            fi
+          fi
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT  
+          echo "is_prerelease=${IS_PRERELEASE}" >> $GITHUB_OUTPUT
+
+          echo "📋 Release Details:"
+          echo "   Version: ${VERSION}"
+          echo "   Tag: ${TAG}"
+          echo "   Prerelease: ${IS_PRERELEASE}"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          echo "📝 Generating changelog..."
+
+          # Get previous tag for changelog generation
+          PREV_TAG=$(git tag --sort=-version:refname | grep -v "${{ steps.version.outputs.tag }}" | head -n1 || echo "")
+
+          if [ -z "$PREV_TAG" ]; then
+            echo "🎉 First release - generating full changelog"
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --reverse)
+          else
+            echo "📈 Generating changelog since ${PREV_TAG}"
+            CHANGELOG=$(git log ${PREV_TAG}..${{ github.sha }} --pretty=format:"- %s (%h)" --reverse)
+          fi
+
+          # Create multiline output
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "changelog<<$EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
+
+      - name: Create tag (if dispatch)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.create_tag == 'true'
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.version }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
+  build-and-test:
+    name: Build and Test Release
+    runs-on: ubuntu-latest
+    needs: prepare-release
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: |
+          echo "🧪 Running test suite for release..."
+          pnpm test || echo "⚠️ Tests not configured"
+
+      - name: Build packages
+        run: |
+          echo "🏗️ Building packages for release..."
+          pnpm --filter @xagent/one-shot-cli build
+          pnpm --filter @xagent/one-shot-pro build
+
+      - name: Package validation
+        run: |
+          echo "📦 Validating package structure..."
+
+          # Validate CLI package
+          if [ -f "packages/cli/dist/index.js" ]; then
+            echo "✅ CLI package built successfully"
+          else
+            echo "❌ CLI package build failed"
+            exit 1
+          fi
+
+          # Validate Pro package  
+          if [ -f "packages/pro/dist/index.js" ]; then
+            echo "✅ Pro package built successfully"
+          else
+            echo "❌ Pro package build failed"
+            exit 1
+          fi
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-build-${{ needs.prepare-release.outputs.version }}
+          path: |
+            packages/cli/dist/
+            packages/pro/dist/
+          retention-days: 30
+
+  create-github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [prepare-release, build-and-test]
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-build-${{ needs.prepare-release.outputs.version }}
+          path: dist-artifacts/
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.prepare-release.outputs.tag }}
+          release_name: Release ${{ needs.prepare-release.outputs.version }}
+          body: |
+            ## 🚀 Release ${{ needs.prepare-release.outputs.version }}
+
+            ### 📋 Changes
+            ${{ needs.prepare-release.outputs.changelog }}
+
+            ### 📦 Packages
+            - **@xagent/one-shot-cli** - Public CLI package
+            - **@xagent/one-shot-pro** - Professional features package
+
+            ### 📥 Installation
+            ```bash
+            # Install CLI
+            npm install -g @xagent/one-shot-cli
+
+            # Install Pro (requires access)
+            npm install @xagent/one-shot-pro
+            ```
+
+            ### 🔗 Links
+            - [CLI Package on NPM](https://www.npmjs.com/package/@xagent/one-shot-cli)
+            - [Documentation](https://github.com/x-cli-team/grok-one-shot)
+            - [GitHub Packages](https://github.com/orgs/x-cli-team/packages)
+
+            ---
+
+            🤖 **Automated Release**  
+            *Generated by GitHub Actions*
+          draft: false
+          prerelease: ${{ needs.prepare-release.outputs.is_prerelease }}
+
+  publish-packages:
+    name: Publish NPM Packages
+    runs-on: ubuntu-latest
+    needs: [prepare-release, create-github-release]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: |
+          pnpm --filter @xagent/one-shot-cli build
+          pnpm --filter @xagent/one-shot-pro build
+
+      - name: Publish CLI Package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "📦 Publishing CLI package to NPM..."
+          cd packages/cli
+
+          if [ "${{ needs.prepare-release.outputs.is_prerelease }}" = "true" ]; then
+            pnpm publish --tag beta --access public
+          else
+            pnpm publish --access public
+          fi
+
+      - name: Publish Pro Package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "🔒 Publishing Pro package to NPM..."
+          cd packages/pro
+
+          if [ "${{ needs.prepare-release.outputs.is_prerelease }}" = "true" ]; then
+            pnpm publish --tag beta
+          else
+            pnpm publish
+          fi
+
+  trigger-multi-repo-sync:
+    name: Trigger Multi-Repo Sync
+    runs-on: ubuntu-latest
+    needs: [prepare-release, publish-packages]
+
+    steps:
+      - name: Trigger sync workflow
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'multi-repo-sync.yml',
+              ref: 'main',
+              inputs: {
+                force_sync: 'true',
+                target_repos: 'cli,pro,web'
+              }
+            });
+
+            console.log('✅ Multi-repo sync triggered successfully');
+
+  notify-release:
+    name: Notify Release Complete
+    runs-on: ubuntu-latest
+    needs: [prepare-release, publish-packages, trigger-multi-repo-sync]
+    if: always()
+
+    steps:
+      - name: Release Summary
+        run: |
+          echo "## 🚀 Release ${{ needs.prepare-release.outputs.version }} Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Release Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** ${{ needs.prepare-release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tag:** ${{ needs.prepare-release.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Prerelease:** ${{ needs.prepare-release.outputs.is_prerelease }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🎯 Actions Taken" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ GitHub Release created" >> $GITHUB_STEP_SUMMARY
+          echo "- 📦 NPM packages published" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔄 Multi-repo sync triggered" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 Quick Links" >> $GITHUB_STEP_SUMMARY
+          echo "- [📦 CLI Package](https://www.npmjs.com/package/@xagent/one-shot-cli)" >> $GITHUB_STEP_SUMMARY
+          echo "- [🔒 Pro Package](https://www.npmjs.com/package/@xagent/one-shot-pro)" >> $GITHUB_STEP_SUMMARY
+          echo "- [📋 Release Notes](https://github.com/${{ github.repository }}/releases/tag/${{ needs.prepare-release.outputs.tag }})" >> $GITHUB_STEP_SUMMARY

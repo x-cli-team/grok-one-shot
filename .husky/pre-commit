@@ -1,4 +1,35 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+# Monorepo Pre-commit Validation
+echo "🔍 Running monorepo pre-commit checks..."
+
+# 1. Critical folder protection
+echo "📁 Validating monorepo structure..."
+REQUIRED_FOLDERS=(".github" "packages/cli" "packages/pro" "apps")
+for folder in "${REQUIRED_FOLDERS[@]}"; do
+  if [ ! -d "$folder" ]; then
+    echo "❌ Critical folder missing: $folder"
+    exit 1
+  fi
+done
+
+# 2. TypeScript validation for packages
+echo "🔧 TypeScript validation..."
+if ! pnpm run typecheck; then
+  echo "❌ TypeScript errors found"
+  exit 1
+fi
+
+# 3. Package structure validation
+echo "📦 Package structure validation..."
+if [ ! -f "packages/cli/package.json" ] || [ ! -f "packages/pro/package.json" ]; then
+  echo "❌ Missing package.json files"
+  exit 1
+fi
+
+# 4. Lint-staged formatting
+echo "✨ Running lint-staged..."
 pnpm exec lint-staged
+
+echo "✅ All pre-commit checks passed!"

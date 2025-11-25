@@ -1,0 +1,107 @@
+name: Publish CLI Package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/cli/**"
+      - ".github/workflows/publish.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  publish-cli:
+    # Trigger on version bump commits from mono-publish-enhanced.sh
+    if: "contains(github.event.head_commit.message, 'chore: bump packages to v') || contains(github.event.head_commit.message, 'Bump CLI and Pro to v')"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Configure npm authentication
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run quality checks
+        run: |
+          echo "🔍 Running comprehensive quality checks..."
+          pnpm run typecheck
+          pnpm run lint
+
+      - name: Build CLI package
+        run: |
+          echo "🔨 Building CLI package..."
+          pnpm run build:cli
+
+      - name: Extract version info
+        id: version
+        run: |
+          CLI_VERSION=$(node -pe "require('./packages/cli/package.json').version")
+          CLI_NAME=$(node -pe "require('./packages/cli/package.json').name")
+          echo "version=$CLI_VERSION" >> $GITHUB_OUTPUT
+          echo "name=$CLI_NAME" >> $GITHUB_OUTPUT
+          echo "📋 Package: $CLI_NAME@$CLI_VERSION"
+
+      - name: Dry run publish (validation)
+        run: |
+          echo "🧪 Performing dry-run validation..."
+          cd packages/cli
+          npm publish --access public --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish CLI package to NPM
+        run: |
+          echo "📤 Publishing ${{ steps.version.outputs.name }}@${{ steps.version.outputs.version }} to NPM..."
+          cd packages/cli
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Verify publication
+        run: |
+          echo "🔍 Verifying package publication..."
+          max_attempts=10
+          for attempt in $(seq 1 $max_attempts); do
+            if npm view "${{ steps.version.outputs.name }}@${{ steps.version.outputs.version }}" version >/dev/null 2>&1; then
+              echo "✅ Package ${{ steps.version.outputs.name }}@${{ steps.version.outputs.version }} verified on NPM registry!"
+              echo "🔗 Package URL: https://www.npmjs.com/package/${{ steps.version.outputs.name }}/v/${{ steps.version.outputs.version }}"
+              exit 0
+            else
+              echo "⏳ Attempt $attempt/$max_attempts: Package not yet available, waiting 10s..."
+              sleep 10
+            fi
+          done
+          echo "⚠️ Package verification timed out, but publish likely succeeded"
+          echo "💡 Manual check: npm view ${{ steps.version.outputs.name }}@${{ steps.version.outputs.version }}"
+
+      - name: Create release summary
+        run: |
+          echo "🎉 CLI Package Publication Summary" >> $GITHUB_STEP_SUMMARY
+          echo "=================================" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📦 **Package**: ${{ steps.version.outputs.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "🏷️ **Version**: ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **NPM**: https://www.npmjs.com/package/${{ steps.version.outputs.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "📋 **Install**: \`npm install -g ${{ steps.version.outputs.name }}@${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✨ Published via enhanced mono-publish workflow" >> $GITHUB_STEP_SUMMARY

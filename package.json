@@ -29,6 +29,8 @@
     "test-iterative": "./packages/cli/scripts/test-agent-iterative.sh",
     "test-self": "./packages/cli/scripts/agent-self-test.js",
     "build": "cd packages/cli && npm run build",
+    "build:cli": "cd packages/cli && npm run build",
+    "build:pro": "cd packages/pro && npm run build",
     "dev": "cd packages/cli && npm run dev",
     "lint": "cd packages/cli && npm run lint",
     "typecheck": "cd packages/cli && npm run typecheck",
@@ -54,11 +56,17 @@
   "lint-staged": {
     ".agent/**/*.{md,mdx}": "prettier --write",
     "apps/site/docs/**/*.{md,mdx}": "prettier --write",
+    "packages/**/*.{ts,tsx}": [
+      "eslint --fix --ignore-pattern 'dist/**' --ignore-pattern 'node_modules/**'"
+    ],
+    "packages/**/*.{js,jsx,mjs}": [
+      "eslint --fix --ignore-pattern 'dist/**' --ignore-pattern 'node_modules/**'"
+    ],
     "*.{ts,tsx}": [
-      "eslint --fix --ignore-pattern 'dist/**'"
+      "eslint --fix --ignore-pattern 'dist/**' --ignore-pattern 'packages/**/dist/**'"
     ],
     "*.{js,jsx,mjs}": [
-      "eslint --fix --ignore-pattern 'dist/**'"
+      "eslint --fix --ignore-pattern 'dist/**' --ignore-pattern 'packages/**/dist/**'"
     ],
     "*.{md,mdx}": [
       "prettier --write"
@@ -76,34 +84,6 @@
   ],
   "author": "x-cli-team",
   "license": "MIT",
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.0",
-    "@types/marked-terminal": "^6.1.1",
-    "@typescript-eslint/typescript-estree": "^8.46.0",
-    "ajv": "^8.17.1",
-    "ajv-formats": "^3.0.1",
-    "axios": "^1.7.0",
-    "cfonts": "^3.3.0",
-    "chalk": "^5.3.0",
-    "chokidar": "^4.0.3",
-    "cli-highlight": "^2.1.11",
-    "commander": "^12.0.0",
-    "diff": "^8.0.2",
-    "dotenv": "^16.4.0",
-    "enquirer": "^2.4.1",
-    "fs-extra": "^11.2.0",
-    "fuse.js": "^7.1.0",
-    "glob": "^11.0.3",
-    "ink": "^4.4.1",
-    "js-yaml": "^4.1.0",
-    "marked": "^15.0.12",
-    "marked-terminal": "^7.3.0",
-    "openai": "^5.10.1",
-    "react": "^18.3.1",
-    "ripgrep-node": "^1.0.0",
-    "terminal-image": "^4.1.0",
-    "tiktoken": "^1.0.21"
-  },
   "devDependencies": {
     "@eslint/js": "^9.37.0",
     "@types/fs-extra": "^11.0.2",
