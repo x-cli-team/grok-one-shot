@@ -21,7 +21,7 @@ import {
   ArchitecturePattern,
   ExplorationInsight,
   PlanModeSettings
-} from '../types/plan-mode.js';
+} from "../lib/types/plan-mode.js";
 
 interface ExplorationOptions {
   /** Root directory to explore */

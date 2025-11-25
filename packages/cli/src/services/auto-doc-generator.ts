@@ -5,8 +5,8 @@
  * and optionally updates SOP files with learned lessons.
  */
 
-import { ResearchOutput, ResearchRequest } from '../types/research-recommend.js';
-import { ExecutionResult } from '../types/execution.js';
+import { ResearchOutput, ResearchRequest } from "../lib/types/research-recommend.js";
+import { ExecutionResult } from "../lib/types/execution.js";
 import * as fs from 'fs';
 import * as path from 'path';
 

@@ -37,7 +37,7 @@ import { ContextPack } from "../lib/utils/context-loader.js";
 import { ResearchRecommendService } from "../services/research-recommend.js";
 import { SubagentFramework } from "../subagents/subagent-framework.js";
 import { ExecutionOrchestrator } from "../services/execution-orchestrator.js";
-import { PlanModeState } from "../types/plan-mode.js";
+import { PlanModeState } from "../lib/types/plan-mode.js";
 import { ReadOnlyFilesystemOverlay } from "../services/readonly-filesystem-overlay.js";
 import { RegexHelper } from "../lib/utils/regex-helper.js";
 

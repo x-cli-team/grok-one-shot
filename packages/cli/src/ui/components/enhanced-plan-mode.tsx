@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Text, useInput } from 'ink';
-import { ImplementationPlan } from '../../types/plan-mode.js';
+import { ImplementationPlan } from "../../lib/types/plan-mode.js";
 import { PlanDisplay } from './plan-display.js';
 import { ApprovalResult, PlanApprovalManager } from '../../services/plan-approval-manager.js';
 import { inkColors } from '../colors.js';

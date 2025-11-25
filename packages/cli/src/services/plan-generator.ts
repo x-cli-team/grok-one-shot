@@ -16,7 +16,7 @@ import {
   EffortEstimate,
   Risk,
   MitigationStrategy
-} from '../types/plan-mode.js';
+} from "../lib/types/plan-mode.js";
 import { GrokAgent } from '../agent/grok-agent.js';
 
 interface PlanGenerationOptions {

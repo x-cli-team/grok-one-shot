@@ -19,7 +19,7 @@ import {
   PlanModeState,
   PlanModeActivationOptions,
   ExplorationData
-} from '../types/plan-mode.js';
+} from "../lib/types/plan-mode.js";
 import { usePlanMode } from '../hooks/use-plan-mode.js';
 import { ReadOnlyFilesystemOverlay } from './readonly-filesystem-overlay.js';
 import { PlanVisualizationOrchestrator } from './plan-visualization-orchestrator.js';

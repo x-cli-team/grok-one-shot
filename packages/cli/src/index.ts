@@ -35,6 +35,7 @@ try {
   const { getSettingsManager } = await import("./lib/utils/settings-manager.js");
   const { ConfirmationService } = await import("./lib/utils/confirmation-service.js");
   const { renderMarkdownToConsole } = await import("./lib/utils/console-markdown.js");
+  const { stopPeriodicMemoryLogging } = await import("./lib/utils/session-logger.js");
   const { createMCPCommand } = await import("./commands/mcp.js");
   const { createSetNameCommand } = await import("./commands/set-name.js");
   const { createToggleConfirmationsCommand } = await import("./commands/toggle-confirmations.js");

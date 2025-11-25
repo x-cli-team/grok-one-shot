@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { Box, Text } from 'ink';
-import { ImplementationPlan, ActionStep, Risk } from '../../types/plan-mode.js';
+import { ImplementationPlan, ActionStep, Risk } from "../../lib/types/plan-mode.js";
 import { inkColors } from '../colors.js';
 
 interface StrategyOption {

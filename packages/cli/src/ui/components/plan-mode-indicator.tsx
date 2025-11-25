@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { Box, Text } from 'ink';
-import { PlanModePhase } from '../../types/plan-mode.js';
+import { PlanModePhase } from "../../lib/types/plan-mode.js";
 
 interface PlanModeIndicatorProps {
   /** Whether plan mode is active */

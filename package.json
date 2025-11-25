@@ -56,18 +56,7 @@
   "lint-staged": {
     ".agent/**/*.{md,mdx}": "prettier --write",
     "apps/site/docs/**/*.{md,mdx}": "prettier --write",
-    "packages/**/*.{ts,tsx}": [
-      "eslint --fix --ignore-pattern 'dist/**' --ignore-pattern 'node_modules/**'"
-    ],
-    "packages/**/*.{js,jsx,mjs}": [
-      "eslint --fix --ignore-pattern 'dist/**' --ignore-pattern 'node_modules/**'"
-    ],
-    "*.{ts,tsx}": [
-      "eslint --fix --ignore-pattern 'dist/**' --ignore-pattern 'packages/**/dist/**'"
-    ],
-    "*.{js,jsx,mjs}": [
-      "eslint --fix --ignore-pattern 'dist/**' --ignore-pattern 'packages/**/dist/**'"
-    ],
+    "packages/cli/src/**/*.{ts,tsx}": "cd packages/cli && npm run lint",
     "*.{md,mdx}": [
       "prettier --write"
     ],

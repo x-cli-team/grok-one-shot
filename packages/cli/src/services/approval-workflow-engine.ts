@@ -19,7 +19,7 @@ import {
   Risk,
   ActionStep,
   PlanModePhase
-} from '../types/plan-mode.js';
+} from "../lib/types/plan-mode.js";
 import {
   ApprovalSession,
   ApprovalResult,

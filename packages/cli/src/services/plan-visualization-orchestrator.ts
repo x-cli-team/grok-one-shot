@@ -21,7 +21,7 @@ import {
   PlanModeState,
   ExplorationData,
   PlanModePhase
-} from '../types/plan-mode.js';
+} from "../lib/types/plan-mode.js";
 import { TreeNode, createTreeNode, updateNodeStatus } from '../ui/components/operation-tree.js';
 import { ReadOnlyToolExecutor } from './read-only-tool-executor.js';
 

@@ -5,7 +5,7 @@
  * including user feedback collection, plan revisions, and approval tracking.
  */
 
-import { ImplementationPlan } from '../types/plan-mode.js';
+import { ImplementationPlan } from "../lib/types/plan-mode.js";
 import { GrokAgent } from '../agent/grok-agent.js';
 import { PlanGenerator } from './plan-generator.js';
 

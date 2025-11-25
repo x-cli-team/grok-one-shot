@@ -14,8 +14,8 @@ import {
   FileChange,
   ErrorContext,
   RecoveryResult
-} from '../types/execution.js';
-import { ResearchPlan, ResearchRequest } from '../types/research-recommend.js';
+} from "../lib/types/execution.js";
+import { ResearchPlan, ResearchRequest } from "../lib/types/research-recommend.js";
 import { ResearchRecommendService } from './research-recommend.js';
 import * as fs from 'fs';
 import * as path from 'path';

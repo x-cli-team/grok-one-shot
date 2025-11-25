@@ -14,11 +14,11 @@ import {
   ResearchRecommendation,
   ResearchPlan,
   ApprovalResponse
-} from '../types/research-recommend.js';
+} from "../lib/types/research-recommend.js";
 import { GrokAgent, ChatEntry } from '../agent/grok-agent.js';
 import { ContextPack } from '../lib/utils/context-loader.js';
 import { ExecutionOrchestrator } from './execution-orchestrator.js';
-import { ExecutionResult } from '../types/execution.js';
+import { ExecutionResult } from "../lib/types/execution.js";
 import * as readline from 'readline';
 
 const DEFAULT_CONFIG: ResearchConfig = {

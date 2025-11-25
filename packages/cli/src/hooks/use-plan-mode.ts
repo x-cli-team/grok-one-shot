@@ -15,7 +15,7 @@ import {
   ImplementationPlan,
   ExplorationData,
   PlanModeSettings
-} from '../types/plan-mode.js';
+} from "../lib/types/plan-mode.js";
 import { CodebaseExplorer } from '../services/codebase-explorer.js';
 import { PlanGenerator } from '../services/plan-generator.js';
 import { ReadOnlyToolExecutor } from '../services/read-only-tool-executor.js';
