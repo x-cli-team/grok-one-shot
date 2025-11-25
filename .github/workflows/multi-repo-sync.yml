@@ -1,0 +1,236 @@
+name: 🔄 Multi-Repo Sync
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/cli/**"
+      - "packages/pro/**"
+      - "apps/**"
+  workflow_dispatch:
+    inputs:
+      force_sync:
+        description: "Force sync all repos"
+        required: false
+        default: false
+        type: boolean
+      target_repos:
+        description: "Comma-separated list: cli,pro,web"
+        required: false
+        default: "cli,pro,web"
+
+jobs:
+  sync-cli:
+    name: Sync CLI to grok-one-shot
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.modified, 'packages/cli') || github.event.inputs.force_sync == 'true' || contains(github.event.inputs.target_repos, 'cli')
+
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Git
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      - name: Prepare CLI package
+        run: |
+          echo "📦 Preparing CLI package for sync..."
+
+          # Create temporary directory for CLI repo
+          mkdir -p /tmp/cli-repo
+
+          # Copy CLI package contents
+          cp -r packages/cli/* /tmp/cli-repo/
+
+          # Copy root files needed for CLI
+          cp package.json /tmp/cli-repo/package.json.monorepo
+          cp pnpm-lock.yaml /tmp/cli-repo/ 2>/dev/null || true
+          cp .gitignore.cli /tmp/cli-repo/.gitignore 2>/dev/null || cp .gitignore /tmp/cli-repo/
+
+          # Copy GitHub workflows for CLI
+          mkdir -p /tmp/cli-repo/.github/workflows
+          cp .github/workflows/publish.yml /tmp/cli-repo/.github/workflows/ 2>/dev/null || true
+          cp .github/workflows/ci.yml /tmp/cli-repo/.github/workflows/ 2>/dev/null || true
+
+      - name: Push to CLI repository
+        env:
+          CLI_REPO_TOKEN: ${{ secrets.CLI_REPO_TOKEN }}
+        run: |
+          if [ -z "${CLI_REPO_TOKEN:-}" ]; then
+            echo "⚠️ CLI_REPO_TOKEN not set - skipping CLI repo sync"
+            exit 0
+          fi
+
+          echo "🚀 Syncing to CLI repository..."
+          cd /tmp/cli-repo
+
+          git init
+          git remote add origin https://x-access-token:${CLI_REPO_TOKEN}@github.com/x-cli-team/grok-one-shot.git
+          git add .
+          git commit -m "Sync from monorepo: $(echo '${{ github.event.head_commit.message }}' | head -n1)
+
+          Synced from: ${{ github.repository }}@${{ github.sha }}
+
+          🤖 Automated sync via GitHub Actions"
+
+          git push --force origin main
+
+  sync-pro:
+    name: Sync Pro to one-shot-pro
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.modified, 'packages/pro') || github.event.inputs.force_sync == 'true' || contains(github.event.inputs.target_repos, 'pro')
+
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Git
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      - name: Prepare Pro package
+        run: |
+          echo "🔒 Preparing Pro package for sync..."
+
+          # Create temporary directory for Pro repo
+          mkdir -p /tmp/pro-repo
+
+          # Copy Pro package contents  
+          cp -r packages/pro/* /tmp/pro-repo/
+
+          # Copy root files needed for Pro
+          cp package.json /tmp/pro-repo/package.json.monorepo
+          cp pnpm-lock.yaml /tmp/pro-repo/ 2>/dev/null || true
+          cp .gitignore.pro /tmp/pro-repo/.gitignore 2>/dev/null || cp .gitignore /tmp/pro-repo/
+
+          # Copy GitHub workflows for Pro
+          mkdir -p /tmp/pro-repo/.github/workflows
+          cp .github/workflows/publish-pro.yml /tmp/pro-repo/.github/workflows/ 2>/dev/null || true
+          cp .github/workflows/security.yml /tmp/pro-repo/.github/workflows/ 2>/dev/null || true
+
+      - name: Push to Pro repository
+        env:
+          PRO_REPO_TOKEN: ${{ secrets.PRO_REPO_TOKEN }}
+        run: |
+          if [ -z "${PRO_REPO_TOKEN:-}" ]; then
+            echo "⚠️ PRO_REPO_TOKEN not set - skipping Pro repo sync"
+            exit 0
+          fi
+
+          echo "🔒 Syncing to Pro repository..."
+          cd /tmp/pro-repo
+
+          git init
+          git remote add origin https://x-access-token:${PRO_REPO_TOKEN}@github.com/x-cli-team/one-shot-pro.git
+          git add .
+          git commit -m "Sync from monorepo: $(echo '${{ github.event.head_commit.message }}' | head -n1)
+
+          Synced from: ${{ github.repository }}@${{ github.sha }}
+
+          🔒 Private package sync via GitHub Actions"
+
+          git push --force origin main
+
+  sync-web:
+    name: Sync Web to web repository
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.modified, 'apps/') || github.event.inputs.force_sync == 'true' || contains(github.event.inputs.target_repos, 'web')
+
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Git
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      - name: Prepare Web apps
+        run: |
+          echo "🌐 Preparing Web apps for sync..."
+
+          # Create temporary directory for Web repo
+          mkdir -p /tmp/web-repo
+
+          # Copy apps directory contents
+          cp -r apps/* /tmp/web-repo/
+
+          # Copy root files needed for Web
+          cp package.json /tmp/web-repo/package.json.monorepo
+          cp pnpm-lock.yaml /tmp/web-repo/ 2>/dev/null || true  
+          cp .gitignore.web /tmp/web-repo/.gitignore 2>/dev/null || cp .gitignore /tmp/web-repo/
+
+          # Create web-specific package.json
+          cat > /tmp/web-repo/package.json << 'EOF'
+          {
+            "name": "@x-cli-team/web-apps",
+            "version": "1.0.0",
+            "private": true,
+            "description": "Web applications for grok-one-shot",
+            "workspaces": [
+              "site",
+              "dashboard"
+            ],
+            "scripts": {
+              "dev:site": "cd site && npm run start",
+              "build:site": "cd site && npm run build",
+              "dev:dashboard": "cd dashboard && npm run dev",
+              "build:dashboard": "cd dashboard && npm run build"
+            }
+          }
+          EOF
+
+      - name: Push to Web repository
+        env:
+          WEB_REPO_TOKEN: ${{ secrets.WEB_REPO_TOKEN }}
+        run: |
+          if [ -z "${WEB_REPO_TOKEN:-}" ]; then
+            echo "⚠️ WEB_REPO_TOKEN not set - skipping Web repo sync"
+            exit 0
+          fi
+
+          echo "🌐 Syncing to Web repository..."
+          cd /tmp/web-repo
+
+          git init
+          git remote add origin https://x-access-token:${WEB_REPO_TOKEN}@github.com/x-cli-team/web.git
+          git add .
+          git commit -m "Sync from monorepo: $(echo '${{ github.event.head_commit.message }}' | head -n1)
+
+          Synced from: ${{ github.repository }}@${{ github.sha }}
+
+          🌐 Web apps sync via GitHub Actions"
+
+          git push --force origin main
+
+  notify-sync:
+    name: Notify Sync Results
+    runs-on: ubuntu-latest
+    needs: [sync-cli, sync-pro, sync-web]
+    if: always()
+
+    steps:
+      - name: Summary
+        run: |
+          echo "## 🔄 Multi-Repo Sync Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Repository | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| CLI (grok-one-shot) | ${{ needs.sync-cli.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Pro (one-shot-pro) | ${{ needs.sync-pro.result }} |" >> $GITHUB_STEP_SUMMARY  
+          echo "| Web (web) | ${{ needs.sync-web.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY

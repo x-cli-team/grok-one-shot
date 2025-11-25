@@ -32,6 +32,7 @@ If CPU drops under ~30–40% with those, you've confirmed the issue is the rende
 **ETA:** 1–2 short commits
 
 ### Tasks
+
 1. **Render Throttle**
    - Batch UI updates to ~150 ms (≈6–7 FPS). Streaming tokens should append to a buffer and flush on interval/final.
 
@@ -49,22 +50,26 @@ If CPU drops under ~30–40% with those, you've confirmed the issue is the rende
    - Ensure all intervals, timers, and Ink subscriptions are cleared on teardown.
 
 ### Acceptance Criteria
+
 - 5-minute streaming test: no flicker, CPU avg <10% on your Mac.
 - 15+ tool calls: active tools ≤2, no duplicate console.time warnings.
 - Idle at prompt: CPU <3%.
 
 ## Verify the Fix (Simple Checks)
+
 - While running, do:
 - **Render Cadence:** You should see updates ~6–7 times/second, not every token.
 - **Top/Activity Monitor:** Process stays <10–15% during streaming, drops near 0% when idle.
 - **Logs:** No per-token spam unless DEBUG=1.
 
 ## Common Gotchas That Cause the Spike (Watch for These)
+
 - Re-introduced per-token setState in chat history.
 - Accidental double-subscription (effect runs without a cleanup).
 - Tool orchestration firing 3+ concurrent operations.
 
 ## If You Still See ~136% After This
+
 - Temporarily run in headless/non-UI mode (same runtime) to confirm CPU normalizes; if headless is calm, the hotspot is 100% UI.
 - Capture one brief CPU sample (30–60s) and check:
   - % time in your render function(s)

@@ -1,20 +1,23 @@
 # Incident: NPM Publish Failure on Tag Push
 
 ## Summary
+
 - **Date Created**: 2025-10-17
-- **Date Resolved**: 2025-10-17  
+- **Date Resolved**: 2025-10-17
 - **Status**: ✅ **RESOLVED**
 - **Issue**: Automated NPM publishing fails despite successful builds and tag creation. Versions were bumped but not published to NPM.
 - **Root Cause**: Multiple issues: (1) Git auth failing in Release workflow, (2) Cross-workflow triggering blocked by GITHUB_TOKEN, (3) npm config syntax errors, (4) Rollup dependency cache corruption
 - **Impact**: New versions were not released to NPM, blocking users from installing updates.
 
 ## Investigation Notes
+
 - GitHub Actions release workflow successfully bumps version, commits, and pushes tags (e.g., v1.0.63).
 - Publish workflow triggers on tag push but fails at `npm publish` step (confirmed not published via NPM registry check).
 - Local build succeeds; issue is CI-specific.
 - NPM_TOKEN secret is set in GitHub repo, but may be invalid, for wrong account, or not an Automation token.
 
 ## Fix Plan (Based on Provided Guidance)
+
 Follow the battle-tested checklist in order:
 
 1. **Confirm Package Ownership**:
@@ -36,12 +39,14 @@ Follow the battle-tested checklist in order:
    - Replace current `release.yml` and `publish.yml` with improved versions (see below).
 
 ## Updated Workflow Files
+
 ### release.yml (Bump + Tag on Push to Main)
+
 ```yaml
 name: Release
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 permissions:
   contents: write
@@ -83,6 +88,7 @@ jobs:
 ```
 
 ### publish.yml (Publish on Tag)
+
 ```yaml
 name: Publish
 on:
@@ -92,7 +98,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write  # for --provenance
+  id-token: write # for --provenance
 
 jobs:
   publish:
@@ -130,6 +136,7 @@ jobs:
 ```
 
 ## Next Steps
+
 - Confirm package ownership and update token if needed.
 - Apply workflow updates.
 - Test with a new push to `main` (should bump to 1.0.64 and publish).
@@ -140,11 +147,12 @@ jobs:
 After multiple failed attempts with cross-workflow triggering, the solution was to **combine both workflows into a single Release workflow** that handles both version bumping AND NPM publishing.
 
 ### ✅ Working Release Workflow (`.github/workflows/release.yml`)
+
 ```yaml
 name: Release
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 permissions:
   contents: write
@@ -210,6 +218,7 @@ jobs:
 ```
 
 ### Key Fixes Applied:
+
 1. **Git Authentication**: Added `PAT_TOKEN` fallback for git push operations
 2. **Dependency Issues**: Clear npm cache with `rm -rf node_modules package-lock.json && npm install`
 3. **NPM Auth**: Use simple `.npmrc` file creation instead of complex npm config commands
@@ -217,6 +226,7 @@ jobs:
 5. **Error Prevention**: Added proper exit codes and validation steps
 
 ## Resolution Status
+
 - [x] ✅ **Ownership confirmed** (using grok_cli account)
 - [x] ✅ **NPM token configured** (Automation token type)
 - [x] ✅ **Workflows fixed** (Combined into single workflow)
@@ -227,12 +237,14 @@ jobs:
 - [x] ✅ **Incident closed** (Automation working as of 2025-10-17)
 
 ## Lessons Learned
+
 1. **GITHUB_TOKEN cannot trigger other workflows** - Use PAT_TOKEN for cross-workflow triggering, or better yet, combine workflows
 2. **npm config commands are fragile** - Direct .npmrc file creation is more reliable
 3. **Rollup dependencies can cache corrupt** - Always clear node_modules when build fails
 4. **Separate workflows add complexity** - Single workflow is more reliable for simple automation
 
 ## Critical Dependencies
+
 - **PAT_TOKEN secret**: Personal Access Token with repo permissions
 - **NPM_TOKEN secret**: NPM Automation token from grok_cli account
 - **Package name**: Must remain "grok-cli-hurry-mode" (unscoped)

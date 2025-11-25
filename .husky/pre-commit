@@ -1,163 +1,35 @@
 #!/usr/bin/env sh
-. "$(dirname "$0")/_/husky.sh"
+. "$(dirname -- "$0")/_/husky.sh"
 
-# ⚠️  CRITICAL GIT WORKFLOW WARNING FOR AI AGENTS ⚠️
-# 
-# THIS REPO USES AUTOMATED NPM PUBLISHING ON MAIN BRANCH PUSHES
-# 
-# 🚨 PUSH STRATEGY REQUIREMENTS:
-# 1. ONLY push to main branch for releases (triggers NPM publish)
-# 2. ALWAYS use feature branches for development work  
-# 3. NEVER use 'git push origin main' directly
-# 4. ALWAYS use smart-push script: 'npm run smart-push' or './scripts/smart-push.sh'
-# 5. ALWAYS merge feature branches to main (don't push commits directly to main)
-#
-# 📋 CORRECT WORKFLOW:
-#   git checkout -b feature/my-changes
-#   [make changes and commits]
-#   git checkout main
-#   git merge feature/my-changes  
-#   npm run smart-push  # This triggers NPM publish
-#
-# 💡 WHY: Every push to main triggers automated version bump + NPM publish
-# 💡 Missing pushes to main = No NPM releases = Broken deployment pipeline
-# 💡 Direct pushes to main = Bypass quality gates and monitoring
-#
-# 🔧 If you pushed to wrong branch: merge to main and use smart-push
-#
+# Monorepo Pre-commit Validation
+echo "🔍 Running monorepo pre-commit checks..."
 
-# Critical folder protection check
-node -e "
-const fs = require('fs');
-const path = require('path');
-
-const criticalFolders = [
-  '.agent',
-  '.github',
-  'apps/site/docs',
-  'src',
-  'apps/site/src'
-];
-
-const missingFolders = criticalFolders.filter(folder => {
-  try {
-    return !fs.existsSync(folder) || !fs.statSync(folder).isDirectory();
-  } catch (e) {
-    return true;
-  }
-});
-
-if (missingFolders.length > 0) {
-  console.error('🚨 CRITICAL FOLDERS MISSING! Commit blocked to prevent accidental deletion.');
-  console.error('Missing folders:', missingFolders.join(', '));
-  console.error('If this is intentional, use --no-verify to bypass: git commit --no-verify');
-  process.exit(1);
-} else {
-  console.log('✅ Critical folders verified');
-}
-"
-
-# Run lint-staged for code formatting
-npx lint-staged --config package.json .agent/**/*.{md,mdx} && npx lint-staged --config package.json -- '*.{ts,js,md,mdx}' --ignore-path .gitignore || true
-
-# Update sprint index and compressed docs summary (skip in CI)
-if [ -z "$CI" ] && [ -z "$GITHUB_ACTIONS" ]; then
-  echo "📝 Updating sprint index..."
-  ./scripts/update-sprint-index.sh 2>/dev/null || echo "📝 Sprint index update completed"
-  echo "📝 Updating compressed docs summary..."
-  ./scripts/update-docs-summary.sh 2>/dev/null || echo "📝 Docs summary update completed"
-else
-  echo "⏭️ Skipping sprint/docs updates in CI environment"
-fi
-
-# Auto-update roadmap with AI agent (skip in CI)
-if [ -z "$CI" ] && [ -z "$GITHUB_ACTIONS" ]; then
-  echo "🗓️ Auto-updating roadmap..."
-  if command -v grok &> /dev/null && [ -f "apps/site/docs/roadmap.md" ]; then
-    CURRENT_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "unknown")
-    if timeout 30 grok -p "Review apps/site/docs/roadmap.md and update current version to ${CURRENT_VERSION}. Check if dates need updating to be realistic for future releases. Make minimal necessary changes only." 2>/dev/null; then
-      echo "✅ Roadmap updated successfully"
-    else
-      echo "⚠️ Roadmap auto-update failed - continuing with commit"
-    fi
-  else
-    echo "⚠️ Grok not available - skipping roadmap update"
+# 1. Critical folder protection
+echo "📁 Validating monorepo structure..."
+REQUIRED_FOLDERS=(".github" "packages/cli" "packages/pro" "apps")
+for folder in "${REQUIRED_FOLDERS[@]}"; do
+  if [ ! -d "$folder" ]; then
+    echo "❌ Critical folder missing: $folder"
+    exit 1
   fi
-else
-  echo "⏭️ Skipping roadmap update in CI environment"
-fi
+done
 
-# Run core features test suite (ensure build exists first)
-if ! ./scripts/test-core-features-husky.sh true 2>/dev/null; then
-  echo "❌ Core features validation failed! Essential functionality is broken."
-  echo "💡 Common issues:"
-  echo "   - TypeScript compilation errors"
-  echo "   - Missing dependencies" 
-  echo "   - Build configuration problems"
-  echo "   - Core source files missing"
-  echo ""
-  echo "🔧 To debug: Run './scripts/test-core-features.sh' for detailed analysis"
-  echo "🚫 Commit blocked - fix core functionality and try again"
+# 2. TypeScript validation for packages
+echo "🔧 TypeScript validation..."
+if ! pnpm run typecheck; then
+  echo "❌ TypeScript errors found"
   exit 1
-else
-  echo "✅ Core features validated successfully"
 fi
 
-# Run quick tool system validation
-if ! ./scripts/test-tools-quick.sh true 2>/dev/null; then
-  echo "❌ Tool system validation failed! Tool infrastructure is broken."
-  echo "💡 Common issues:"
-  echo "   - Tool exports missing"
-  echo "   - Tool files deleted or moved"
-  echo "   - Tool registration broken"
-  echo "   - MCP integration issues"
-  echo ""
-  echo "🔧 To debug: Run 'npm run test:tools' for comprehensive tool analysis"
-  echo "🚫 Commit blocked - fix tool system and try again"
+# 3. Package structure validation
+echo "📦 Package structure validation..."
+if [ ! -f "packages/cli/package.json" ] || [ ! -f "packages/pro/package.json" ]; then
+  echo "❌ Missing package.json files"
   exit 1
-else
-  echo "✅ Tool system validated successfully (25+ tools)"
 fi
 
-# Run tool code validation to catch accidental changes
-if ! ./scripts/validate-tool-code-husky.sh true 2>/dev/null; then
-  echo "❌ Tool code validation failed! Accidental changes detected in core tools."
-  echo "💡 Common issues:"
-  echo "   - Tool class definitions missing"
-  echo "   - Unmatched opening/closing tags"
-  echo "   - Incorrect tool parameter validation"
-  echo "   - Tool description inconsistencies"
-  echo ""
-  echo "🔧 To debug: Run 'npm run validate:tools' for detailed tool validation"
-  echo "🚫 Commit blocked - fix tool code issues and try again"
-  exit 1
-else
-  echo "✅ Tool code integrity verified (no accidental changes detected)"
-fi
+# 4. Lint-staged formatting
+echo "✨ Running lint-staged..."
+pnpm exec lint-staged
 
-# Docs now updated directly in apps/site/docs/ - no auto-update needed
-
-# Auto-update README.md with AI agent (skip in CI)
-if [ -z "$CI" ] && [ -z "$GITHUB_ACTIONS" ]; then
-  echo "📖 Auto-updating README.md based on session changes..."
-  if command -v grok &> /dev/null && [ -f "README.md" ]; then
-    # Get current version for context
-    CURRENT_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "unknown")
-    # Get changed files (limit to key files that might affect README)
-    CHANGED_FILES=$(git status --porcelain | head -10 | awk '{print $2}' | grep -E '\.(md|ts|js)$' | head -5 || echo "")
-    if [ -n "$CHANGED_FILES" ]; then
-      echo "🔄 Analyzing changes for README impact..."
-      timeout 45 grok -p "Review these changed files and update README.md if needed: $CHANGED_FILES. Current version: $CURRENT_VERSION. Focus on accuracy and keep changes minimal." 2>/dev/null || echo "⚠️ README auto-update timed out"
-    else
-      echo "📝 No relevant changes for README update"
-    fi
-  else
-    echo "⚠️ Grok not available or README.md missing - skipping README update"
-  fi
-else
-  echo "⏭️ Skipping README AI updates in CI environment"
-fi
-
-# TODO: Add session learnings capture here
-# This could log agent interactions, learnings, or changes made during the session
-# For now, this is a placeholder for future implementation
+echo "✅ All pre-commit checks passed!"

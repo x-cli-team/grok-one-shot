@@ -5,18 +5,20 @@
 **Status**: ✅ FULLY AUTOMATED as of 2025-10-17
 
 ### How It Works
+
 1. **Push to main branch** → Release workflow triggers
-2. **Version auto-bumps** (patch) → Creates "Bump version to X.X.X" commit  
+2. **Version auto-bumps** (patch) → Creates "Bump version to X.X.X" commit
 3. **Builds and publishes** to NPM automatically
 4. **Creates git tag** for the release
 
 ### What You Need to Do
+
 **Use Smart Push!** GitHub Actions creates version bump commits, so use:
 
 ```bash
 # ✅ CORRECT - Use smart push to handle automated version bumps
 git pushup              # Git alias method
-npm run smart-push      # NPM script method  
+npm run smart-push      # NPM script method
 ./scripts/smart-push.sh # Direct script method
 
 # ❌ WRONG - Will cause "fetch first" errors
@@ -24,7 +26,8 @@ git push origin main
 ```
 
 The system handles:
-- ✅ Version bumping (patch increments)  
+
+- ✅ Version bumping (patch increments)
 - ✅ README updates
 - ✅ NPM publishing
 - ✅ Git tagging
@@ -36,28 +39,32 @@ The system handles:
 **⚠️ DO NOT MODIFY THESE WITHOUT EXTREME CAUTION:**
 
 ### GitHub Secrets (Required)
+
 - **`PAT_TOKEN`**: Personal Access Token with repo permissions
 - **`NPM_TOKEN`**: NPM Automation token from grok_cli account
 
 ### Package Configuration (Sacred)
+
 ```json
 {
-  "name": "grok-cli-hurry-mode",  // ⚠️ NEVER change - breaks publishing
+  "name": "grok-cli-hurry-mode", // ⚠️ NEVER change - breaks publishing
   "publishConfig": {
-    "access": "public"  // ⚠️ Must NOT include registry override
+    "access": "public" // ⚠️ Must NOT include registry override
   }
 }
 ```
 
 ### Working Release Workflow
+
 **File**: `.github/workflows/release.yml`
+
 ```yaml
 # ⚠️ This workflow took multiple attempts to get working!
 # DO NOT MODIFY without understanding all dependencies
 name: Release
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 permissions:
   contents: write
 jobs:
@@ -69,7 +76,7 @@ jobs:
         run: |
           rm -rf node_modules package-lock.json
           npm install
-      
+
       # Critical: Loop prevention
       - name: Skip if previous commit was auto-bump
         run: |
@@ -77,12 +84,12 @@ jobs:
             echo "Auto-bump detected; skipping."
             exit 78
           fi
-      
+
       # Critical: Git authentication for push
       - name: Create tag and push
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
-      
+
       # Critical: NPM authentication
       - name: Configure npm auth
         run: |
@@ -94,11 +101,13 @@ jobs:
 ## Manual Release Guidelines (Emergency Only)
 
 ### Version Bumping Types
+
 - **Patch (1.0.41 → 1.0.42)**: Bug fixes, small updates (DEFAULT)
 - **Minor (1.0.41 → 1.1.0)**: New features, backwards-compatible
 - **Major (1.0.41 → 2.0.0)**: Breaking changes
 
 ### Manual Process (If Automation Fails)
+
 ```bash
 # 1. Bump version locally
 npm version patch  # or minor/major
@@ -115,12 +124,14 @@ git push origin main --follow-tags
 ```
 
 ## Best Practices
+
 - **Conventional commits**: `feat:`, `fix:`, `BREAKING CHANGE:`
 - **Test locally**: `npm run local` before pushing
 - **Monitor automation**: Check GitHub Actions for failures
 - **Don't force-push**: Breaks automation workflow
 
 ## Timing for Releases
+
 - **Automatic patch**: Every push to main (current behavior)
 - **Manual minor**: Accumulate features, then manual `npm version minor`
 - **Manual major**: Breaking changes, coordinate with team
@@ -128,6 +139,7 @@ git push origin main --follow-tags
 ## Troubleshooting Automation
 
 ### If Publishing Fails
+
 1. Check GitHub Actions logs
 2. Verify secrets are set: `PAT_TOKEN`, `NPM_TOKEN`
 3. Confirm NPM token hasn't expired
@@ -135,10 +147,12 @@ git push origin main --follow-tags
 5. See `.agent/incidents/incident-npm-publish-failure.md` for detailed troubleshooting
 
 ### Emergency Manual Publish
+
 If automation is broken and you need to publish immediately:
+
 ```bash
 npm version patch
-npm run build  
+npm run build
 npm publish --access public
 git push origin main --follow-tags
 ```

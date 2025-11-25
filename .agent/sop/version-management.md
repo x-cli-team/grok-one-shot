@@ -7,12 +7,14 @@ This SOP ensures consistent version management across the Grok CLI codebase, pre
 ## 🎯 Quick Reference
 
 ### ✅ DO
+
 - Use dynamic imports: `import pkg from '../../../package.json' with { type: 'json' };`
 - Let GitHub Action handle README version updates
 - Check `npm view grok-cli-hurry-mode version` for current NPM version
 - Test version displays with temporary package.json changes
 
 ### ❌ DON'T
+
 - Hardcode version strings anywhere in the codebase
 - Manually update README version headers
 - Bypass the automated release workflow
@@ -25,12 +27,15 @@ This SOP ensures consistent version management across the Grok CLI codebase, pre
 **When**: Adding version info to new UI components, CLI outputs, or documentation
 
 **Steps**:
+
 1. Import package.json dynamically:
+
    ```typescript
-   import pkg from '../../../package.json' with { type: 'json' };
+   import pkg from "../../../package.json" with { type: "json" };
    ```
 
 2. Use the version property:
+
    ```typescript
    const version = pkg.version;
    // or inline
@@ -50,6 +55,7 @@ This SOP ensures consistent version management across the Grok CLI codebase, pre
 **When**: Reviewing PRs that include version displays
 
 **Checklist**:
+
 - [ ] No hardcoded version strings (grep for `"1\.[0-9]\+\.[0-9]\+"`)
 - [ ] Version displays use dynamic imports from package.json
 - [ ] README changes are minimal (auto-handled by GitHub Action)
@@ -60,13 +66,15 @@ This SOP ensures consistent version management across the Grok CLI codebase, pre
 **When**: Pushing changes to main branch
 
 **Automated Flow**:
+
 1. Push to main → GitHub Action triggers
-2. Action bumps package.json version  
+2. Action bumps package.json version
 3. Action updates README.md automatically
 4. Action creates git tag and pushes
 5. Action publishes to NPM
 
 **Manual Verification** (after release):
+
 ```bash
 # Check all versions are synchronized
 npm view grok-cli-hurry-mode version  # NPM version
@@ -79,7 +87,9 @@ head -1 README.md  # README version
 **When**: Versions become out of sync due to action failures
 
 **Steps**:
+
 1. Identify the discrepancy:
+
    ```bash
    echo "NPM: $(npm view grok-cli-hurry-mode version)"
    echo "Local: $(node -p "require('./package.json').version")"
@@ -89,10 +99,11 @@ head -1 README.md  # README version
 2. Determine source of truth (usually NPM if published)
 
 3. Manual sync (avoid if possible):
+
    ```bash
    # If NPM is ahead, pull latest:
    git pull origin main
-   
+
    # If README is behind, let next release fix it
    # DON'T manually edit - GitHub Action will handle it
    ```
@@ -102,25 +113,28 @@ head -1 README.md  # README version
 **Common Problems**:
 
 1. **"Command not found: grok"**
+
    ```bash
    npm view grok-cli-hurry-mode version  # Check if published
    npm install -g grok-cli-hurry-mode@latest
    ```
 
 2. **Version displays show wrong version**
+
    ```bash
    # Check if using dynamic imports
    grep -r "pkg.version\|package.json" src/
-   
+
    # Rebuild if using bundled version
    npm run build
    ```
 
 3. **GitHub Action fails to sync versions**
+
    ```bash
    # Check action logs at:
    # https://github.com/hinetapora/grok-cli-hurry-mode/actions
-   
+
    # Verify secrets are set:
    # PAT_TOKEN, NPM_TOKEN
    ```
@@ -130,21 +144,24 @@ head -1 README.md  # README version
 ### Version Synchronization Pattern
 
 **REQUIRED PATTERN** for all version displays:
+
 ```typescript
-import pkg from '../../../package.json' with { type: 'json' };
+import pkg from "../../../package.json" with { type: "json" };
 const version = pkg.version;
 ```
 
 **FORBIDDEN PATTERNS**:
+
 ```typescript
-const version = "1.1.22";  // ❌ Hardcoded
-const version = process.env.VERSION;  // ❌ Environment variable
-const version = "v" + getCurrentVersion();  // ❌ Function call
+const version = "1.1.22"; // ❌ Hardcoded
+const version = process.env.VERSION; // ❌ Environment variable
+const version = "v" + getCurrentVersion(); // ❌ Function call
 ```
 
 ### GitHub Action Protection
 
 **Never modify** these without full testing:
+
 - `.github/workflows/release.yml` version bump logic
 - README version regex pattern: `^## [0-9]\+\.[0-9]\+\.[0-9]\+`
 - package.json version format
@@ -152,6 +169,7 @@ const version = "v" + getCurrentVersion();  // ❌ Function call
 ### Breaking Change Protocol
 
 **Before modifying version patterns**:
+
 1. Create development branch
 2. Test full release cycle in fork
 3. Document changes in `.agent/system/version-synchronization.md`
@@ -160,11 +178,13 @@ const version = "v" + getCurrentVersion();  // ❌ Function call
 ## 📊 Monitoring & Validation
 
 ### Daily Checks
+
 - Compare NPM vs GitHub package.json versions
 - Verify welcome screen shows correct version
 - Check recent GitHub Action execution logs
 
 ### Weekly Audits
+
 ```bash
 # Run version audit script
 grep -r "1\.[0-9]\+\.[0-9]\+" src/ --exclude="*.json" || echo "✅ No hardcoded versions found"
@@ -183,4 +203,4 @@ node -p "require('./package.json').version"
 
 ---
 
-*Following this SOP ensures zero version drift and automated consistency across all version displays.*
+_Following this SOP ensures zero version drift and automated consistency across all version displays._

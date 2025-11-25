@@ -11,6 +11,7 @@
 ## 🎯 Problem Statement
 
 ### Current Documentation Gaps
+
 - **No public landing page** - Users discover x-cli through NPM or GitHub only
 - **Scattered documentation** - README is comprehensive but not discoverable
 - **No community hub** - No central place for users to find help and resources
@@ -19,6 +20,7 @@
 - **Duplication risk** - Multiple documentation sources can become inconsistent
 
 ### Success Metrics
+
 - **Public documentation site** live on custom domain
 - **Automated sync** from `.agent` folder to public docs
 - **Always-current documentation** - no manual updates needed
@@ -29,6 +31,7 @@
 ## 📋 Scope & Deliverables
 
 ### 1. Monorepo Setup
+
 ```
 grok-cli-hurry-mode/
 ├── apps/
@@ -43,6 +46,7 @@ grok-cli-hurry-mode/
 ```
 
 #### Workspace Configuration
+
 - **Add `apps/site`** as Next.js + Nextra docs app
 - **Configure `pnpm-workspace.yaml`** for monorepo structure
 - **Add dev scripts** for local development (`pnpm dev:site`)
@@ -50,6 +54,7 @@ grok-cli-hurry-mode/
 ### 2. Documentation Site (`apps/site`)
 
 #### Core Technology Stack
+
 - **Framework**: Docusaurus (Meta/Facebook)
 - **Documentation**: MDX with React components
 - **Styling**: Built-in Docusaurus theming + customization
@@ -57,6 +62,7 @@ grok-cli-hurry-mode/
 - **Sync System**: Custom Node.js scripts for `.agent` integration
 
 #### Site Structure (.agent Synchronized)
+
 ```
 apps/site/
 ├── docs/                       # Auto-synced from .agent
@@ -84,6 +90,7 @@ apps/site/
 ```
 
 #### Content Strategy & .agent Integration
+
 - **Automated sync**: `.agent` docs automatically transform to public docs
 - **Single source of truth**: `.agent` remains authoritative, public docs derived
 - **Content filtering**: Internal/sensitive content filtered for public consumption
@@ -91,6 +98,7 @@ apps/site/
 - **Always current**: Documentation reflects latest project state
 
 #### Content Transformation Pipeline
+
 ```js
 // Sync workflow
 .agent/README.md → docs/overview.md (add frontmatter, rewrite links)
@@ -102,59 +110,61 @@ apps/site/
 ### 3. UI/UX Design
 
 #### Branding & Theme (Docusaurus)
+
 ```js
 // docusaurus.config.js
 module.exports = {
-  title: 'Grok CLI',
-  tagline: 'Claude Code-level intelligence in your terminal',
-  favicon: 'img/favicon.ico',
-  url: 'https://docs.grok-cli.dev',
-  baseUrl: '/',
-  
+  title: "Grok CLI",
+  tagline: "Claude Code-level intelligence in your terminal",
+  favicon: "img/favicon.ico",
+  url: "https://docs.grok-cli.dev",
+  baseUrl: "/",
+
   themeConfig: {
     navbar: {
-      title: 'Grok CLI',
+      title: "Grok CLI",
       logo: {
-        alt: 'Grok CLI Logo',
-        src: 'img/logo.svg',
+        alt: "Grok CLI Logo",
+        src: "img/logo.svg",
       },
       items: [
         {
-          type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
-          position: 'left',
-          label: 'Docs',
+          type: "docSidebar",
+          sidebarId: "tutorialSidebar",
+          position: "left",
+          label: "Docs",
         },
-        {to: '/blog', label: 'Blog', position: 'left'},
+        { to: "/blog", label: "Blog", position: "left" },
         {
-          href: 'https://discord.com/channels/1315720379607679066/1315822328139223064',
-          label: 'Discord',
-          position: 'right',
+          href: "https://discord.com/channels/1315720379607679066/1315822328139223064",
+          label: "Discord",
+          position: "right",
         },
         {
-          href: 'https://github.com/hinetapora/grok-cli-hurry-mode',
-          label: 'GitHub',
-          position: 'right',
+          href: "https://github.com/hinetapora/grok-cli-hurry-mode",
+          label: "GitHub",
+          position: "right",
         },
       ],
     },
     footer: {
-      style: 'dark',
+      style: "dark",
       copyright: `Copyright © ${new Date().getFullYear()} Grok CLI. Built with Docusaurus.`,
     },
     colorMode: {
-      defaultMode: 'dark',
+      defaultMode: "dark",
       respectPrefersColorScheme: true,
     },
   },
-  
+
   plugins: [
-    require('./src/plugins/sync-agent-docs'), // Custom sync plugin
+    require("./src/plugins/sync-agent-docs"), // Custom sync plugin
   ],
 };
 ```
 
 #### Features
+
 - **Dark/light mode toggle** (default: dark)
 - **Responsive design** for mobile/desktop
 - **Discord integration** in header
@@ -164,6 +174,7 @@ module.exports = {
 ### 4. Content Migration & Creation
 
 #### From Existing Sources
+
 - **README.md** → `/docs/overview.mdx` + `/docs/quickstart.mdx`
 - **Installation section** → `/docs/quickstart.mdx`
 - **Troubleshooting** → `/docs/guides/troubleshooting.mdx`
@@ -171,12 +182,15 @@ module.exports = {
 - **Existing page.tsx** → `src/pages/index.js` (adapted for Grok CLI)
 
 #### Landing Page Adaptation
+
 The existing `page.tsx` provides:
+
 - **Modern gradient design** - Professional, eye-catching visual appeal
 - **Responsive layout** - Mobile and desktop optimized
 - **Component structure** - Reusable buttons, navigation, hero sections
 
 **Required Customization**:
+
 ```jsx
 // Updated content for Grok CLI
 <h1>Claude Code-Level Intelligence in Your Terminal</h1>
@@ -192,12 +206,14 @@ The existing `page.tsx` provides:
 ```
 
 #### New Content
+
 - **Feature showcase** - P1-P3 tools with examples
 - **API reference** - Comprehensive command documentation
 - **Changelog** - Release notes and version history
 
 #### Content Structure Example
-```mdx
+
+````mdx
 ---
 title: Quick Start
 description: Get up and running with Grok CLI in minutes
@@ -212,6 +228,7 @@ Get up and running with Grok CLI in minutes.
 ```bash
 npm install -g grok-cli-hurry-mode@latest
 ```
+````
 
 ## Setup
 
@@ -230,7 +247,8 @@ npm install -g grok-cli-hurry-mode@latest
 - [Explore Features](/docs/features)
 - [Advanced Configuration](/docs/api/configuration)
 - [Join our Discord](https://discord.com/channels/1315720379607679066/1315822328139223064)
-```
+
+````
 
 ### 5. Deployment Configuration
 
@@ -249,14 +267,16 @@ module.exports = withNextra({
     unoptimized: true
   }
 });
-```
+````
 
 #### Domain & DNS
+
 - **Primary option**: `docs.grok-cli.dev`
 - **Alternative**: `grok-cli.dev` (with docs subdirectory)
 - **Fallback**: Vercel subdomain (`grok-cli-docs.vercel.app`)
 
 #### Build & Deploy
+
 ```json
 {
   "scripts": {
@@ -273,6 +293,7 @@ module.exports = withNextra({
 ### Project Structure Setup
 
 #### 1. Initialize Monorepo
+
 ```bash
 # Create apps directory
 mkdir apps
@@ -289,6 +310,7 @@ npm install nextra nextra-theme-docs
 ```
 
 #### 2. Workspace Configuration
+
 ```yaml
 # pnpm-workspace.yaml
 packages:
@@ -310,18 +332,21 @@ packages:
 ### Content Creation Workflow
 
 #### 1. Extract from README
+
 - Convert markdown sections to MDX
 - Add frontmatter metadata
 - Split large sections into focused pages
 - Add cross-references and navigation
 
 #### 2. Create New Content
+
 - Landing page with value proposition
 - Feature comparison table
 - API reference with examples
 - Community guidelines
 
 #### 3. Optimize for SEO
+
 - Add meta descriptions
 - Use semantic heading structure
 - Include relevant keywords
@@ -332,11 +357,13 @@ packages:
 #### 1. Vercel Project Setup (Subfolder Deployment)
 
 **Step 1: Create New Vercel Project**
+
 1. Go to https://vercel.com/dashboard
 2. Click "New Project"
 3. Import GitHub repo: `hinetapora/grok-cli-hurry-mode`
 
 **Step 2: Configure Subfolder Settings**
+
 ```
 Framework Preset: Docusaurus
 Root Directory: apps/site
@@ -346,6 +373,7 @@ Install Command: npm install
 ```
 
 **Step 3: Advanced Settings**
+
 ```
 Node.js Version: 18.x
 Environment Variables: (none required for static site)
@@ -357,22 +385,25 @@ Build & Development Settings:
 ```
 
 **Step 4: Deploy Settings**
+
 ```yaml
 # vercel.json (in apps/site/)
 {
   "buildCommand": "npm run build",
   "outputDirectory": "build",
   "installCommand": "npm install",
-  "framework": "docusaurus2"
+  "framework": "docusaurus2",
 }
 ```
 
 #### 2. Domain Configuration
+
 - **Primary option**: `docs.grok-cli.dev`
 - **Alternative**: `grok-cli.dev/docs` (subdirectory)
 - **Fallback**: `grok-cli-docs.vercel.app`
 
 **DNS Setup** (if using custom domain):
+
 ```
 Type: CNAME
 Name: docs (or @)
@@ -380,52 +411,58 @@ Value: cname.vercel-dns.com
 ```
 
 #### 3. Auto-deployment Configuration
+
 - **Deploy trigger**: Push to main branch
 - **Build context**: Only when `apps/site/` changes
 - **Preview deployments**: Enabled for PRs
 - **Environment variables**: None required (static site)
 
 #### 4. Build Optimization
+
 ```js
 // apps/site/docusaurus.config.js
 module.exports = {
   // ... other config
-  
+
   // Vercel-specific optimizations
   trailingSlash: false,
-  onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
-  
+  onBrokenLinks: "throw",
+  onBrokenMarkdownLinks: "warn",
+
   // Static export for Vercel
-  staticDirectories: ['static'],
-  
+  staticDirectories: ["static"],
+
   // Build performance
   future: {
     experimental_faster: true,
-  }
+  },
 };
 ```
 
 ## 📅 Implementation Timeline
 
 ### Phase 1: Setup & Sync System (4 hours)
+
 - **1 hour**: Create monorepo structure and initialize Docusaurus
 - **1 hour**: Build .agent sync pipeline and content transformation
 - **1 hour**: Configure workspace scripts and automation
 - **1 hour**: Test sync system and validate transformations
 
 ### Phase 2: Content & Integration (3 hours)
+
 - **30 min**: Adapt existing page.tsx as landing page and blog setup
 - **1 hour**: Implement automatic roadmap generation
 - **1 hour**: Configure sidebars and navigation
 - **30 min**: Customize landing page content for Grok CLI branding
 
 ### Phase 3: Deployment (1 hour)
+
 - **30 min**: Configure Vercel project (subfolder setup, build settings)
-- **20 min**: Set up custom domain and DNS configuration  
+- **20 min**: Set up custom domain and DNS configuration
 - **10 min**: Test deployment pipeline and validate build
 
 ### Phase 4: Validation & Polish (1 hour)
+
 - **30 min**: Test sync pipeline end-to-end
 - **15 min**: Verify all .agent content transforms correctly
 - **15 min**: Final review and link validation
@@ -433,6 +470,7 @@ module.exports = {
 ## 🎯 Acceptance Criteria
 
 ### Technical Requirements
+
 - [ ] **Docusaurus site** builds and deploys on Vercel
 - [ ] **.agent sync pipeline** automatically transforms content
 - [ ] **Documentation pages** load with proper sidebar navigation
@@ -442,7 +480,8 @@ module.exports = {
 - [ ] **No runtime errors** or missing assets
 - [ ] **Total bundle size** < 20 MB for static export
 
-### Content Requirements  
+### Content Requirements
+
 - [ ] **.agent content** successfully synced and transformed
 - [ ] **Internal references** filtered for public consumption
 - [ ] **Dynamic roadmap** reflects current project status
@@ -452,6 +491,7 @@ module.exports = {
 - [ ] **Automated changelog** with recent releases
 
 ### User Experience
+
 - [ ] **Fast loading** (<3 seconds initial load)
 - [ ] **Intuitive navigation** with clear information architecture
 - [ ] **Discord integration** visible and functional
@@ -459,6 +499,7 @@ module.exports = {
 - [ ] **Dark mode** as default with light mode toggle
 
 ### SEO & Discoverability
+
 - [ ] **Meta tags** for all pages
 - [ ] **Sitemap** generated automatically
 - [ ] **Robots.txt** configured
@@ -486,29 +527,32 @@ module.exports = {
 
 ## 📚 Content Migration Matrix
 
-| Source | Target | Status |
-|--------|--------|--------|
-| README.md intro | `/index.mdx` | New content |
-| README.md installation | `/docs/quickstart.mdx` | Direct migration |
-| README.md features | `/docs/features.mdx` | Enhanced |
-| README.md troubleshooting | `/docs/guides/troubleshooting.mdx` | Direct migration |
-| .agent/sop/release-management.md | `/docs/guides/automation.mdx` | Adapted |
-| Package.json scripts | `/docs/api/commands.mdx` | New content |
-| Tool system docs | `/docs/api/tools.mdx` | New content |
+| Source                           | Target                             | Status           |
+| -------------------------------- | ---------------------------------- | ---------------- |
+| README.md intro                  | `/index.mdx`                       | New content      |
+| README.md installation           | `/docs/quickstart.mdx`             | Direct migration |
+| README.md features               | `/docs/features.mdx`               | Enhanced         |
+| README.md troubleshooting        | `/docs/guides/troubleshooting.mdx` | Direct migration |
+| .agent/sop/release-management.md | `/docs/guides/automation.mdx`      | Adapted          |
+| Package.json scripts             | `/docs/api/commands.mdx`           | New content      |
+| Tool system docs                 | `/docs/api/tools.mdx`              | New content      |
 
 ## 🔗 Related Resources
 
 ### Documentation References
+
 - **Nextra Documentation**: https://nextra.site/
 - **Next.js 14 Docs**: https://nextjs.org/docs
 - **Vercel Deployment**: https://vercel.com/docs
 
 ### Design Inspiration
+
 - **X.AI Docs**: https://docs.x.ai/
 - **Claude Docs**: https://docs.anthropic.com/
 - **GitHub Docs**: https://docs.github.com/
 
 ### Community Integration
+
 - **Discord Server**: https://discord.com/channels/1315720379607679066/1315822328139223064
 - **GitHub Issues**: https://github.com/hinetapora/grok-cli-hurry-mode/issues
 
@@ -522,8 +566,9 @@ module.exports = {
 ## ✅ Completion Summary
 
 **Delivered Features:**
+
 - ✅ Comprehensive documentation website with Docusaurus
-- ✅ Copy-to-clipboard functionality for install commands  
+- ✅ Copy-to-clipboard functionality for install commands
 - ✅ Detailed tools documentation (12 core/advanced tools)
 - ✅ Enhanced roadmap with Claude Code parity goals
 - ✅ Fixed external navigation links (Discord/GitHub)
@@ -532,6 +577,7 @@ module.exports = {
 - ✅ Hero video integration and landing page optimization
 
 **Key Achievements:**
+
 - Documentation site live and accessible
 - All major sections populated with comprehensive content
 - Professional landing page with modern UX
@@ -544,24 +590,26 @@ module.exports = {
 ## 🔧 Key Technical Implementation
 
 ### .agent Sync Pipeline
+
 ```js
 // src/plugins/sync-agent-docs.js
-module.exports = function() {
+module.exports = function () {
   return {
-    name: 'sync-agent-docs',
+    name: "sync-agent-docs",
     loadContent: async () => {
       const agentDocs = await syncAgentDocs();
       return agentDocs;
     },
-    contentLoaded: async ({content, actions}) => {
-      const {createData} = actions;
-      await createData('agent-docs.json', JSON.stringify(content));
-    }
+    contentLoaded: async ({ content, actions }) => {
+      const { createData } = actions;
+      await createData("agent-docs.json", JSON.stringify(content));
+    },
   };
 };
 ```
 
 ### Content Transformation
+
 ```js
 function transformAgentDoc(filePath, content) {
   // Add Docusaurus frontmatter
@@ -573,9 +621,10 @@ function transformAgentDoc(filePath, content) {
 ```
 
 ### Automated Roadmap Generation
+
 ```js
 function generateRoadmap() {
-  const taskFiles = glob.sync('.agent/tasks/*.md');
+  const taskFiles = glob.sync(".agent/tasks/*.md");
   const roadmapData = taskFiles.map(parseTaskFile);
   return renderRoadmapPage(roadmapData);
 }

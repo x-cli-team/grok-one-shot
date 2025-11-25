@@ -49,14 +49,11 @@ grok
 </Step>
 </Steps>
 
-<Tip>
 Tips:
 
 - Start with broad questions, then narrow down to specific areas
 - Ask about coding conventions and patterns used in the project
 - Request a glossary of project-specific terms
-
-</Tip>
 
 ### Find relevant code
 
@@ -82,12 +79,10 @@ Suppose you need to locate code related to a specific feature or functionality.
 </Step>
 </Steps>
 
-<Tip>
 Tips:
 
 - Be specific about what you're looking for
 - Use domain language from the project
-  </Tip>
 
 ---
 
@@ -115,13 +110,11 @@ Suppose you've encountered an error message and need to find and fix its source.
 </Step>
 </Steps>
 
-<Tip>
 Tips:
 
 - Tell Grok the command to reproduce the issue and get a stack trace
 - Mention any steps to reproduce the error
 - Let Grok know if the error is intermittent or consistent
-  </Tip>
 
 ---
 
@@ -155,13 +148,11 @@ Suppose you need to update old code to use modern patterns and practices.
 </Step>
 </Steps>
 
-<Tip>
-Tips:
+**Tips:**
 
 - Ask Grok to explain the benefits of the modern approach
 - Request that changes maintain backward compatibility when needed
 - Do refactoring in small, testable increments
-  </Tip>
 
 ---
 
@@ -239,13 +230,11 @@ Suppose you need to add tests for uncovered code.
 </Step>
 </Steps>
 
-<Tip>
 Tips:
 
 - Ask for tests that cover edge cases and error conditions
 - Request both unit and integration tests when appropriate
 - Have Grok explain the testing strategy
-  </Tip>
 
 ---
 
@@ -279,13 +268,11 @@ Suppose you need to create a well-documented pull request for your changes.
 </Step>
 </Steps>
 
-<Tip>
 Tips:
 
 - Ask Grok directly to make a PR for you
 - Review Grok's generated PR before submitting
 - Ask Grok to highlight potential risks or considerations
-  </Tip>
 
 ## Handle documentation
 
@@ -317,13 +304,11 @@ Suppose you need to add or update documentation for your code.
 </Step>
 </Steps>
 
-<Tip>
 Tips:
 
 - Specify the documentation style you want (JSDoc, docstrings, etc.)
 - Ask for examples in the documentation
 - Request documentation for public APIs, interfaces, and complex logic
-  </Tip>
 
 ---
 
@@ -480,7 +465,7 @@ git worktree remove ../project-feature-a
 </Step>
 </Steps>
 
-<Tip>
+
 Tips:
 
 - Each worktree has its own independent file state, making it perfect for parallel Grok sessions
@@ -491,7 +476,7 @@ Tips:
 - Remember to initialize your development environment in each new worktree according to your project's setup. Depending on your stack, this might include:
 _ JavaScript projects: Running dependency installation (`npm install`, `yarn`)
 _ Python projects: Setting up virtual environments or installing with package managers \* Other languages: Following your project's standard setup process
-</Tip>
+
 
 ---
 
@@ -514,13 +499,11 @@ Suppose you want to use Grok One-Shot as a linter or code reviewer.
 }
 ````
 
-<Tip>
 Tips:
 
 - Use Grok for automated code review in your CI/CD pipeline
 - Customize the prompt to check for specific issues relevant to your project
 - Consider creating multiple scripts for different types of verification
-  </Tip>
 
 ### Pipe in, pipe out
 
@@ -532,13 +515,11 @@ Suppose you want to pipe data into Grok, and get back data in a structured forma
 cat build-error.txt | grok -p 'concisely explain the root cause of this build error' > output.txt
 ```
 
-<Tip>
 Tips:
 
 - Use pipes to integrate Grok into existing shell scripts
 - Combine with other Unix tools for powerful workflows
 - Consider using structured prompts for consistent output
-  </Tip>
 
 ### Control output format
 
@@ -620,13 +601,11 @@ Grok has built-in access to its documentation and can answer questions about its
 Grok provides documentation-based answers to these questions. For executable examples and hands-on demonstrations, refer to the specific workflow sections above.
 </Note>
 
-<Tip>
 Tips:
 
 - Grok always has access to the latest Grok One-Shot documentation via GROK.md and docs-index.md
 - Ask specific questions to get detailed answers
 - Grok can explain features like MCP integration, configuration, and workflows
-  </Tip>
 
 ---
 

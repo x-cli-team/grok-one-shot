@@ -1,9 +1,11 @@
 # UX Feedback System - Maintenance SOP
 
 ## Overview
+
 Standard Operating Procedures for maintaining and extending the Claude Code-style UX feedback system.
 
 ## Core Files (DO NOT MODIFY without testing)
+
 - `src/ui/colors.ts` - Color palette and consistency
 - `src/services/ui-state.ts` - Event bus and state coordination
 - `src/ui/components/banner.tsx` - Welcome banner system
@@ -12,12 +14,14 @@ Standard Operating Procedures for maintaining and extending the Claude Code-styl
 - `src/ui/components/background-activity.tsx` - Activity monitoring
 
 ## Integration Points
+
 - `src/ui/components/chat-interface.tsx` - Main UI
 - `src/hooks/use-enhanced-feedback.ts` - React hooks
 
 ## Color System
 
 **DO:**
+
 ```typescript
 import { inkColors } from '../colors.js';
 <Text color={inkColors.success}>Success message</Text>
@@ -25,12 +29,14 @@ const spinnerColor = getSpinnerColor('search');
 ```
 
 **DON'T:**
+
 ```typescript
 <Text color="green">Success message</Text>  // ❌ Hard-coded
 <Text color="#00FF00">Success message</Text> // ❌ Bypasses system
 ```
 
 **Color Standards:**
+
 - Blue/Cyan (info): Search, indexing, system info
 - Green (success): File operations, completed
 - Yellow (warning): Processing, work in progress
@@ -41,6 +47,7 @@ const spinnerColor = getSpinnerColor('search');
 ## Spinner System
 
 **Adding New Operations:**
+
 ```typescript
 // 1. Add to operationConfig in loading-spinner.tsx
 newOperation: {
@@ -56,21 +63,24 @@ case 'newoperation': return 'warning';
 ```
 
 **Usage:**
+
 ```typescript
-uiState.startSpinner({ operation: 'search', message: 'Scanning...' });
-uiState.updateSpinner({ progress: 75, message: 'Almost done...' });
+uiState.startSpinner({ operation: "search", message: "Scanning..." });
+uiState.updateSpinner({ progress: 75, message: "Almost done..." });
 uiState.stopSpinner();
 ```
 
 ## Progress Indicators
 
 **Standards:**
+
 - Length: 25 characters
 - Fill: `█` filled, `░` empty
 - Update: Max 10Hz (100ms)
 - ETA: Show for operations >30s
 
 **Usage:**
+
 ```typescript
 <ProgressIndicator
   operation="indexing"
@@ -84,18 +94,20 @@ uiState.stopSpinner();
 ## Background Activity
 
 **Lifecycle:**
+
 ```typescript
 // Start
-uiState.startBackgroundActivity('indexing', { details: '0/150' });
+uiState.startBackgroundActivity("indexing", { details: "0/150" });
 
 // Update
-uiState.updateBackgroundActivity('indexing', { details: '47/150' });
+uiState.updateBackgroundActivity("indexing", { details: "47/150" });
 
 // Complete
-uiState.stopBackgroundActivity('indexing');
+uiState.stopBackgroundActivity("indexing");
 ```
 
 **Guidelines:**
+
 - Position: corner for non-intrusive display
 - Frequency: Max 1 update/second
 - Content: ≤20 characters
@@ -104,6 +116,7 @@ uiState.stopBackgroundActivity('indexing');
 ## UI State Management
 
 **Event Naming:**
+
 ```
 [category]:[component]:[action]
 'spinner:start'
@@ -112,21 +125,24 @@ uiState.stopBackgroundActivity('indexing');
 ```
 
 **Coordination:**
+
 ```typescript
 // Listen
-const unsubscribe = uiState.on('spinner:start', handler);
+const unsubscribe = uiState.on("spinner:start", handler);
 return unsubscribe; // Cleanup
 ```
 
 ## Animation Standards
 
 **Timing:**
+
 - Spinner: 120ms (8.33 FPS)
 - Pulse: 1.5s breathing rhythm
 - Progress: 50ms minimum interval
 - Transitions: 200ms ease-in-out
 
 **Performance:**
+
 ```typescript
 // ✅ Use appropriate intervals
 setInterval(updateSpinner, 120); // 8.33 FPS
@@ -138,6 +154,7 @@ setInterval(updateSpinner, 16); // 60 FPS unnecessary
 ## Testing
 
 **Visual Checklist:**
+
 - [ ] Color consistency
 - [ ] Animation smoothness
 - [ ] Terminal compatibility
@@ -145,6 +162,7 @@ setInterval(updateSpinner, 16); // 60 FPS unnecessary
 - [ ] Accessibility (icons + colors)
 
 **Commands:**
+
 ```bash
 # Test spinner system
 npm run build && echo "exit" | node dist/index.js
@@ -159,24 +177,28 @@ GROK_UX_MINIMAL=true npm run dev
 ## Troubleshooting
 
 **Spinner Not Appearing:**
+
 ```typescript
 console.log(uiState.getCurrentSpinner());
-uiState.listenerCount('spinner:start'); // Should be > 0
+uiState.listenerCount("spinner:start"); // Should be > 0
 ```
 
 **Color Issues:**
+
 ```typescript
-import { inkColors } from '../colors.js';
+import { inkColors } from "../colors.js";
 console.log(inkColors.success); // 'green'
 ```
 
 **Performance:**
+
 ```typescript
 const ANIMATION_INTERVAL = 120; // ≥100ms
 const PULSE_CYCLE = 1500; // ≥1000ms
 ```
 
 **Debug Flags:**
+
 ```bash
 export GROK_UX_DEBUG=true      # Debug logging
 export GROK_UX_ENHANCED=false  # Disable enhancements
@@ -186,6 +208,7 @@ export GROK_UX_MINIMAL=true    # Performance mode
 ## Extension Guidelines
 
 **Adding Feedback Types:**
+
 1. Define in UI state service
 2. Create component following patterns
 3. Add color mapping
@@ -194,6 +217,7 @@ export GROK_UX_MINIMAL=true    # Performance mode
 6. Document in this SOP
 
 **Backwards Compatibility:**
+
 - UX enhancements optional by default
 - Graceful degradation for limited terminals
 - Maintain existing API compatibility
@@ -202,6 +226,7 @@ export GROK_UX_MINIMAL=true    # Performance mode
 ## Quality Gates
 
 **Before Committing:**
+
 - [ ] TypeScript compilation passes
 - [ ] Tests pass
 - [ ] Manual terminal testing
@@ -211,6 +236,7 @@ export GROK_UX_MINIMAL=true    # Performance mode
 - [ ] Documentation updated
 
 **Code Review:**
+
 - [ ] Uses centralized colors
 - [ ] Follows animation guidelines
 - [ ] Proper event cleanup
