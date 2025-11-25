@@ -38,19 +38,24 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Install dependencies
-        run: pnpm install
+      - name: Install CLI dependencies
+        run: |
+          echo "📦 Installing CLI package dependencies..."
+          cd packages/cli
+          npm install
 
       - name: Run quality checks
         run: |
           echo "🔍 Running comprehensive quality checks..."
-          pnpm run typecheck
-          pnpm run lint
+          cd packages/cli
+          npm run typecheck
+          npm run lint
 
       - name: Build CLI package
         run: |
           echo "🔨 Building CLI package..."
-          pnpm run build:cli
+          cd packages/cli
+          npm run build
 
       - name: Extract version info
         id: version
