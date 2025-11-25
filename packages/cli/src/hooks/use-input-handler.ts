@@ -348,7 +348,7 @@ export function useInputHandler({
 
   // Hook up the actual input handling with paste detection
   useInput((inputChar: string, key: Key) => {
-    console.log('Memory before keypress:', process.memoryUsage());
+
     debugInputLog('RAW_INPUT', {
       inputChar: inputChar === '' ? '(empty)' : inputChar,
       inputLength: inputChar.length,

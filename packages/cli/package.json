@@ -1,6 +1,6 @@
 {
   "name": "@xagent/one-shot-cli",
-  "version": "1.9.0",
+  "version": "1.2.16",
   "description": "CLI component of Grok One-Shot",
   "type": "module",
   "main": "dist/index.js",
