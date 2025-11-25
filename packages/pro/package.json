@@ -1,6 +1,6 @@
 {
   "name": "@xagent/one-shot-pro",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Pro features for Grok One-Shot CLI",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
