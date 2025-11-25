@@ -19,6 +19,10 @@ on:
         required: false
         default: "cli,pro,web"
 
+permissions:
+  contents: write
+  actions: write
+
 jobs:
   sync-cli:
     name: Sync CLI to grok-one-shot
@@ -59,18 +63,13 @@ jobs:
 
       - name: Push to CLI repository
         env:
-          CLI_REPO_TOKEN: ${{ secrets.CLI_REPO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ -z "${CLI_REPO_TOKEN:-}" ]; then
-            echo "⚠️ CLI_REPO_TOKEN not set - skipping CLI repo sync"
-            exit 0
-          fi
-
           echo "🚀 Syncing to CLI repository..."
           cd /tmp/cli-repo
 
           git init
-          git remote add origin https://x-access-token:${CLI_REPO_TOKEN}@github.com/x-cli-team/grok-one-shot.git
+          git remote add origin https://x-access-token:${GITHUB_TOKEN}@github.com/x-cli-team/grok-one-shot.git
           git add .
           git commit -m "Sync from monorepo: $(echo '${{ github.event.head_commit.message }}' | head -n1)
 
